@@ -11,19 +11,19 @@ interface GreetingMessageProps {
 const GreetingMessage: React.FC<GreetingMessageProps> = ({ content }) => {
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="text-center max-w-md mx-auto">
+      <div className="text-center max-w-2xl mx-auto">
         {/* Avatar centré */}
-        <div className="flex justify-center mb-6">
-          <Avatar className="w-16 h-16">
+        <div className="flex justify-center mb-8">
+          <Avatar className="w-20 h-20">
             <AvatarFallback className="bg-green-500 text-white">
-              <Star className="w-8 h-8" />
+              <Star className="w-10 h-10" />
             </AvatarFallback>
           </Avatar>
         </div>
         
         {/* Message de salutation */}
-        <div className="prose prose-xl dark:prose-invert">
-          <p className="text-2xl text-gray-800 dark:text-gray-200 font-light leading-relaxed">
+        <div className="prose prose-2xl dark:prose-invert">
+          <p className="text-4xl text-gray-800 dark:text-gray-100 font-light leading-relaxed">
             {content}
           </p>
         </div>
