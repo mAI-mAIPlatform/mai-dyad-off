@@ -37,10 +37,16 @@ export class ImageGenerationService {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       const data = await response.json();
+      
+      // Vérifier si la réponse contient bien les données d'image
+      if (!data.data || !data.data[0] || !data.data[0].url) {
+        throw new Error('Réponse invalide de l\'API de génération d\'images');
+      }
       
       return {
         url: data.data[0].url,
@@ -50,7 +56,7 @@ export class ImageGenerationService {
       };
     } catch (error) {
       console.error('Error generating image:', error);
-      throw new Error('Erreur lors de la génération de l\'image');
+      throw new Error(`Erreur lors de la génération de l'image: ${(error as Error).message}`);
     }
   }
 
