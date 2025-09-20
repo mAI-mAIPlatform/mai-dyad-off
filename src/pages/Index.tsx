@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, Bot, User } from "lucide-react";
+import { Send, Bot, User, Trash2 } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
+import { OpenRouterService, OpenRouterMessage } from "@/services/openrouter";
 
 interface Message {
   id: string;
@@ -26,6 +27,7 @@ const Index = () => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('openai/gpt-3.5-turbo');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -35,6 +37,18 @@ const Index = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const clearChat = () => {
+    setMessages([
+      {
+        id: Date.now().toString(),
+        content: "Bonjour ! Je suis mAI, votre assistant IA. Comment puis-je vous aider aujourd'hui ?",
+        role: 'assistant',
+        timestamp: new Date()
+      }
+    ]);
+    showSuccess("Conversation effacée");
+  };
 
   const handleSendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -51,20 +65,46 @@ const Index = () => {
     setIsLoading(true);
 
     try {
-      // Simulation d'une réponse IA (à remplacer par une vraie API)
-      setTimeout(() => {
-        const aiResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          content: `Je suis mAI et j'ai bien reçu votre message : "${input.trim()}". Comment puis-je vous aider davantage ?`,
-          role: 'assistant',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, aiResponse]);
-        setIsLoading(false);
-        showSuccess("Réponse reçue !");
-      }, 1000);
+      // Préparer les messages pour l'API
+      const apiMessages: OpenRouterMessage[] = messages
+        .slice(-10) // Garder les 10 derniers messages pour le contexte
+        .map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }));
+
+      apiMessages.push({
+        role: 'user',
+        content: input.trim()
+      });
+
+      const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages);
+
+      // Appeler l'API OpenRouter
+      const response = await OpenRouterService.sendMessage(formattedMessages, selectedModel);
+      
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content: response.choices[0].message.content,
+        role: 'assistant',
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, aiResponse]);
+      showSuccess("Réponse IA reçue !");
     } catch (error) {
-      showError("Erreur lors de l'envoi du message");
+      console.error('Error:', error);
+      showError("Erreur lors de la communication avec l'IA");
+      
+      // Message d'erreur fallback
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "Désolé, je rencontre des difficultés techniques. Pouvez-vous réessayer ?",
+        role: 'assistant',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -91,17 +131,45 @@ const Index = () => {
               </h1>
             </div>
             <p className="text-gray-600 dark:text-gray-300 text-lg">
-              Votre assistant IA personnel
+              Votre assistant IA personnel avec OpenRouter
             </p>
           </div>
 
+          {/* Model Selector */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Modèle IA
+            </label>
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 text-gray-900 dark:text-white"
+              disabled={isLoading}
+            >
+              <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo (Rapide)</option>
+              <option value="openai/gpt-4">GPT-4 (Plus puissant)</option>
+              <option value="anthropic/claude-3-haiku">Claude 3 Haiku</option>
+              <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet</option>
+            </select>
+          </div>
+
           {/* Chat Container */}
-          <Card className="shadow-lg border-0">
-            <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+          <Card className="shadow-lg border-0 mb-8">
+            <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Bot className="w-5 h-5" />
                 Conversation avec mAI
               </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearChat}
+                className="text-white hover:bg-white/20"
+                disabled={isLoading}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Effacer
+              </Button>
             </CardHeader>
             <CardContent className="p-0">
               {/* Messages Area */}
@@ -112,7 +180,7 @@ const Index = () => {
                     className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {message.role === 'assistant' && (
-                      <Avatar className="w-8 h-8">
+                      <Avatar className="w-8 h-8 flex-shrink-0">
                         <AvatarFallback className="bg-blue-500 text-white">
                           <Bot className="w-4 h-4" />
                         </AvatarFallback>
@@ -125,13 +193,13 @@ const Index = () => {
                           : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'
                       }`}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                       <p className="text-xs opacity-70 mt-1">
                         {message.timestamp.toLocaleTimeString()}
                       </p>
                     </div>
                     {message.role === 'user' && (
-                      <Avatar className="w-8 h-8">
+                      <Avatar className="w-8 h-8 flex-shrink-0">
                         <AvatarFallback className="bg-gray-500 text-white">
                           <User className="w-4 h-4" />
                         </AvatarFallback>
@@ -141,7 +209,7 @@ const Index = () => {
                 ))}
                 {isLoading && (
                   <div className="flex gap-3 justify-start">
-                    <Avatar className="w-8 h-8">
+                    <Avatar className="w-8 h-8 flex-shrink-0">
                       <AvatarFallback className="bg-blue-500 text-white">
                         <Bot className="w-4 h-4" />
                       </AvatarFallback>
@@ -183,15 +251,15 @@ const Index = () => {
           </Card>
 
           {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="text-center">
               <CardContent className="pt-6">
                 <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Bot className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="font-semibold mb-2">Intelligent</h3>
+                <h3 className="font-semibold mb-2">OpenRouter</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Réponses pertinentes et contextuelles
+                  Accès à multiples modèles IA via une seule API
                 </p>
               </CardContent>
             </Card>
@@ -201,9 +269,9 @@ const Index = () => {
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Send className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="font-semibold mb-2">Rapide</h3>
+                <h3 className="font-semibold mb-2">Temps Réel</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Réponses instantanées en temps réel
+                  Réponses instantanées des meilleurs modèles
                 </p>
               </CardContent>
             </Card>
@@ -213,9 +281,9 @@ const Index = () => {
                 <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-4">
                   <User className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h3 className="font-semibold mb-2">Personnel</h3>
+                <h3 className="font-semibold mb-2">Personnalisable</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Expérience de chat personnalisée
+                  Choisissez le modèle qui vous convient
                 </p>
               </CardContent>
             </Card>
