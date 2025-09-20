@@ -8,6 +8,8 @@ import ChatSidebar from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import SettingsDialog from "@/components/SettingsDialog";
+import GreetingMessage from "@/components/GreetingMessage";
+import { generateGreetingMessages } from "@/utils/greetings";
 
 interface Message {
   id: string;
@@ -27,19 +29,13 @@ const Index = () => {
     {
       id: 'default',
       title: "Nouvelle conversation",
-      messages: [
-        {
-          id: '1',
-          content: "Bonjour ! Je suis mAI, votre assistant IA. Comment puis-je vous aider aujourd'hui ?",
-          role: 'assistant',
-          timestamp: new Date()
-        }
-      ]
+      messages: []
     }
   ]);
   const [currentConversationId, setCurrentConversationId] = useState('default');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('openai/gpt-3.5-turbo');
+  const [userName, setUserName] = useState('Utilisateur');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const currentConversation = conversations.find(conv => conv.id === currentConversationId) || conversations[0];
@@ -52,18 +48,19 @@ const Index = () => {
     scrollToBottom();
   }, [currentConversation.messages]);
 
+  useEffect(() => {
+    // Charger le nom utilisateur depuis le localStorage
+    const savedUserName = localStorage.getItem('userName');
+    if (savedUserName) {
+      setUserName(savedUserName);
+    }
+  }, []);
+
   const handleNewChat = () => {
     const newConversation: Conversation = {
       id: Date.now().toString(),
       title: "Nouvelle conversation",
-      messages: [
-        {
-          id: '1',
-          content: "Bonjour ! Je suis mAI, votre assistant IA. Comment puis-je vous aider aujourd'hui ?",
-          role: 'assistant',
-          timestamp: new Date()
-        }
-      ]
+      messages: []
     };
     setConversations(prev => [newConversation, ...prev]);
     setCurrentConversationId(newConversation.id);
@@ -104,6 +101,11 @@ const Index = () => {
           }
         : conv
     ));
+  };
+
+  const handleUserNameChange = (name: string) => {
+    setUserName(name);
+    localStorage.setItem('userName', name);
   };
 
   const handleSendMessage = async (content: string) => {
@@ -186,6 +188,8 @@ const Index = () => {
     }
   };
 
+  const shouldShowGreeting = currentConversation.messages.length === 0;
+
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <div className="h-screen flex bg-white dark:bg-gray-900">
@@ -209,6 +213,8 @@ const Index = () => {
               <SettingsDialog
                 selectedModel={selectedModel}
                 onModelChange={setSelectedModel}
+                userName={userName}
+                onUserNameChange={handleUserNameChange}
               />
             </div>
           </div>
@@ -216,27 +222,33 @@ const Index = () => {
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
-              {currentConversation.messages.map((message) => (
-                <ChatMessage
-                  key={message.id}
-                  id={message.id}
-                  content={message.content}
-                  role={message.role}
-                  timestamp={message.timestamp}
-                  onEditMessage={handleEditMessage}
-                  onCopyMessage={handleCopyMessage}
-                />
-              ))}
-              {isLoading && (
-                <ChatMessage
-                  id="loading"
-                  content=""
-                  role="assistant"
-                  timestamp={new Date()}
-                  isGenerating={true}
-                  onEditMessage={() => {}}
-                  onCopyMessage={() => {}}
-                />
+              {shouldShowGreeting ? (
+                <GreetingMessage content={generateGreetingMessages(userName)[0].content} />
+              ) : (
+                <>
+                  {currentConversation.messages.map((message) => (
+                    <ChatMessage
+                      key={message.id}
+                      id={message.id}
+                      content={message.content}
+                      role={message.role}
+                      timestamp={message.timestamp}
+                      onEditMessage={handleEditMessage}
+                      onCopyMessage={handleCopyMessage}
+                    />
+                  ))}
+                  {isLoading && (
+                    <ChatMessage
+                      id="loading"
+                      content=""
+                      role="assistant"
+                      timestamp={new Date()}
+                      isGenerating={true}
+                      onEditMessage={() => {}}
+                      onCopyMessage={() => {}}
+                    />
+                  )}
+                </>
               )}
               <div ref={messagesEndRef} />
             </div>
