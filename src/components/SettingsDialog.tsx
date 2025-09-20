@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
+import { showSuccess } from "@/utils/toast";
 
 interface SettingsDialogProps {
   selectedModel: string;
@@ -38,6 +39,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
 }) => {
   const [localUserName, setLocalUserName] = useState(userName);
   const { theme, setTheme } = useTheme();
+  const [localSelectedModel, setLocalSelectedModel] = useState(selectedModel);
 
   const models = [
     { id: 'openai/gpt-3.5-turbo', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
@@ -49,6 +51,11 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
   const handleSave = () => {
     onUserNameChange(localUserName);
+    // Sauvegarder les paramètres dans localStorage
+    localStorage.setItem('userName', localUserName);
+    localStorage.setItem('selectedModel', localSelectedModel);
+    localStorage.setItem('theme', theme || 'system');
+    showSuccess("Paramètres sauvegardés avec succès");
   };
 
   return (
@@ -75,14 +82,13 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
               value={localUserName}
               onChange={(e) => setLocalUserName(e.target.value)}
               placeholder="Entrez votre nom"
-              onBlur={handleSave}
             />
           </div>
 
           {/* Modèle IA */}
           <div className="grid gap-2">
             <Label htmlFor="model">Modèle IA</Label>
-            <Select value={selectedModel} onValueChange={onModelChange}>
+            <Select value={localSelectedModel} onValueChange={setLocalSelectedModel}>
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionnez un modèle" />
               </SelectTrigger>
@@ -108,6 +114,16 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
               onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
             />
           </div>
+        </div>
+
+        {/* Version et bouton sauvegarder */}
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-xs text-gray-500">
+            26 0.5 (Public Update)
+          </div>
+          <Button onClick={handleSave} size="sm">
+            Sauvegarder
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
