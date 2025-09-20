@@ -8,7 +8,6 @@ import ChatSidebar from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import SettingsDialog from "@/components/SettingsDialog";
-import ModelDropdown from "@/components/ModelDropdown";
 
 interface Message {
   id: string;
@@ -204,15 +203,9 @@ const Index = () => {
           {/* Header */}
           <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
             <div className="max-w-4xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {currentConversation.title}
-                </h1>
-                <ModelDropdown
-                  selectedModel={selectedModel}
-                  onModelChange={setSelectedModel}
-                />
-              </div>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {currentConversation.title}
+              </h1>
               <SettingsDialog
                 selectedModel={selectedModel}
                 onModelChange={setSelectedModel}
