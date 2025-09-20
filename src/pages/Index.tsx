@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Card } from "@/components/ui/card";
-import { showSuccess, showError } from "@/utils/toast";
+import { showSuccess } from "@/utils/toast";
 import { OpenRouterService, OpenRouterMessage } from "@/services/openrouter";
 import ChatSidebar from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
@@ -72,6 +71,39 @@ const Index = () => {
     setCurrentConversationId(id);
   };
 
+  const handleDeleteConversation = (id: string) => {
+    if (conversations.length > 1) {
+      setConversations(prev => prev.filter(conv => conv.id !== id));
+      if (currentConversationId === id) {
+        setCurrentConversationId(conversations.find(conv => conv.id !== id)?.id || 'default');
+      }
+    }
+  };
+
+  const handleRenameConversation = (id: string, newTitle: string) => {
+    setConversations(prev => prev.map(conv => 
+      conv.id === id ? { ...conv, title: newTitle } : conv
+    ));
+  };
+
+  const handleCopyMessage = (content: string) => {
+    navigator.clipboard.writeText(content);
+    showSuccess("Message copié");
+  };
+
+  const handleEditMessage = (messageId: string, newContent: string) => {
+    setConversations(prev => prev.map(conv => 
+      conv.id === currentConversationId
+        ? {
+            ...conv,
+            messages: conv.messages.map(msg =>
+              msg.id === messageId ? { ...msg, content: newContent } : msg
+            )
+          }
+        : conv
+    ));
+  };
+
   const handleSendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return;
 
@@ -99,7 +131,7 @@ const Index = () => {
     try {
       // Prepare messages for API
       const apiMessages: OpenRouterMessage[] = currentConversation.messages
-        .slice(-20) // Keep last 20 messages for context
+        .slice(-20)
         .map(msg => ({
           role: msg.role,
           content: msg.content
@@ -130,10 +162,8 @@ const Index = () => {
       );
 
       setConversations(finalConversations);
-      showSuccess("Réponse reçue");
     } catch (error) {
       console.error('Error:', error);
-      showError("Erreur de communication avec l'IA");
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -154,16 +184,14 @@ const Index = () => {
     }
   };
 
-  const handleFeedback = (messageId: string, isPositive: boolean) => {
-    showSuccess(isPositive ? "Merci pour votre retour 👍" : "Retour enregistré 👎");
-  };
-
   return (
     <div className="h-screen flex bg-white dark:bg-gray-900">
       {/* Sidebar */}
       <ChatSidebar
         onNewChat={handleNewChat}
         onSelectConversation={handleSelectConversation}
+        onDeleteConversation={handleDeleteConversation}
+        onRenameConversation={handleRenameConversation}
         currentConversationId={currentConversationId}
       />
 
@@ -184,12 +212,34 @@ const Index = () => {
             {currentConversation.messages.map((message) => (
               <ChatMessage
                 key={message.id}
+                id={message.id}
                 content={message.content}
                 role={message.role}
                 timestamp={message.timestamp}
-                onFeedback={(isPositive) => handleFeedback(message.id, isPositive)}
+                onEditMessage={handleEditMessage}
+                onCopyMessage={handleCopyMessage}
               />
             ))}
+            {isLoading && (
+              <div className="py-4 bg-gray-50 dark:bg-gray-800">
+                <div className="max-w-4xl mx-auto px-4">
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                        <div className="w-4 h-4 text-white">mAI</div>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
         </div>
