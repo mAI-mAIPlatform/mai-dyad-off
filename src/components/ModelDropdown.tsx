@@ -27,9 +27,14 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
 }) => {
   const models: Model[] = [
     {
-      id: 'openai/gpt-5',
+      id: 'openai/gpt-3.5-turbo',
       name: 'm-4.0',
       description: 'Pour les tâches quotidiennes, rapide'
+    },
+    {
+      id: 'openai/gpt-4',
+      name: 'm-4.5 Pro',
+      description: 'Professionnel, précis'
     },
     {
       id: 'anthropic/claude-3-haiku',
@@ -37,17 +42,12 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
       description: 'Écologique'
     },
     {
-      id: 'openai/o4',
-      name: 'm-4.5 Pro',
-      description: 'Professionnel, précis'
-    },
-    {
       id: 'anthropic/claude-3-opus',
       name: 'm-4.7o',
       description: 'Précis'
     },
     {
-      id: 'openai/gpt-5-mini',
+      id: 'openai/gpt-4-turbo',
       name: 'm-4.9+',
       description: 'Rapide'
     }
