@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { ThemeProvider } from "next-themes";
 import { showSuccess } from "@/utils/toast";
 import { OpenRouterService, OpenRouterMessage } from "@/services/openrouter";
 import ChatSidebar from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
+import SettingsDialog from "@/components/SettingsDialog";
 
 interface Message {
   id: string;
@@ -185,73 +187,70 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen flex bg-white dark:bg-gray-900">
-      {/* Sidebar */}
-      <ChatSidebar
-        onNewChat={handleNewChat}
-        onSelectConversation={handleSelectConversation}
-        onDeleteConversation={handleDeleteConversation}
-        onRenameConversation={handleRenameConversation}
-        currentConversationId={currentConversationId}
-      />
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {currentConversation.title}
-            </h1>
-          </div>
-        </div>
-
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto">
-            {currentConversation.messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                id={message.id}
-                content={message.content}
-                role={message.role}
-                timestamp={message.timestamp}
-                onEditMessage={handleEditMessage}
-                onCopyMessage={handleCopyMessage}
-              />
-            ))}
-            {isLoading && (
-              <div className="py-4 bg-gray-50 dark:bg-gray-800">
-                <div className="max-w-4xl mx-auto px-4">
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                        <div className="w-4 h-4 text-white">mAI</div>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
-
-        {/* Chat Input */}
-        <ChatInput
-          onSendMessage={handleSendMessage}
-          isLoading={isLoading}
-          placeholder="Message mAI..."
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <div className="h-screen flex bg-white dark:bg-gray-900">
+        {/* Sidebar */}
+        <ChatSidebar
+          onNewChat={handleNewChat}
+          onSelectConversation={handleSelectConversation}
+          onDeleteConversation={handleDeleteConversation}
+          onRenameConversation={handleRenameConversation}
+          currentConversationId={currentConversationId}
         />
+
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
+            <div className="max-w-4xl mx-auto flex items-center justify-between">
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {currentConversation.title}
+              </h1>
+              <SettingsDialog
+                selectedModel={selectedModel}
+                onModelChange={setSelectedModel}
+              />
+            </div>
+          </div>
+
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-4xl mx-auto">
+              {currentConversation.messages.map((message) => (
+                <ChatMessage
+                  key={message.id}
+                  id={message.id}
+                  content={message.content}
+                  role={message.role}
+                  timestamp={message.timestamp}
+                  onEditMessage={handleEditMessage}
+                  onCopyMessage={handleCopyMessage}
+                />
+              ))}
+              {isLoading && (
+                <ChatMessage
+                  id="loading"
+                  content=""
+                  role="assistant"
+                  timestamp={new Date()}
+                  isGenerating={true}
+                  onEditMessage={() => {}}
+                  onCopyMessage={() => {}}
+                />
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          {/* Chat Input */}
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+            placeholder="Message mAI..."
+          />
+        </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 };
 

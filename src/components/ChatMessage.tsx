@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Bot, User, Copy, Edit, Check, X } from "lucide-react";
+import { User, Copy, Edit, Check, X, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { showSuccess } from "@/utils/toast";
@@ -12,6 +12,7 @@ interface ChatMessageProps {
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;
+  isGenerating?: boolean;
   onEditMessage: (id: string, newContent: string) => void;
   onCopyMessage: (content: string) => void;
 }
@@ -21,6 +22,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   content,
   role,
   timestamp,
+  isGenerating = false,
   onEditMessage,
   onCopyMessage
 }) => {
@@ -70,7 +72,17 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                   ? 'bg-gray-500 text-white' 
                   : 'bg-green-500 text-white'
               }>
-                {role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                {role === 'user' ? (
+                  <User className="w-4 h-4" />
+                ) : isGenerating ? (
+                  <Star className="w-4 h-4 animate-spin" />
+                ) : (
+                  <img 
+                    src="/logo.png" 
+                    alt="mAI" 
+                    className="w-4 h-4 object-contain"
+                  />
+                )}
               </AvatarFallback>
             </Avatar>
           </div>
@@ -122,17 +134,17 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 </div>
 
                 {/* Actions */}
-                {role === 'user' && (
-                  <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs"
-                      onClick={handleCopy}
-                    >
-                      <Copy className="w-3 h-3 mr-1" />
-                      Copier
-                    </Button>
+                <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={handleCopy}
+                  >
+                    <Copy className="w-3 h-3 mr-1" />
+                    Copier
+                  </Button>
+                  {role === 'user' && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -142,8 +154,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                       <Edit className="w-3 h-3 mr-1" />
                       Modifier
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </>
             )}
           </div>
