@@ -26,14 +26,14 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
       description: 'Pour les tâches quotidiennes, rapide'
     },
     {
-      id: 'openai/gpt-4',
-      name: 'm-4.5 Pro',
-      description: 'Professionnel, précis'
-    },
-    {
       id: 'anthropic/claude-3-haiku',
       name: 'm-4.3-mini',
       description: 'Écologique'
+    },
+    {
+      id: 'openai/gpt-4',
+      name: 'm-4.5 Pro',
+      description: 'Professionnel, précis'
     },
     {
       id: 'anthropic/claude-3-opus',
