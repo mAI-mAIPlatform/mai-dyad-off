@@ -109,6 +109,13 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
             />
           </div>
         </div>
+
+        {/* Version text */}
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+          <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+            26 0.5 (Public Update)
+          </p>
+        </div>
       </DialogContent>
     </Dialog>
   );
