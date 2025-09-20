@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, MessageSquare, Trash2, Settings, Edit, Check, X } from "lucide-react";
+import { Plus, MessageSquare, Trash2, Edit, Check, X } from "lucide-react";
 
 interface Conversation {
   id: string;
@@ -181,17 +181,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             </Card>
           ))}
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-gray-600 dark:text-gray-400"
-        >
-          <Settings className="w-4 h-4 mr-2" />
-          Paramètres
-        </Button>
       </div>
     </div>
   );
