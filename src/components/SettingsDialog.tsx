@@ -40,11 +40,11 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const { theme, setTheme } = useTheme();
 
   const models = [
-    { id: 'openai/gpt-3.5-turbo', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
-    { id: 'openai/gpt-4', name: 'm-4.5 Pro', description: 'Professionnel, précis' },
+    { id: 'openai/gpt-5', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
     { id: 'anthropic/claude-3-haiku', name: 'm-4.3-mini', description: 'Écologique' },
+    { id: 'openai/o4', name: 'm-4.5 Pro', description: 'Professionnel, précis' },
     { id: 'anthropic/claude-3-opus', name: 'm-4.7o', description: 'Précis' },
-    { id: 'openai/gpt-4-turbo', name: 'm-4.9+', description: 'Rapide' }
+    { id: 'openai/gpt-5-mini', name: 'm-4.9+', description: 'Rapide' }
   ];
 
   const handleSave = () => {

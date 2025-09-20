@@ -34,7 +34,7 @@ const Index = () => {
   ]);
   const [currentConversationId, setCurrentConversationId] = useState('default');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('openai/gpt-3.5-turbo');
+  const [selectedModel, setSelectedModel] = useState('openai/gpt-5');
   const [userName, setUserName] = useState('Utilisateur');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -220,6 +220,7 @@ const Index = () => {
           </div>
 
           {/* Messages Area */}
+<dyad-write path="src/pages/Index.tsx" description="Mettre à jour le modèle par défaut (suite)">
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
               {shouldShowGreeting ? (
