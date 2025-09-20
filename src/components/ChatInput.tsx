@@ -48,6 +48,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Arrêter la dictée si elle est active
+    if (isListening) {
+      stopListening();
+    }
+    
     // Si un fichier est sélectionné mais pas encore uploadé
     if (selectedFile && !isUploading) {
       try {
@@ -154,7 +159,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 onKeyPress={handleKeyPress}
                 placeholder={placeholder}
                 disabled={isLoading || isUploading}
-                className="min-h-[60px] max-h-32 resize-none pr-12 py-3"
+                className="min-h-[60px] max-h-32 resize-none pr-12 py-3 text-base"
                 rows={1}
               />
               
@@ -205,7 +210,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         {isListening && (
           <div className="mt-2 flex items-center gap-2">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <span className="text-xs text-red-500">En écoute...</span>
+            <span className="text-xs text-red-500">En écoute... (cliquez sur le micro pour arrêter)</span>
           </div>
         )}
 

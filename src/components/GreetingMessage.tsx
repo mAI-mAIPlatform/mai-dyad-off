@@ -13,17 +13,17 @@ const GreetingMessage: React.FC<GreetingMessageProps> = ({ content }) => {
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-center max-w-md mx-auto">
         {/* Avatar centré */}
-        <div className="flex justify-center mb-4">
-          <Avatar className="w-12 h-12">
+        <div className="flex justify-center mb-6">
+          <Avatar className="w-16 h-16">
             <AvatarFallback className="bg-green-500 text-white">
-              <Star className="w-6 h-6" />
+              <Star className="w-8 h-8" />
             </AvatarFallback>
           </Avatar>
         </div>
         
         {/* Message de salutation */}
-        <div className="prose prose-lg dark:prose-invert">
-          <p className="text-gray-700 dark:text-gray-300 font-light leading-relaxed">
+        <div className="prose prose-xl dark:prose-invert">
+          <p className="text-2xl text-gray-800 dark:text-gray-200 font-light leading-relaxed">
             {content}
           </p>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface SpeechRecognitionHook {
   isListening: boolean;
@@ -13,7 +13,7 @@ interface SpeechRecognitionHook {
 export const useSpeechRecognition = (): SpeechRecognitionHook => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [recognition, setRecognition] = useState<any>(null);
+  const recognitionRef = useRef<any>(null);
   const [hasRecognitionSupport, setHasRecognitionSupport] = useState(false);
 
   useEffect(() => {
@@ -44,29 +44,42 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
       };
 
       recognitionInstance.onend = () => {
-        setIsListening(false);
+        // Redémarrer automatiquement si toujours en mode écoute
+        if (isListening) {
+          recognitionInstance.start();
+        }
       };
 
-      setRecognition(recognitionInstance);
+      recognitionRef.current = recognitionInstance;
     }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
   }, []);
 
   const startListening = useCallback(() => {
-    if (recognition && hasRecognitionSupport) {
+    if (recognitionRef.current && hasRecognitionSupport) {
       setTranscript('');
       setIsListening(true);
-      recognition.start();
+      try {
+        recognitionRef.current.start();
+      } catch (error) {
+        console.log("Recognition already started");
+      }
     } else {
       alert("La reconnaissance vocale n'est pas supportée par votre navigateur");
     }
-  }, [recognition, hasRecognitionSupport]);
+  }, [hasRecognitionSupport]);
 
   const stopListening = useCallback(() => {
-    if (recognition && hasRecognitionSupport) {
+    if (recognitionRef.current && hasRecognitionSupport) {
       setIsListening(false);
-      recognition.stop();
+      recognitionRef.current.stop();
     }
-  }, [recognition, hasRecognitionSupport]);
+  }, [hasRecognitionSupport]);
 
   return {
     isListening,
