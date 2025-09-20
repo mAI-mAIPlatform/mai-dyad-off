@@ -2,10 +2,12 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ThemeProvider } from "next-themes";
-import { showSuccess } from "@/utils/toast";
+import { showSuccess, showError } from "@/utils/toast";
 import { OpenRouterService, OpenRouterMessage } from "@/services/openrouter";
+import { ImageGenerationService, GeneratedImage } from "@/services/image-generation";
 import ChatSidebar from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
+import ImageMessage from "@/components/ImageMessage";
 import ChatInput from "@/components/ChatInput";
 import SettingsDialog from "@/components/SettingsDialog";
 import GreetingMessage from "@/components/GreetingMessage";
@@ -16,6 +18,8 @@ interface Message {
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;
+  type?: 'text' | 'image';
+  imageData?: GeneratedImage;
 }
 
 interface Conversation {
@@ -34,6 +38,7 @@ const Index = () => {
   ]);
   const [currentConversationId, setCurrentConversationId] = useState('default');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [selectedModel, setSelectedModel] = useState('openai/gpt-3.5-turbo');
   const [userName, setUserName] = useState('Utilisateur');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -49,7 +54,6 @@ const Index = () => {
   }, [currentConversation.messages]);
 
   useEffect(() => {
-    // Charger le nom utilisateur depuis le localStorage
     const savedUserName = localStorage.getItem('userName');
     if (savedUserName) {
       setUserName(savedUserName);
@@ -108,17 +112,52 @@ const Index = () => {
     localStorage.setItem('userName', name);
   };
 
+  const handleRegenerateImage = async (prompt: string) => {
+    setIsGeneratingImage(true);
+    try {
+      const image = await ImageGenerationService.generateImage({
+        prompt: prompt,
+        model: 'openai/dall-e-3'
+      });
+
+      const imageMessage: Message = {
+        id: Date.now().toString(),
+        content: `Image générée: ${prompt}`,
+        role: 'assistant',
+        timestamp: new Date(),
+        type: 'image',
+        imageData: image
+      };
+
+      setConversations(prev => prev.map(conv =>
+        conv.id === currentConversationId
+          ? { ...conv, messages: [...conv.messages, imageMessage] }
+          : conv
+      ));
+    } catch (error) {
+      showError("Erreur lors de la régénération de l'image");
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
   const handleSendMessage = async (content: string) => {
-    if (!content.trim() || isLoading) return;
+    if (!content.trim() || isLoading || isGeneratingImage) return;
+
+    // Vérifier si c'est une demande de génération d'image
+    if (ImageGenerationService.isImagePrompt(content)) {
+      await handleGenerateImage(content);
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
       content: content.trim(),
       role: 'user',
-      timestamp: new Date()
+      timestamp: new Date(),
+      type: 'text'
     };
 
-    // Update conversation with user message
     const updatedConversations = conversations.map(conv =>
       conv.id === currentConversationId
         ? {
@@ -133,9 +172,9 @@ const Index = () => {
     setIsLoading(true);
 
     try {
-      // Prepare messages for API
       const apiMessages: OpenRouterMessage[] = currentConversation.messages
         .slice(-20)
+        .filter(msg => msg.type === 'text')
         .map(msg => ({
           role: msg.role,
           content: msg.content
@@ -147,18 +186,16 @@ const Index = () => {
       });
 
       const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages);
-
-      // Call OpenRouter API
       const response = await OpenRouterService.sendMessage(formattedMessages, selectedModel);
       
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         content: response.choices[0].message.content,
         role: 'assistant',
-        timestamp: new Date()
+        timestamp: new Date(),
+        type: 'text'
       };
 
-      // Update conversation with AI response
       const finalConversations = updatedConversations.map(conv =>
         conv.id === currentConversationId
           ? { ...conv, messages: [...conv.messages, aiResponse] }
@@ -173,7 +210,8 @@ const Index = () => {
         id: (Date.now() + 1).toString(),
         content: "Désolé, je rencontre des difficultés techniques. Pouvez-vous réessayer ?",
         role: 'assistant',
-        timestamp: new Date()
+        timestamp: new Date(),
+        type: 'text'
       };
       
       const errorConversations = updatedConversations.map(conv =>
@@ -185,6 +223,74 @@ const Index = () => {
       setConversations(errorConversations);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGenerateImage = async (prompt: string) => {
+    setIsGeneratingImage(true);
+    
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: prompt.trim(),
+      role: 'user',
+      timestamp: new Date(),
+      type: 'text'
+    };
+
+    const updatedConversations = conversations.map(conv =>
+      conv.id === currentConversationId
+        ? {
+            ...conv,
+            messages: [...conv.messages, userMessage],
+            title: conv.title === "Nouvelle conversation" ? "Génération d'image" : conv.title
+          }
+        : conv
+    );
+
+    setConversations(updatedConversations);
+
+    try {
+      const image = await ImageGenerationService.generateImage({
+        prompt: prompt,
+        model: 'openai/dall-e-3'
+      });
+
+      const imageMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `Image générée: ${prompt}`,
+        role: 'assistant',
+        timestamp: new Date(),
+        type: 'image',
+        imageData: image
+      };
+
+      const finalConversations = updatedConversations.map(conv =>
+        conv.id === currentConversationId
+          ? { ...conv, messages: [...conv.messages, imageMessage] }
+          : conv
+      );
+
+      setConversations(finalConversations);
+    } catch (error) {
+      console.error('Error generating image:', error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "Désolé, je n'ai pas pu générer l'image. Veuillez réessayer.",
+        role: 'assistant',
+        timestamp: new Date(),
+        type: 'text'
+      };
+      
+      const errorConversations = updatedConversations.map(conv =>
+        conv.id === currentConversationId
+          ? { ...conv, messages: [...conv.messages, errorMessage] }
+          : conv
+      );
+
+      setConversations(errorConversations);
+    } finally {
+      setIsGeneratingImage(false);
     }
   };
 
@@ -227,17 +333,25 @@ const Index = () => {
               ) : (
                 <>
                   {currentConversation.messages.map((message) => (
-                    <ChatMessage
-                      key={message.id}
-                      id={message.id}
-                      content={message.content}
-                      role={message.role}
-                      timestamp={message.timestamp}
-                      onEditMessage={handleEditMessage}
-                      onCopyMessage={handleCopyMessage}
-                    />
+                    message.type === 'image' && message.imageData ? (
+                      <ImageMessage
+                        key={message.id}
+                        image={message.imageData}
+                        onRegenerate={handleRegenerateImage}
+                      />
+                    ) : (
+                      <ChatMessage
+                        key={message.id}
+                        id={message.id}
+                        content={message.content}
+                        role={message.role}
+                        timestamp={message.timestamp}
+                        onEditMessage={handleEditMessage}
+                        onCopyMessage={handleCopyMessage}
+                      />
+                    )
                   ))}
-                  {isLoading && (
+                  {(isLoading || isGeneratingImage) && (
                     <ChatMessage
                       id="loading"
                       content=""
@@ -257,8 +371,8 @@ const Index = () => {
           {/* Chat Input */}
           <ChatInput
             onSendMessage={handleSendMessage}
-            isLoading={isLoading}
-            placeholder="Message mAI..."
+            isLoading={isLoading || isGeneratingImage}
+            placeholder="Message mAI ou demandez une image..."
           />
         </div>
       </div>
