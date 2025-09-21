@@ -13,15 +13,13 @@ interface ChatInputProps {
   isLoading: boolean;
   placeholder?: string;
   language: string;
-  iconColor?: string;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
   isLoading,
   placeholder,
-  language,
-  iconColor = 'black'
+  language
 }) => {
   const [input, setInput] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -32,7 +30,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     handleFileSelect,
     handleFileUpload,
     resetFile
-  } = useFileUpload();
+  } = useFileUpload(); // Correction: appel sans paramètre
   
   const t = useTranslation(language);
 
@@ -78,18 +76,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const getIconColorClass = () => {
-    switch (iconColor) {
-      case 'blue': return 'text-blue-500';
-      case 'red': return 'text-red-500';
-      case 'yellow': return 'text-yellow-500';
-      case 'gray': return 'text-gray-500';
-      case 'green': return 'text-green-500';
-      case 'purple': return 'text-purple-500';
-      default: return 'text-black dark:text-white';
-    }
-  };
-
   return (
     <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
       <div className="max-w-4xl mx-auto p-4">
@@ -98,7 +84,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className={`w-4 h-4 ${getIconColorClass()}`} />
+                <FileText className="w-4 h-4 text-blue-600" />
                 <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                   {selectedFile.name}
                 </span>
@@ -138,7 +124,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               onClick={handleFileButtonClick}
               disabled={isUploading}
             >
-              <Paperclip className={`w-5 h-5 ${getIconColorClass()}`} />
+              <Paperclip className="w-5 h-5" />
             </Button>
 
             {/* Textarea - Même hauteur que les boutons */}
@@ -168,7 +154,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               ) : selectedFile ? (
                 t.chat.sendFile
               ) : (
-                <Send className={`w-4 h-4 ${getIconColorClass()}`} />
+                <Send className="w-4 h-4" />
               )}
             </Button>
           </div>
