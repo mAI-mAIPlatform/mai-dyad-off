@@ -29,17 +29,22 @@ interface SettingsDialogProps {
   onModelChange: (model: string) => void;
   userName: string;
   onUserNameChange: (name: string) => void;
+  selectedLanguage: string;
+  onLanguageChange: (language: string) => void;
 }
 
 const SettingsDialog: React.FC<SettingsDialogProps> = ({
   selectedModel,
   onModelChange,
   userName,
-  onUserNameChange
+  onUserNameChange,
+  selectedLanguage,
+  onLanguageChange
 }) => {
   const [localUserName, setLocalUserName] = useState(userName);
   const { theme, setTheme } = useTheme();
   const [localSelectedModel, setLocalSelectedModel] = useState(selectedModel);
+  const [localSelectedLanguage, setLocalSelectedLanguage] = useState(selectedLanguage);
 
   const models = [
     { id: 'openai/gpt-4o', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
@@ -49,12 +54,22 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     { id: 'google/gemini-2.0-flash-thinking-exp', name: 'm-4.9+', description: 'Rapide, court' }
   ];
 
+  const languages = [
+    { id: 'fr', name: 'Français', flag: '🇫🇷' },
+    { id: 'en', name: 'Anglais', flag: '🇬🇧' },
+    { id: 'es', name: 'Espagnol', flag: '🇪🇸' },
+    { id: 'de', name: 'Allemand', flag: '🇩🇪' },
+    { id: 'pt', name: 'Portugais', flag: '🇵🇹' }
+  ];
+
   const handleSave = () => {
     onUserNameChange(localUserName);
     onModelChange(localSelectedModel);
+    onLanguageChange(localSelectedLanguage);
     // Sauvegarder les paramètres dans localStorage
     localStorage.setItem('userName', localUserName);
     localStorage.setItem('selectedModel', localSelectedModel);
+    localStorage.setItem('selectedLanguage', localSelectedLanguage);
     localStorage.setItem('theme', theme || 'system');
     showSuccess("Paramètres sauvegardés avec succès");
   };
@@ -84,6 +99,26 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
               onChange={(e) => setLocalUserName(e.target.value)}
               placeholder="Entrez votre nom"
             />
+          </div>
+
+          {/* Langue */}
+          <div className="grid gap-2">
+            <Label htmlFor="language">Langue</Label>
+            <Select value={localSelectedLanguage} onValueChange={setLocalSelectedLanguage}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionnez une langue" />
+              </SelectTrigger>
+              <SelectContent>
+                {languages.map((language) => (
+                  <SelectItem key={language.id} value={language.id}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{language.flag}</span>
+                      <span>{language.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Modèle IA */}

@@ -56,11 +56,19 @@ export class OpenRouterService {
     }
   }
 
-  static formatMessagesForAPI(messages: OpenRouterMessage[]): OpenRouterMessage[] {
-    // Ajouter un message système pour définir le comportement de l'assistant
+  static formatMessagesForAPI(messages: OpenRouterMessage[], language: string = 'fr'): OpenRouterMessage[] {
+    // Messages système selon la langue choisie
+    const systemMessages: Record<string, string> = {
+      fr: 'Tu es mAI, un assistant IA utile, amical et professionnel. Réponds en français de manière claire et concise.',
+      en: 'You are mAI, a helpful, friendly and professional AI assistant. Respond in English in a clear and concise manner.',
+      es: 'Eres mAI, un asistente de IA útil, amigable y profesional. Responde en español de manera clara y concisa.',
+      de: 'Du bist mAI, ein hilfsbereiter, freundlicher und professioneller KI-Assistent. Antworte auf Deutsch klar und prägnant.',
+      pt: 'És mAI, um assistente de IA útil, amigável e profissional. Responde em português de forma clara e concisa.'
+    };
+
     const systemMessage: OpenRouterMessage = {
       role: 'system',
-      content: 'Tu es mAI, un assistant IA utile, amical et professionnel. Réponds en français de manière claire et concise.'
+      content: systemMessages[language] || systemMessages.fr
     };
 
     return [systemMessage, ...messages];

@@ -36,6 +36,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('openai/gpt-4o');
   const [userName, setUserName] = useState('Utilisateur');
+  const [selectedLanguage, setSelectedLanguage] = useState('fr');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const currentConversation = conversations.find(conv => conv.id === currentConversationId) || conversations[0];
@@ -50,8 +51,12 @@ const Index = () => {
 
   useEffect(() => {
     const savedUserName = localStorage.getItem('userName');
+    const savedLanguage = localStorage.getItem('selectedLanguage');
     if (savedUserName) {
       setUserName(savedUserName);
+    }
+    if (savedLanguage) {
+      setSelectedLanguage(savedLanguage);
     }
   }, []);
 
@@ -125,6 +130,11 @@ const Index = () => {
     localStorage.setItem('userName', name);
   };
 
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguage(language);
+    localStorage.setItem('selectedLanguage', language);
+  };
+
   const handleSendMessage = async (content: string, isRegeneration = false) => {
     if (!content.trim() || isLoading) return;
 
@@ -164,7 +174,7 @@ const Index = () => {
         content: content.trim()
       });
 
-      const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages);
+      const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages, selectedLanguage);
       const response = await OpenRouterService.sendMessage(formattedMessages, selectedModel);
       
       const aiResponse: Message = {
@@ -230,6 +240,8 @@ const Index = () => {
                 onModelChange={setSelectedModel}
                 userName={userName}
                 onUserNameChange={handleUserNameChange}
+                selectedLanguage={selectedLanguage}
+                onLanguageChange={handleLanguageChange}
               />
             </div>
           </div>
@@ -238,7 +250,7 @@ const Index = () => {
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
               {shouldShowGreeting ? (
-                <GreetingMessage content={generateGreetingMessages(userName)[0].content} />
+                <GreetingMessage content={generateGreetingMessages(userName, selectedLanguage)[0].content} />
               ) : (
                 <>
                   {currentConversation.messages.map((message) => (
