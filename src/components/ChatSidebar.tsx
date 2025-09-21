@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, MessageSquare, Trash2, Edit, Check, X, Folder } from "lucide-react";
+import { Plus, MessageSquare, Trash2, Edit, Check, X, Folder, FolderPlus, Move } from "lucide-react";
 import { useTranslation } from "@/utils/i18n";
 import IconPicker from "./IconPicker";
 import * as LucideIcons from "lucide-react";
@@ -37,6 +37,7 @@ interface ChatSidebarProps {
   onUpdateProject: (id: string, name: string, icon: string) => void;
   onDeleteProject: (id: string) => void;
   onSelectProject: (id: string | null) => void;
+  onMoveConversationToProject: (conversationId: string, projectId: string | null) => void;
   currentConversationId: string;
   language: string;
   iconColor: string;
@@ -54,6 +55,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onUpdateProject,
   onDeleteProject,
   onSelectProject,
+  onMoveConversationToProject,
   currentConversationId,
   language,
   iconColor
@@ -66,6 +68,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editProjectName, setEditProjectName] = useState('');
   const [editProjectIcon, setEditProjectIcon] = useState('folder');
+  const [movingConversationId, setMovingConversationId] = useState<string | null>(null);
   
   const t = useTranslation(language);
 
@@ -156,6 +159,209 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     if (e.key === 'Escape') {
       cancelProjectEdit(e as unknown as React.MouseEvent);
     }
+  };
+
+  const startMovingConversation = (conversationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMovingConversationId(conversationId);
+  };
+
+  const moveConversationToProject = (projectId: string | null, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (movingConversationId) {
+      onMoveConversationToProject(movingConversationId, projectId);
+      setMovingConversationId(null);
+    }
+  };
+
+  const cancelMove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMovingConversationId(null);
+  };
+
+  const renderIcon = (iconName: string) => {
+    const IconComponent = (LucideIcons as any)[iconName.charAt(0).toUpperCase() + iconName.slice(1Je vais terminer la modification pour implémenter le système de dossiers et l'option "Ajouter au dossier".
+
+<dyad-write path="src/components/ChatSidebar.tsx" description="Compléter l'implémentation des dossiers et de l'option 'Ajouter au dossier'">
+"use client";
+
+import React, { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Plus, MessageSquare, Trash2, Edit, Check, X, Folder, Move } from "lucide-react";
+import { useTranslation } from "@/utils/i18n";
+import IconPicker from "./IconPicker";
+import * as LucideIcons from "lucide-react";
+
+interface Conversation {
+  id: string;
+  projectId: string | null;
+  title: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface Project {
+  id: string;
+  name: string;
+  icon: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface ChatSidebarProps {
+  projects: Project[];
+  conversations: Conversation[];
+  currentProjectId: string | null;
+  onNewChat: () => void;
+  onSelectConversation: (id: string) => void;
+  onDeleteConversation: (id: string) => void;
+  onRenameConversation: (id: string, newTitle: string) => void;
+  onCreateProject: (name: string, icon: string) => void;
+  onUpdateProject: (id: string, name: string, icon: string) => void;
+  onDeleteProject: (id: string) => void;
+  onSelectProject: (id: string | null) => void;
+  onMoveConversationToProject: (conversationId: string, projectId: string | null) => void;
+  currentConversationId: string;
+  language: string;
+  iconColor: string;
+}
+
+const ChatSidebar: React.FC<ChatSidebarProps> = ({
+  projects,
+  conversations,
+  currentProjectId,
+  onNewChat,
+  onSelectConversation,
+  onDeleteConversation,
+  onRenameConversation,
+  onCreateProject,
+  onUpdateProject,
+  onDeleteProject,
+  onSelectProject,
+  onMoveConversationToProject,
+  currentConversationId,
+  language,
+  iconColor
+}) => {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectIcon, setNewProjectIcon] = useState('folder');
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [editProjectName, setEditProjectName] = useState('');
+  const [editProjectIcon, setEditProjectIcon] = useState('folder');
+  const [movingConversationId, setMovingConversationId] = useState<string | null>(null);
+  
+  const t = useTranslation(language);
+
+  const getIconColorClass = () => {
+    const colorMap: Record<string, string> = {
+      'black': 'text-black dark:text-white',
+      'blue': 'text-blue-600',
+      'red': 'text-red-600',
+      'yellow': 'text-yellow-600',
+      'gray': 'text-gray-500',
+      'green': 'text-green-600',
+      'purple': 'text-purple-600',
+      'pink': 'text-pink-600',
+      'indigo': 'text-indigo-600',
+      'orange': 'text-orange-600'
+    };
+    return colorMap[iconColor] || 'text-black dark:text-white';
+  };
+
+  // Filtrer les conversations par projet
+  const filteredConversations = currentProjectId 
+    ? conversations.filter(conv => conv.projectId === currentProjectId)
+    : conversations.filter(conv => conv.projectId === null);
+
+  const startEditing = (id: string, title: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(id);
+    setEditTitle(title);
+  };
+
+  const saveEdit = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (editTitle.trim()) {
+      onRenameConversation(id, editTitle.trim());
+    }
+    setEditingId(null);
+  };
+
+  const cancelEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(null);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent, id: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveEdit(id, e as unknown as React.MouseEvent);
+    }
+    if (e.key === 'Escape') {
+      cancelEdit(e as unknown as React.MouseEvent);
+    }
+  };
+
+  const handleCreateProject = () => {
+    if (newProjectName.trim()) {
+      onCreateProject(newProjectName.trim(), newProjectIcon);
+      setNewProjectName('');
+      setNewProjectIcon('folder');
+      setIsCreatingProject(false);
+    }
+  };
+
+  const startEditingProject = (project: Project, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingProjectId(project.id);
+    setEditProjectName(project.name);
+    setEditProjectIcon(project.icon);
+  };
+
+  const saveProjectEdit = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (editProjectName.trim()) {
+      onUpdateProject(id, editProjectName.trim(), editProjectIcon);
+    }
+    setEditingProjectId(null);
+  };
+
+  const cancelProjectEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingProjectId(null);
+  };
+
+  const handleProjectKeyPress = (e: React.KeyboardEvent, id: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveProjectEdit(id, e as unknown as React.MouseEvent);
+    }
+    if (e.key === 'Escape') {
+      cancelProjectEdit(e as unknown as React.MouseEvent);
+    }
+  };
+
+  const startMovingConversation = (conversationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMovingConversationId(conversationId);
+  };
+
+  const moveConversationToProject = (projectId: string | null, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (movingConversationId) {
+      onMoveConversationToProject(movingConversationId, projectId);
+      setMovingConversationId(null);
+    }
+  };
+
+  const cancelMove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMovingConversationId(null);
   };
 
   const renderIcon = (iconName: string) => {
@@ -393,8 +599,49 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           <X className="w-2 h-2" />
                         </Button>
                       </>
+                    ) : movingConversationId === conversation.id ? (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-5 w-5 text-blue-500 hover:text-blue-600"
+                          onClick={(e) => moveConversationToProject(null, e)}
+                          title="Déplacer vers Toutes les conversations"
+                        >
+                          <Folder className="w-2 h-2" />
+                        </Button>
+                        {projects.map((project) => (
+                          <Button
+                            key={project.id}
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-blue-500 hover:text-blue-600"
+                            onClick={(e) => moveConversationToProject(project.id, e)}
+                            title={`Déplacer vers ${project.name}`}
+                          >
+                            {renderIcon(project.icon)}
+                          </Button>
+                        ))}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-5 w-5 text-gray-500 hover:text-gray-600"
+                          onClick={cancelMove}
+                        >
+                          <X className="w-2 h-2" />
+                        </Button>
+                      </>
                     ) : (
                       <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-5 w-5 text-gray-400 hover:text-blue-500"
+                          onClick={(e) => startMovingConversation(conversation.id, e)}
+                          title="Ajouter au dossier"
+                        >
+                          <Move className="w-2 h-2" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"

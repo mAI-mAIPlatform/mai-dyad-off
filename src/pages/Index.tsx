@@ -145,7 +145,7 @@ const Index = () => {
   const handleNewChat = () => {
     const newConversation: Conversation = {
       id: Date.now().toString(),
-      projectId: currentProjectId,
+      projectId: currentProjectId, // Associer au projet courant
       title: t.chat.newConversation,
       messages: [],
       createdAt: new Date(),
@@ -178,6 +178,30 @@ const Index = () => {
         ? { ...conv, title: newTitle, updatedAt: new Date() } 
         : conv
     ));
+  };
+
+  const handleMoveConversationToProject = (conversationId: string, projectId: string | null) => {
+    setConversations(prev => prev.map(conv => 
+      conv.id === conversationId 
+        ? { ...conv, projectId, updatedAt: new Date() } 
+        : conv
+    ));
+    
+    // Si la conversation déplacée est la conversation actuelle et qu'elle n'est plus dans le projet courant
+    if (conversationId === currentConversationId && conv.projectId !== currentProjectId) {
+      // Sélectionner la première conversation du projet courant ou créer une nouvelle
+      const projectConversations = currentProjectId 
+        ? conversations.filter(conv => conv.projectId === currentProjectId && conv.id !== conversationId)
+        : conversations.filter(conv => conv.projectId === null && conv.id !== conversationId);
+      
+      if (projectConversations.length > 0) {
+        setCurrentConversationId(projectConversations[0].id);
+      } else {
+        handleNewChat();
+      }
+    }
+    
+    showSuccess("Conversation déplacée avec succès");
   };
 
   const handleCopyMessage = (content: string) => {
@@ -343,6 +367,7 @@ const Index = () => {
           onUpdateProject={handleUpdateProject}
           onDeleteProject={handleDeleteProject}
           onSelectProject={handleSelectProject}
+          onMoveConversationToProject={handleMoveConversationToProject}
           currentConversationId={currentConversationId}
           language={selectedLanguage}
           iconColor={iconColor}
