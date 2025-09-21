@@ -69,6 +69,22 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   
   const t = useTranslation(language);
 
+  const getIconColorClass = () => {
+    const colorMap: Record<string, string> = {
+      'black': 'text-black dark:text-white',
+      'blue': 'text-blue-600',
+      'red': 'text-red-600',
+      'yellow': 'text-yellow-600',
+      'gray': 'text-gray-500',
+      'green': 'text-green-600',
+      'purple': 'text-purple-600',
+      'pink': 'text-pink-600',
+      'indigo': 'text-indigo-600',
+      'orange': 'text-orange-600'
+    };
+    return colorMap[iconColor] || 'text-black dark:text-white';
+  };
+
   // Filtrer les conversations par projet
   const filteredConversations = currentProjectId 
     ? conversations.filter(conv => conv.projectId === currentProjectId)
@@ -144,26 +160,26 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   const renderIcon = (iconName: string) => {
     const IconComponent = (LucideIcons as any)[iconName.charAt(0).toUpperCase() + iconName.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase())] || Folder;
-    return <IconComponent className={`w-4 h-4 ${iconColor}`} />;
+    return <IconComponent className={`w-4 h-4 ${getIconColorClass()}`} />;
   };
 
   return (
     <div className="w-80 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="p-3 border-b border-gray-200 dark:border-gray-800">
         <div className="space-y-2">
           <Button
             onClick={onNewChat}
-            className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+            className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-sm h-8"
           >
-            <Plus className={`w-4 h-4 mr-2 ${iconColor}`} />
+            <Plus className={`w-3 h-3 mr-2 ${getIconColorClass()}`} />
             {t.chat.newConversation}
           </Button>
           <Button
             onClick={() => setIsCreatingProject(true)}
-            className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+            className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-sm h-8"
           >
-            <Folder className={`w-4 h-4 mr-2 ${iconColor}`} />
+            <Folder className={`w-3 h-3 mr-2 ${getIconColorClass()}`} />
             Nouveau projet
           </Button>
         </div>
@@ -171,9 +187,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
       {/* Create Project Form */}
       {isCreatingProject && (
-        <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-          <Card className="p-3">
-            <div className="flex items-center gap-2 mb-3">
+        <div className="p-3 border-b border-gray-200 dark:border-gray-800">
+          <Card className="p-2">
+            <div className="flex items-center gap-2 mb-2">
               <IconPicker
                 selectedIcon={newProjectIcon}
                 onIconChange={setNewProjectIcon}
@@ -186,7 +202,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   if (e.key === 'Escape') setIsCreatingProject(false);
                 }}
                 placeholder="Nom du projet"
-                className="flex-1"
+                className="flex-1 h-7 text-sm"
                 autoFocus
               />
             </div>
@@ -194,9 +210,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
               <Button
                 size="sm"
                 onClick={handleCreateProject}
-                className="flex-1 h-8"
+                className="flex-1 h-7 text-xs"
               >
-                <Check className="w-4 h-4 mr-1" />
+                <Check className="w-3 h-3 mr-1" />
                 Créer
               </Button>
               <Button
@@ -207,149 +223,151 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   setNewProjectName('');
                   setNewProjectIcon('folder');
                 }}
-                className="h-8"
+                className="h-7 text-xs"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3 h-3" />
               </Button>
             </div>
           </Card>
         </div>
       )}
 
-      {/* Projects List */}
-      <div className="p-2 border-b border-gray-200 dark:border-gray-800">
-        <h3 className="text-sm font-medium mb-2 px-2">Projets</h3>
-        <div className="space-y-1">
-          {/* Default "Toutes les conversations" item */}
-          <Card
-            className={`p-3 cursor-pointer transition-colors ${
-              currentProjectId === null
-                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
-            onClick={() => onSelectProject(null)}
-          >
-            <div className="flex items-center gap-3">
-              <Folder className={`w-4 h-4 ${iconColor}`} />
-              <span className="font-medium">Toutes les conversations</span>
-            </div>
-          </Card>
-
-          {projects.map((project) => (
+      {/* Projects List - Only show if there are projects */}
+      {projects.length > 0 && (
+        <div className="p-2 border-b border-gray-200 dark:border-gray-800">
+          <h3 className="text-xs font-medium mb-2 px-2 text-gray-500 uppercase tracking-wide">Projets</h3>
+          <div className="space-y-1">
+            {/* Default "Toutes les conversations" item */}
             <Card
-              key={project.id}
-              className={`p-3 cursor-pointer transition-colors ${
-                currentProjectId === project.id
+              className={`p-2 cursor-pointer transition-colors text-sm ${
+                currentProjectId === null
                   ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                   : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
-              onClick={() => onSelectProject(project.id)}
+              onClick={() => onSelectProject(null)}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  {editingProjectId === project.id ? (
-                    <>
-                      <IconPicker
-                        selectedIcon={editProjectIcon}
-                        onIconChange={setEditProjectIcon}
-                      />
-                      <Input
-                        value={editProjectName}
-                        onChange={(e) => setEditProjectName(e.target.value)}
-                        onKeyDown={(e) => handleProjectKeyPress(e, project.id)}
-                        className="h-7 text-sm flex-1"
-                        autoFocus
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-center w-5 h-5">
-                        {renderIcon(project.icon)}
-                      </div>
-                      <span className="font-medium truncate">
-                        {project.name}
-                      </span>
-                    </>
-                  )}
-                </div>
-                
-                {editingProjectId === project.id ? (
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-green-500 hover:text-green-600"
-                      onClick={(e) => saveProjectEdit(project.id, e)}
-                    >
-                      <Check className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-gray-500 hover:text-gray-600"
-                      onClick={cancelProjectEdit}
-                    >
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-gray-400 hover:text-blue-500"
-                      onClick={(e) => startEditingProject(project, e)}
-                    >
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-gray-400 hover:text-red-500"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteProject(project.id);
-                      }}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                )}
+              <div className="flex items-center gap-2">
+                <Folder className={`w-3 h-3 ${getIconColorClass()}`} />
+                <span className="font-medium truncate">Toutes les conversations</span>
               </div>
             </Card>
-          ))}
+
+            {projects.map((project) => (
+              <Card
+                key={project.id}
+                className={`p-2 cursor-pointer transition-colors text-sm ${
+                  currentProjectId === project.id
+                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                    : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+                onClick={() => onSelectProject(project.id)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    {editingProjectId === project.id ? (
+                      <>
+                        <IconPicker
+                          selectedIcon={editProjectIcon}
+                          onIconChange={setEditProjectIcon}
+                        />
+                        <Input
+                          value={editProjectName}
+                          onChange={(e) => setEditProjectName(e.target.value)}
+                          onKeyDown={(e) => handleProjectKeyPress(e, project.id)}
+                          className="h-6 text-sm flex-1"
+                          autoFocus
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-center w-4 h-4">
+                          {renderIcon(project.icon)}
+                        </div>
+                        <span className="font-medium truncate text-xs">
+                          {project.name}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  
+                  {editingProjectId === project.id ? (
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 text-green-500 hover:text-green-600"
+                        onClick={(e) => saveProjectEdit(project.id, e)}
+                      >
+                        <Check className="w-2 h-2" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 text-gray-500 hover:text-gray-600"
+                        onClick={cancelProjectEdit}
+                      >
+                        <X className="w-2 h-2" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 text-gray-400 hover:text-blue-500"
+                        onClick={(e) => startEditingProject(project, e)}
+                      >
+                        <Edit className="w-2 h-2" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 text-gray-400 hover:text-red-500"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteProject(project.id);
+                        }}
+                      >
+                        <Trash2 className="w-2 h-2" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Conversations List */}
       <div className="flex-1 overflow-y-auto p-2">
-        <h3 className="text-sm font-medium mb-2 px-2">Conversations</h3>
+        <h3 className="text-xs font-medium mb-2 px-2 text-gray-500 uppercase tracking-wide">Conversations</h3>
         <div className="space-y-1">
           {filteredConversations.map((conversation) => (
             <Card
               key={conversation.id}
-              className={`p-3 cursor-pointer transition-colors ${
+              className={`p-2 cursor-pointer transition-colors text-sm ${
                 currentConversationId === conversation.id
                   ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                   : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
               onClick={() => onSelectConversation(conversation.id)}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <MessageSquare className={`w-4 h-4 text-gray-500 flex-shrink-0 ${iconColor}`} />
+                  <MessageSquare className={`w-3 h-3 text-gray-500 flex-shrink-0 ${getIconColorClass()}`} />
                   {editingId === conversation.id ? (
                     <Input
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
                       onKeyDown={(e) => handleKeyPress(e, conversation.id)}
-                      className="h-7 text-sm flex-1"
+                      className="h-6 text-sm flex-1"
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
-                    <span className="text-sm font-medium truncate">
+                    <span className="font-medium truncate text-xs">
                       {conversation.title}
                     </span>
                   )}
@@ -361,18 +379,18 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 text-green-500 hover:text-green-600"
+                          className="h-5 w-5 text-green-500 hover:text-green-600"
                           onClick={(e) => saveEdit(conversation.id, e)}
                         >
-                          <Check className="w-3 h-3" />
+                          <Check className="w-2 h-2" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 text-gray-500 hover:text-gray-600"
+                          className="h-5 w-5 text-gray-500 hover:text-gray-600"
                           onClick={cancelEdit}
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-2 h-2" />
                         </Button>
                       </>
                     ) : (
@@ -380,28 +398,28 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 text-gray-400 hover:text-blue-500"
+                          className="h-5 w-5 text-gray-400 hover:text-blue-500"
                           onClick={(e) => startEditing(conversation.id, conversation.title, e)}
                         >
-                          <Edit className="w-3 h-3" />
+                          <Edit className="w-2 h-2" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 text-gray-400 hover:text-red-500"
+                          className="h-5 w-5 text-gray-400 hover:text-red-500"
                           onClick={(e) => {
                             e.stopPropagation();
                             onDeleteConversation(conversation.id);
                           }}
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-2 h-2" />
                         </Button>
                       </>
                     )}
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 mt-1">
                 {conversation.updatedAt.toLocaleDateString()}
               </p>
             </Card>
