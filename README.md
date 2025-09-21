@@ -1,1 +1,18 @@
-# mAI
+# mAI 🤖
+
+**mAI** est une intelligence artificielle développée par **mAIDevlopers**. Elle fournit des solutions avancées pour le traitement de données et les interactions automatisées, avec fiabilité et performance.  
+
+---
+
+## 🚀 Fonctionnalités
+
+- Génération de réponses intelligentes et contextuelles 📝  
+- Analyse et traitement de données en temps réel 📊  
+- Interface et API modulaires pour une intégration facile 💻  
+- Optimisée pour rapidité et efficacité ⚡  
+
+---
+
+## 📜 Licence
+
+MIT License — libre d’utilisation et de modification, en conservant le crédit à **mAIDevlopers**.
