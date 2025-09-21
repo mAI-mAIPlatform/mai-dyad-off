@@ -3,10 +3,11 @@
 import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Paperclip, FileText, X } from "lucide-react";
+import { Send, Paperclip, FileText, X, Smile } from "lucide-react";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { showSuccess, showError } from "@/utils/toast";
 import { useTranslation } from "@/utils/i18n";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -94,6 +95,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
+  const insertEmoji = (emoji: string) => {
+    setInput(prev => prev + emoji);
+  };
+
+  const emojis = ['😀', '😂', '😍', '🤔', '👍', '👎', '❤️', '🔥', '✨', '🎉', '🙏', '👏', '💯'];
+
   return (
     <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
       <div className="max-w-4xl mx-auto p-4">
@@ -133,17 +140,48 @@ const ChatInput: React.FC<ChatInputProps> = ({
               accept=".txt,.pdf,.doc,.docx,.csv,.xls,.xlsx"
             />
 
-            {/* Attachment Button */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 text-gray-400 hover:text-gray-600"
-              onClick={handleFileButtonClick}
-              disabled={isUploading}
-            >
-              <Paperclip className="w-5 h-5" />
-            </Button>
+            <div className="flex flex-col gap-1">
+              {/* Emoji Button */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-gray-400 hover:text-gray-600"
+                  >
+                    <Smile className="w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-2" align="start">
+                  <div className="grid grid-cols-6 gap-1">
+                    {emojis.map((emoji, index) => (
+                      <Button
+                        key={index}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                        onClick={() => insertEmoji(emoji)}
+                      >
+                        {emoji}
+                      </Button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              {/* Attachment Button */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-gray-400 hover:text-gray-600"
+                onClick={handleFileButtonClick}
+                disabled={isUploading}
+              >
+                <Paperclip className="w-4 h-4" />
+              </Button>
+            </div>
 
             {/* Textarea - Même hauteur que les boutons */}
             <div className="flex-1 relative">
