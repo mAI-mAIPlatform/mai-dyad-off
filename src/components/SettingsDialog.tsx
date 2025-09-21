@@ -55,11 +55,11 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   ];
 
   const languages = [
-    { id: 'fr', name: 'Français', flag: '🇫🇷' },
-    { id: 'en', name: 'Anglais', flag: '🇬🇧' },
-    { id: 'es', name: 'Espagnol', flag: '🇪🇸' },
-    { id: 'de', name: 'Allemand', flag: '🇩🇪' },
-    { id: 'pt', name: 'Portugais', flag: '🇵🇹' }
+    { id: 'fr', name: 'Français', flag: 'FR' },
+    { id: 'en', name: 'Anglais', flag: 'EN' },
+    { id: 'es', name: 'Espagnol', flag: 'ES' },
+    { id: 'de', name: 'Allemand', flag: 'DE' },
+    { id: 'pt', name: 'Portugais', flag: 'PT' }
   ];
 
   const handleSave = () => {
