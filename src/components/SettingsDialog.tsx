@@ -42,15 +42,16 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const [localSelectedModel, setLocalSelectedModel] = useState(selectedModel);
 
   const models = [
-    { id: 'openai/gpt-3.5-turbo', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
-    { id: 'anthropic/claude-3-haiku', name: 'm-4.3-mini', description: 'Écologique' },
-    { id: 'openai/gpt-4', name: 'm-4.5 Pro', description: 'Professionnel, précis' },
-    { id: 'anthropic/claude-3-opus', name: 'm-4.7o', description: 'Précis' },
-    { id: 'openai/gpt-4-turbo', name: 'm-4.9+', description: 'Rapide' }
+    { id: 'openai/gpt-4o', name: 'm-4.0', description: 'GPT-4 Omni, rapide et polyvalent' },
+    { id: 'openai/gpt-4-turbo', name: 'm-4.5 Pro', description: 'GPT-4 Turbo, professionnel' },
+    { id: 'anthropic/claude-3-5-sonnet', name: 'm-4.7 Sonnet', description: 'Claude 3.5, précis et créatif' },
+    { id: 'anthropic/claude-3-opus', name: 'm-4.9 Opus', description: 'Claude 3 Opus, performance maximale' },
+    { id: 'google/gemini-2.0-flash-thinking-exp', name: 'm-5.0 Flash', description: 'Gemini 2.0, ultra rapide' }
   ];
 
   const handleSave = () => {
     onUserNameChange(localUserName);
+    onModelChange(localSelectedModel);
     // Sauvegarder les paramètres dans localStorage
     localStorage.setItem('userName', localUserName);
     localStorage.setItem('selectedModel', localSelectedModel);
@@ -119,7 +120,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
         {/* Version et bouton sauvegarder */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="text-xs text-gray-500">
-            26 0.5 (Public Update)
+            Version 1.0.0
           </div>
           <Button onClick={handleSave} size="sm">
             Sauvegarder

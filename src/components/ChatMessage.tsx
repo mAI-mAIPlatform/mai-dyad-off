@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, Copy, Edit, Check, X, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { showSuccess } from "@/utils/toast";
+import { useTypewriter } from "@/hooks/useTypewriter";
 
 interface ChatMessageProps {
   id: string;
@@ -28,6 +29,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(content);
+  
+  const { displayedText, isTyping, startTyping } = useTypewriter({
+    text: content,
+    speed: 15,
+    onComplete: () => {}
+  });
+
+  useEffect(() => {
+    if (role === 'assistant' && !isGenerating) {
+      startTyping();
+    }
+  }, [role, isGenerating, startTyping]);
 
   const handleCopy = () => {
     onCopyMessage(content);
@@ -126,32 +139,39 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             ) : (
               <>
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-wrap leading-relaxed">{content}</p>
+                  <p className="whitespace-pre-wrap leading-relaxed">
+                    {role === 'assistant' && !isGenerating ? displayedText : content}
+                    {isTyping && (
+                      <span className="inline-block w-2 h-4 bg-current ml-1 animate-pulse align-middle"></span>
+                    )}
+                  </p>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs"
-                    onClick={handleCopy}
-                  >
-                    <Copy className="w-3 h-3 mr-1" />
-                    Copier
-                  </Button>
-                  {role === 'user' && (
+                {/* Actions - Masqué pendant la frappe */}
+                {!isTyping && (
+                  <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs"
-                      onClick={handleEdit}
+                      onClick={handleCopy}
                     >
-                      <Edit className="w-3 h-3 mr-1" />
-                      Modifier
+                      <Copy className="w-3 h-3 mr-1" />
+                      Copier
                     </Button>
-                  )}
-                </div>
+                    {role === 'user' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={handleEdit}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Modifier
+                      </Button>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
