@@ -6,7 +6,6 @@ import { User, Copy, Edit, Check, X, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { showSuccess } from "@/utils/toast";
-import { useTypewriter } from "@/hooks/useTypewriter";
 
 interface ChatMessageProps {
   id: string;
@@ -29,18 +28,31 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(content);
-  
-  const { displayedText, isTyping, startTyping } = useTypewriter({
-    text: content,
-    speed: 15,
-    onComplete: () => {}
-  });
+  const [displayedText, setDisplayedText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
-    if (role === 'assistant' && !isGenerating) {
-      startTyping();
+    if (role === 'assistant' && !isGenerating && content) {
+      setIsTyping(true);
+      setDisplayedText('');
+      
+      let index = 0;
+      const timer = setInterval(() => {
+        if (index < content.length) {
+          setDisplayedText(content.slice(0, index + 1));
+          index++;
+        } else {
+          clearInterval(timer);
+          setIsTyping(false);
+        }
+      }, 15);
+
+      return () => clearInterval(timer);
+    } else {
+      setDisplayedText(content);
+      setIsTyping(false);
     }
-  }, [role, isGenerating, startTyping]);
+  }, [content, role, isGenerating]);
 
   const handleCopy = () => {
     onCopyMessage(content);
