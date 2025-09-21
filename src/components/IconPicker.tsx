@@ -152,11 +152,11 @@ const IconPicker: React.FC<IconPickerProps> = ({ selectedIcon, onIconChange }) =
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="icon" className="h-8 w-8">
+        <Button variant="outline" size="icon" className="h-8 w-8 bg-white dark:bg-gray-800">
           <SelectedIcon className="w-4 h-4 text-black dark:text-white" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-4 max-h-96 overflow-y-auto">
+      <PopoverContent className="w-80 p-4 max-h-96 overflow-y-auto bg-white dark:bg-gray-800">
         <div className="grid grid-cols-6 gap-2">
           {iconNames.map((iconName) => {
             const IconComponent = iconComponents[iconName];
@@ -165,7 +165,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ selectedIcon, onIconChange }) =
                 key={iconName}
                 variant={selectedIcon === iconName ? "default" : "ghost"}
                 size="icon"
-                className="h-8 w-8"
+                className="h-8 w-8 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => onIconChange(iconName)}
                 title={iconName.replace('-', ' ')}
               >

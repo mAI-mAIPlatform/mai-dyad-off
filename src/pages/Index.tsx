@@ -245,13 +245,15 @@ const Index = () => {
     setIsLoading(true);
 
     try {
+      // Prendre les 10 derniers messages pour le contexte
       const apiMessages: OpenRouterMessage[] = currentConversation.messages
-        .slice(-20)
+        .slice(-10)
         .map(msg => ({
           role: msg.role,
           content: msg.content
         }));
 
+      // Ajouter le nouveau message
       apiMessages.push({
         role: 'user',
         content: content.trim()

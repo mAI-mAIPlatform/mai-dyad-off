@@ -20,7 +20,7 @@ export interface OpenRouterResponse {
 
 export class OpenRouterService {
   private static readonly API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-  private static readonly API_KEY = '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';
+  private static readonly API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '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';
 
   static async sendMessage(
     messages: OpenRouterMessage[],
