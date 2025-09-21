@@ -39,6 +39,7 @@ interface ChatSidebarProps {
   onSelectProject: (id: string | null) => void;
   currentConversationId: string;
   language: string;
+  iconColor: string;
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
@@ -54,7 +55,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onDeleteProject,
   onSelectProject,
   currentConversationId,
-  language
+  language,
+  iconColor
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -142,7 +144,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   const renderIcon = (iconName: string) => {
     const IconComponent = (LucideIcons as any)[iconName.charAt(0).toUpperCase() + iconName.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase())] || Folder;
-    return <IconComponent className="w-4 h-4 text-black dark:text-white" />;
+    return <IconComponent className={`w-4 h-4 ${iconColor}`} />;
   };
 
   return (
@@ -154,14 +156,14 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             onClick={onNewChat}
             className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className={`w-4 h-4 mr-2 ${iconColor}`} />
             {t.chat.newConversation}
           </Button>
           <Button
             onClick={() => setIsCreatingProject(true)}
             className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
           >
-            <Folder className="w-4 h-4 mr-2" />
+            <Folder className={`w-4 h-4 mr-2 ${iconColor}`} />
             Nouveau projet
           </Button>
         </div>
@@ -228,7 +230,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             onClick={() => onSelectProject(null)}
           >
             <div className="flex items-center gap-3">
-              <Folder className="w-4 h-4 text-black dark:text-white" />
+              <Folder className={`w-4 h-4 ${iconColor}`} />
               <span className="font-medium">Toutes les conversations</span>
             </div>
           </Card>
@@ -336,7 +338,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <MessageSquare className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  <MessageSquare className={`w-4 h-4 text-gray-500 flex-shrink-0 ${iconColor}`} />
                   {editingId === conversation.id ? (
                     <Input
                       value={editTitle}

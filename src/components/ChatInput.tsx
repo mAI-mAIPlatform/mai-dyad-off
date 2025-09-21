@@ -13,13 +13,15 @@ interface ChatInputProps {
   isLoading: boolean;
   placeholder?: string;
   language: string;
+  iconColor: string;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
   isLoading,
   placeholder,
-  language
+  language,
+  iconColor
 }) => {
   const [input, setInput] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -30,7 +32,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     handleFileSelect,
     handleFileUpload,
     resetFile
-  } = useFileUpload(); // Correction: appel sans paramètre
+  } = useFileUpload();
   
   const t = useTranslation(language);
 
@@ -84,7 +86,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-blue-600" />
+                <FileText className={`w-4 h-4 text-blue-600 ${iconColor}`} />
                 <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                   {selectedFile.name}
                 </span>
@@ -124,7 +126,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               onClick={handleFileButtonClick}
               disabled={isUploading}
             >
-              <Paperclip className="w-5 h-5" />
+              <Paperclip className={`w-5 h-5 ${iconColor}`} />
             </Button>
 
             {/* Textarea - Même hauteur que les boutons */}
@@ -154,7 +156,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               ) : selectedFile ? (
                 t.chat.sendFile
               ) : (
-                <Send className="w-4 h-4" />
+                <Send className={`w-4 h-4 ${iconColor}`} />
               )}
             </Button>
           </div>

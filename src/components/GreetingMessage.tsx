@@ -6,9 +6,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface GreetingMessageProps {
   content: string;
+  iconColor: string;
 }
 
-const GreetingMessage: React.FC<GreetingMessageProps> = ({ content }) => {
+const GreetingMessage: React.FC<GreetingMessageProps> = ({ content, iconColor }) => {
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-center max-w-2xl mx-auto">
@@ -16,7 +17,7 @@ const GreetingMessage: React.FC<GreetingMessageProps> = ({ content }) => {
         <div className="flex justify-center mb-6">
           <Avatar className="w-16 h-16">
             <AvatarFallback className="bg-transparent">
-              <Star className="w-8 h-8 text-black dark:text-white" />
+              <Star className={`w-8 h-8 ${iconColor}`} />
             </AvatarFallback>
           </Avatar>
         </div>

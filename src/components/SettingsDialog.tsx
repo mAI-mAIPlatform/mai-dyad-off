@@ -33,6 +33,8 @@ interface SettingsDialogProps {
   onLanguageChange: (language: string) => void;
   betaFeaturesEnabled: boolean;
   onBetaFeaturesChange: (enabled: boolean) => void;
+  iconColor: string;
+  onIconColorChange: (color: string) => void;
 }
 
 const SettingsDialog: React.FC<SettingsDialogProps> = ({
@@ -43,13 +45,16 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   selectedLanguage,
   onLanguageChange,
   betaFeaturesEnabled,
-  onBetaFeaturesChange
+  onBetaFeaturesChange,
+  iconColor,
+  onIconColorChange
 }) => {
   const [localUserName, setLocalUserName] = useState(userName);
   const { theme, setTheme } = useTheme();
   const [localSelectedModel, setLocalSelectedModel] = useState(selectedModel);
   const [localSelectedLanguage, setLocalSelectedLanguage] = useState(selectedLanguage);
   const [localBetaFeaturesEnabled, setLocalBetaFeaturesEnabled] = useState(betaFeaturesEnabled);
+  const [localIconColor, setLocalIconColor] = useState(iconColor);
 
   const models = [
     { id: 'openai/gpt-4o', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
@@ -67,16 +72,30 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     { id: 'pt', name: 'Portugais', flag: 'PT' }
   ];
 
+  const iconColors = [
+    { id: 'black', name: 'Noir', value: 'text-black dark:text-white' },
+    { id: 'blue', name: 'Bleu', value: 'text-blue-600 dark:text-blue-400' },
+    { id: 'red', name: 'Rouge', value: 'text-red-600 dark:text-red-400' },
+    { id: 'yellow', name: 'Jaune', value: 'text-yellow-600 dark:text-yellow-400' },
+    { id: 'green', name: 'Vert', value: 'text-green-600 dark:text-green-400' },
+    { id: 'purple', name: 'Violet', value: 'text-purple-600 dark:text-purple-400' },
+    { id: 'pink', name: 'Rose', value: 'text-pink-600 dark:text-pink-400' },
+    { id: 'gray', name: 'Gris', value: 'text-gray-600 dark:text-gray-400' },
+    { id: 'orange', name: 'Orange', value: 'text-orange-600 dark:text-orange-400' }
+  ];
+
   const handleSave = () => {
     onUserNameChange(localUserName);
     onModelChange(localSelectedModel);
     onLanguageChange(localSelectedLanguage);
     onBetaFeaturesChange(localBetaFeaturesEnabled);
+    onIconColorChange(localIconColor);
     // Sauvegarder les paramètres dans localStorage
     localStorage.setItem('userName', localUserName);
     localStorage.setItem('selectedModel', localSelectedModel);
     localStorage.setItem('selectedLanguage', localSelectedLanguage);
     localStorage.setItem('betaFeaturesEnabled', localBetaFeaturesEnabled.toString());
+    localStorage.setItem('iconColor', localIconColor);
     localStorage.setItem('theme', theme || 'system');
     showSuccess("Paramètres sauvegardés avec succès");
   };
@@ -87,6 +106,11 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
       : "26 0.8 (Public Update)";
   };
 
+  const getColorClass = (colorId: string) => {
+    const color = iconColors.find(c => c.id === colorId);
+    return color ? color.value : 'text-black dark:text-white';
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -94,7 +118,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
           <Settings className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Paramètres</DialogTitle>
           <DialogDescription>
@@ -131,7 +155,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
           {/* Langue */}
           <div className="grid gap-2">
-            <Label htmlFor="language">Langue (Bêta)</Label>
+            <Label htmlFor="language">Langue</Label>
             <Select 
               value={localSelectedLanguage} 
               onValueChange={setLocalSelectedLanguage}
@@ -151,6 +175,33 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Couleur des icônes */}
+          <div className="grid gap-2">
+            <Label htmlFor="icon-color">Couleur des icônes</Label>
+            <Select 
+              value={localIconColor} 
+              onValueChange={setLocalIconColor}
+              disabled={!localBetaFeaturesEnabled}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionnez une couleur" />
+              </SelectTrigger>
+              <SelectContent>
+                {iconColors.map((color) => (
+                  <SelectItem key={color.id} value={color.id}>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-4 h-4 rounded-full ${getColorClass(color.id)} bg-current`}></div>
+                      <span>{color.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500">
+              Couleur des icônes de projets, étoiles et autres éléments
+            </p>
           </div>
 
           {/* Modèle IA */}

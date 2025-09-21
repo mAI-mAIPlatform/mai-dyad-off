@@ -19,6 +19,7 @@ interface ChatMessageProps {
   onCopyMessage: (content: string) => void;
   onRegenerateResponse?: (messageId: string, newContent: string) => void;
   language: string;
+  iconColor: string;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -30,7 +31,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   onEditMessage,
   onCopyMessage,
   onRegenerateResponse,
-  language
+  language,
+  iconColor
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(content);
@@ -114,9 +116,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 {role === 'user' ? (
                   <User className="w-4 h-4" />
                 ) : isGenerating ? (
-                  <Star className="w-4 h-4 animate-spin" />
+                  <Star className={`w-4 h-4 animate-spin ${iconColor}`} />
                 ) : (
-                  <Star className="w-4 h-4 text-black dark:text-white" />
+                  <Star className={`w-4 h-4 ${iconColor}`} />
                 )}
               </AvatarFallback>
             </Avatar>
@@ -195,7 +197,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                       className="h-7 px-2 text-xs"
                       onClick={handleCopy}
                     >
-                      <Copy className="w-3 h-3 mr-1" />
+                      <Copy className={`w-3 h-3 mr-1 ${iconColor}`} />
                       {t.messages.copy}
                     </Button>
                     {role === 'user' && (
@@ -205,7 +207,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                         className="h-7 px-2 text-xs"
                         onClick={handleEdit}
                       >
-                        <Edit className="w-3 h-3 mr-1" />
+                        <Edit className={`w-3 h-3 mr-1 ${iconColor}`} />
                         {t.messages.edit}
                       </Button>
                     )}
