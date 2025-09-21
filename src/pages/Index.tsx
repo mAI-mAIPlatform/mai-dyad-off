@@ -54,6 +54,7 @@ const Index = () => {
   const [selectedModel, setSelectedModel] = useState('openai/gpt-4o');
   const [userName, setUserName] = useState('Utilisateur');
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
+  const [betaFeaturesEnabled, setBetaFeaturesEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const t = useTranslation(selectedLanguage);
@@ -71,11 +72,15 @@ const Index = () => {
   useEffect(() => {
     const savedUserName = localStorage.getItem('userName');
     const savedLanguage = localStorage.getItem('selectedLanguage');
+    const savedBetaFeatures = localStorage.getItem('betaFeaturesEnabled');
     if (savedUserName) {
       setUserName(savedUserName);
     }
     if (savedLanguage) {
       setSelectedLanguage(savedLanguage);
+    }
+    if (savedBetaFeatures) {
+      setBetaFeaturesEnabled(savedBetaFeatures === 'true');
     }
   }, []);
 
@@ -217,6 +222,11 @@ const Index = () => {
     localStorage.setItem('selectedLanguage', language);
   };
 
+  const handleBetaFeaturesChange = (enabled: boolean) => {
+    setBetaFeaturesEnabled(enabled);
+    localStorage.setItem('betaFeaturesEnabled', enabled.toString());
+  };
+
   const handleSendMessage = async (content: string, isRegeneration = false) => {
     if (!content.trim() || isLoading) return;
 
@@ -342,6 +352,8 @@ const Index = () => {
                 onUserNameChange={handleUserNameChange}
                 selectedLanguage={selectedLanguage}
                 onLanguageChange={handleLanguageChange}
+                betaFeaturesEnabled={betaFeaturesEnabled}
+                onBetaFeaturesChange={handleBetaFeaturesChange}
               />
             </div>
           </div>

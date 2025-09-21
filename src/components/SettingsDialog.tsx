@@ -31,6 +31,8 @@ interface SettingsDialogProps {
   onUserNameChange: (name: string) => void;
   selectedLanguage: string;
   onLanguageChange: (language: string) => void;
+  betaFeaturesEnabled: boolean;
+  onBetaFeaturesChange: (enabled: boolean) => void;
 }
 
 const SettingsDialog: React.FC<SettingsDialogProps> = ({
@@ -39,12 +41,15 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   userName,
   onUserNameChange,
   selectedLanguage,
-  onLanguageChange
+  onLanguageChange,
+  betaFeaturesEnabled,
+  onBetaFeaturesChange
 }) => {
   const [localUserName, setLocalUserName] = useState(userName);
   const { theme, setTheme } = useTheme();
   const [localSelectedModel, setLocalSelectedModel] = useState(selectedModel);
   const [localSelectedLanguage, setLocalSelectedLanguage] = useState(selectedLanguage);
+  const [localBetaFeaturesEnabled, setLocalBetaFeaturesEnabled] = useState(betaFeaturesEnabled);
 
   const models = [
     { id: 'openai/gpt-4o', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
@@ -66,10 +71,12 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     onUserNameChange(localUserName);
     onModelChange(localSelectedModel);
     onLanguageChange(localSelectedLanguage);
+    onBetaFeaturesChange(localBetaFeaturesEnabled);
     // Sauvegarder les paramètres dans localStorage
     localStorage.setItem('userName', localUserName);
     localStorage.setItem('selectedModel', localSelectedModel);
     localStorage.setItem('selectedLanguage', localSelectedLanguage);
+    localStorage.setItem('betaFeaturesEnabled', localBetaFeaturesEnabled.toString());
     localStorage.setItem('theme', theme || 'system');
     showSuccess("Paramètres sauvegardés avec succès");
   };
@@ -101,10 +108,29 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
             />
           </div>
 
+          {/* Fonctions Bêta */}
+          <div className="grid gap-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="beta-features">Fonctions Bêta</Label>
+              <Switch
+                id="beta-features"
+                checked={localBetaFeaturesEnabled}
+                onCheckedChange={setLocalBetaFeaturesEnabled}
+              />
+            </div>
+            <p className="text-xs text-gray-500">
+              Activez les fonctionnalités expérimentales de l'application
+            </p>
+          </div>
+
           {/* Langue */}
           <div className="grid gap-2">
             <Label htmlFor="language">Langue (Bêta)</Label>
-            <Select value={localSelectedLanguage} onValueChange={setLocalSelectedLanguage}>
+            <Select 
+              value={localSelectedLanguage} 
+              onValueChange={setLocalSelectedLanguage}
+              disabled={!localBetaFeaturesEnabled}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionnez une langue" />
               </SelectTrigger>
