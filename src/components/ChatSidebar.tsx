@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Plus, MessageSquare, Trash2, Edit, Check, X, Folder } from "lucide-react";
 import { useTranslation } from "@/utils/i18n";
+import IconPicker from "./IconPicker";
 
 interface Conversation {
   id: string;
@@ -31,8 +32,8 @@ interface ChatSidebarProps {
   onSelectConversation: (id: string) => void;
   onDeleteConversation: (id: string) => void;
   onRenameConversation: (id: string, newTitle: string) => void;
-  onCreateProject: (name: string) => void;
-  onUpdateProject: (id: string, name: string) => void;
+  onCreateProject: (name: string, icon: string) => void;
+  onUpdateProject: (id: string, name: string, icon: string) => void;
   onDeleteProject: (id: string) => void;
   onSelectProject: (id: string | null) => void;
   currentConversationId: string;
@@ -58,8 +59,10 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [editTitle, setEditTitle] = useState('');
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectIcon, setNewProjectIcon] = useState('📁');
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editProjectName, setEditProjectName] = useState('');
+  const [editProjectIcon, setEditProjectIcon] = useState('📁');
   
   const t = useTranslation(language);
 
@@ -99,8 +102,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   const handleCreateProject = () => {
     if (newProjectName.trim()) {
-      onCreateProject(newProjectName.trim());
+      onCreateProject(newProjectName.trim(), newProjectIcon);
       setNewProjectName('');
+      setNewProjectIcon('📁');
       setIsCreatingProject(false);
     }
   };
@@ -109,12 +113,13 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     e.stopPropagation();
     setEditingProjectId(project.id);
     setEditProjectName(project.name);
+    setEditProjectIcon(project.icon);
   };
 
   const saveProjectEdit = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (editProjectName.trim()) {
-      onUpdateProject(id, editProjectName.trim());
+      onUpdateProject(id, editProjectName.trim(), editProjectIcon);
     }
     setEditingProjectId(null);
   };
@@ -161,7 +166,10 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         <div className="p-4 border-b border-gray-200 dark:border-gray-800">
           <Card className="p-3">
             <div className="flex items-center gap-2 mb-3">
-              <Folder className="w-5 h-5 text-blue-500" />
+              <IconPicker
+                selectedIcon={newProjectIcon}
+                onIconChange={setNewProjectIcon}
+              />
               <Input
                 value={newProjectName}
                 onChange={(e) => setNewProjectName(e.target.value)}
@@ -189,6 +197,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 onClick={() => {
                   setIsCreatingProject(false);
                   setNewProjectName('');
+                  setNewProjectIcon('📁');
                 }}
                 className="h-8"
               >
@@ -213,7 +222,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             onClick={() => onSelectProject(null)}
           >
             <div className="flex items-center gap-3">
-              <Folder className="w-5 h-5 text-gray-500" />
+              <span className="text-lg">📁</span>
               <span className="font-medium">Toutes les conversations</span>
             </div>
           </Card>
@@ -230,20 +239,28 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <Folder className="w-5 h-5 text-blue-500 flex-shrink-0" />
                   {editingProjectId === project.id ? (
-                    <Input
-                      value={editProjectName}
-                      onChange={(e) => setEditProjectName(e.target.value)}
-                      onKeyDown={(e) => handleProjectKeyPress(e, project.id)}
-                      className="h-7 text-sm flex-1"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
+                    <>
+                      <IconPicker
+                        selectedIcon={editProjectIcon}
+                        onIconChange={setEditProjectIcon}
+                      />
+                      <Input
+                        value={editProjectName}
+                        onChange={(e) => setEditProjectName(e.target.value)}
+                        onKeyDown={(e) => handleProjectKeyPress(e, project.id)}
+                        className="h-7 text-sm flex-1"
+                        autoFocus
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </>
                   ) : (
-                    <span className="font-medium truncate">
-                      {project.name}
-                    </span>
+                    <>
+                      <span className="text-lg">{project.icon}</span>
+                      <span className="font-medium truncate">
+                        {project.name}
+                      </span>
+                    </>
                   )}
                 </div>
                 

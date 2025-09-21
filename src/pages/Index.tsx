@@ -80,11 +80,11 @@ const Index = () => {
   }, []);
 
   // Gestion des projets
-  const handleCreateProject = (name: string) => {
+  const handleCreateProject = (name: string, icon: string) => {
     const newProject: Project = {
       id: Date.now().toString(),
       name,
-      icon: '📁', // Icône par défaut
+      icon,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -92,10 +92,10 @@ const Index = () => {
     showSuccess(`Projet "${name}" créé avec succès`);
   };
 
-  const handleUpdateProject = (id: string, name: string) => {
+  const handleUpdateProject = (id: string, name: string, icon: string) => {
     setProjects(prev => prev.map(project => 
       project.id === id 
-        ? { ...project, name, updatedAt: new Date() } 
+        ? { ...project, name, icon, updatedAt: new Date() } 
         : project
     ));
     showSuccess("Projet mis à jour");
