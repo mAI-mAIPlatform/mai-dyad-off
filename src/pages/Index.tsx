@@ -10,7 +10,6 @@ import ChatInput from "@/components/ChatInput";
 import SettingsDialog from "@/components/SettingsDialog";
 import GreetingMessage from "@/components/GreetingMessage";
 import { generateGreetingMessages } from "@/utils/greetings";
-import { useTranslation } from "@/utils/i18n";
 
 interface Message {
   id: string;
@@ -39,8 +38,6 @@ const Index = () => {
   const [userName, setUserName] = useState('Utilisateur');
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  const t = useTranslation(selectedLanguage);
 
   const currentConversation = conversations.find(conv => conv.id === currentConversationId) || conversations[0];
 
@@ -66,7 +63,7 @@ const Index = () => {
   const handleNewChat = () => {
     const newConversation: Conversation = {
       id: Date.now().toString(),
-      title: t.chat.newConversation,
+      title: "Nouvelle conversation",
       messages: []
     };
     setConversations(prev => [newConversation, ...prev]);
@@ -94,7 +91,7 @@ const Index = () => {
 
   const handleCopyMessage = (content: string) => {
     navigator.clipboard.writeText(content);
-    showSuccess(t.messages.copied);
+    showSuccess("Message copié");
   };
 
   const handleEditMessage = (messageId: string, newContent: string) => {
@@ -199,7 +196,7 @@ const Index = () => {
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: t.messages.technicalError,
+        content: "Désolé, je rencontre des difficultés techniques. Pouvez-vous réessayer ?",
         role: 'assistant',
         timestamp: new Date(),
       };
@@ -228,7 +225,6 @@ const Index = () => {
           onDeleteConversation={handleDeleteConversation}
           onRenameConversation={handleRenameConversation}
           currentConversationId={currentConversationId}
-          language={selectedLanguage}
         />
 
         {/* Main Chat Area */}
@@ -267,19 +263,17 @@ const Index = () => {
                       onEditMessage={handleEditMessage}
                       onCopyMessage={handleCopyMessage}
                       onRegenerateResponse={handleRegenerateResponse}
-                      language={selectedLanguage}
                     />
                   ))}
                   {isLoading && (
                     <ChatMessage
                       id="loading"
-                      content={t.messages.generating}
+                      content=""
                       role="assistant"
                       timestamp={new Date()}
                       isGenerating={true}
                       onEditMessage={() => {}}
                       onCopyMessage={() => {}}
-                      language={selectedLanguage}
                     />
                   )}
                 </>
@@ -292,7 +286,7 @@ const Index = () => {
           <ChatInput
             onSendMessage={(content) => handleSendMessage(content, false)}
             isLoading={isLoading}
-            language={selectedLanguage}
+            placeholder="Message mAI..."
           />
         </div>
       </div>
