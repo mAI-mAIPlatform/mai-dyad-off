@@ -13,7 +13,7 @@ interface ChatInputProps {
   onSendMessage: (message: string) => void;
   isLoading: boolean;
   placeholder?: string;
-  language: string; // Ajout de la propriété language
+  language: string;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
@@ -30,7 +30,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
     transcript,
     startListening,
     stopListening,
-    hasRecognitionSupport
+    hasRecognitionSupport,
+    resetTranscript
   } = useSpeechRecognition();
 
   const {
@@ -46,9 +47,17 @@ const ChatInput: React.FC<ChatInputProps> = ({
   // Mettre à jour l'input avec la transcription vocale
   useEffect(() => {
     if (transcript) {
-      setInput(prev => prev + transcript);
+      setInput(transcript);
     }
   }, [transcript]);
+
+  // Gérer l'arrêt de l'écoute et l'envoi du message
+  useEffect(() => {
+    if (!isListening && transcript.trim()) {
+      // Lorsque l'écoute s'arrête et qu'il y a une transcription, on peut envoyer le message
+      // Mais on ne l'envoie pas automatiquement, on le laisse dans le champ pour édition
+    }
+  }, [isListening, transcript]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,6 +85,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       onSendMessage(input.trim());
       setInput('');
       resetFile();
+      resetTranscript();
     }
   };
 

@@ -8,6 +8,7 @@ interface SpeechRecognitionHook {
   startListening: () => void;
   stopListening: () => void;
   hasRecognitionSupport: boolean;
+  resetTranscript: () => void;
 }
 
 export const useSpeechRecognition = (): SpeechRecognitionHook => {
@@ -15,6 +16,7 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
   const [transcript, setTranscript] = useState('');
   const recognitionRef = useRef<any>(null);
   const [hasRecognitionSupport, setHasRecognitionSupport] = useState(false);
+  const finalTranscriptRef = useRef('');
 
   useEffect(() => {
     // Vérifier la compatibilité du navigateur
@@ -30,12 +32,14 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
       recognitionInstance.onresult = (event: any) => {
         let interimTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            setTranscript(prev => prev + event.results[i][0].transcript + ' ');
+            finalTranscriptRef.current += transcript + ' ';
           } else {
-            interimTranscript += event.results[i][0].transcript;
+            interimTranscript += transcript;
           }
         }
+        setTranscript(finalTranscriptRef.current + interimTranscript);
       };
 
       recognitionInstance.onerror = (event: any) => {
@@ -44,10 +48,7 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
       };
 
       recognitionInstance.onend = () => {
-        // Redémarrer automatiquement si toujours en mode écoute
-        if (isListening) {
-          recognitionInstance.start();
-        }
+        setIsListening(false);
       };
 
       recognitionRef.current = recognitionInstance;
@@ -62,6 +63,7 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
 
   const startListening = useCallback(() => {
     if (recognitionRef.current && hasRecognitionSupport) {
+      finalTranscriptRef.current = '';
       setTranscript('');
       setIsListening(true);
       try {
@@ -76,16 +78,22 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current && hasRecognitionSupport) {
-      setIsListening(false);
       recognitionRef.current.stop();
+      setIsListening(false);
     }
   }, [hasRecognitionSupport]);
+
+  const resetTranscript = useCallback(() => {
+    setTranscript('');
+    finalTranscriptRef.current = '';
+  }, []);
 
   return {
     isListening,
     transcript,
     startListening,
     stopListening,
-    hasRecognitionSupport
+    hasRecognitionSupport,
+    resetTranscript
   };
 };
