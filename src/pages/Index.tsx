@@ -4,12 +4,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from "next-themes";
 import { showSuccess, showError } from "@/utils/toast";
 import { OpenRouterService, OpenRouterMessage } from "@/services/openrouter";
+import ProjectManager from "@/components/ProjectManager";
 import ChatSidebar from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import SettingsDialog from "@/components/SettingsDialog";
 import GreetingMessage from "@/components/GreetingMessage";
 import { generateGreetingMessages } from "@/utils/greetings";
+import { useTranslation } from "@/utils/i18n";
 
 interface Message {
   id: string;
@@ -20,24 +22,42 @@ interface Message {
 
 interface Conversation {
   id: string;
+  projectId: string | null;
   messages: Message[];
   title: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface Project {
+  id: string;
+  name: string;
+  icon: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const Index = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([
     {
       id: 'default',
+      projectId: null,
       title: "Nouvelle conversation",
-      messages: []
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   ]);
   const [currentConversationId, setCurrentConversationId] = useState('default');
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('openai/gpt-4o');
   const [userName, setUserName] = useState('Utilisateur');
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const t = useTranslation(selectedLanguage);
 
   const currentConversation = conversations.find(conv => conv.id === currentConversationId) || conversations[0];
 
@@ -60,11 +80,67 @@ const Index = () => {
     }
   }, []);
 
+  // Gestion des projets
+  const handleCreateProject = (name: string) => {
+    const newProject: Project = {
+      id: Date.now().toString(),
+      name,
+      icon: '📁', // Icône par défaut
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    setProjects(prev => [...prev, newProject]);
+    showSuccess(`Projet "${name}" créé avec succès`);
+  };
+
+  const handleUpdateProject = (id: string, name: string) => {
+    setProjects(prev => prev.map(project => 
+      project.id === id 
+        ? { ...project, name, updatedAt: new Date() } 
+        : project
+    ));
+    showSuccess("Projet mis à jour");
+  };
+
+  const handleDeleteProject = (id: string) => {
+    setProjects(prev => prev.filter(project => project.id !== id));
+    
+    // Déplacer les conversations de ce projet vers "Toutes les conversations"
+    setConversations(prev => prev.map(conv => 
+      conv.projectId === id ? { ...conv, projectId: null } : conv
+    ));
+    
+    // Si le projet actuel est supprimé, revenir à "Toutes les conversations"
+    if (currentProjectId === id) {
+      setCurrentProjectId(null);
+    }
+    
+    showSuccess("Projet supprimé");
+  };
+
+  const handleSelectProject = (id: string | null) => {
+    setCurrentProjectId(id);
+    
+    // Sélectionner la première conversation du projet ou créer une nouvelle
+    const projectConversations = id 
+      ? conversations.filter(conv => conv.projectId === id)
+      : conversations.filter(conv => conv.projectId === null);
+    
+    if (projectConversations.length > 0) {
+      setCurrentConversationId(projectConversations[0].id);
+    } else {
+      handleNewChat();
+    }
+  };
+
   const handleNewChat = () => {
     const newConversation: Conversation = {
       id: Date.now().toString(),
-      title: "Nouvelle conversation",
-      messages: []
+      projectId: currentProjectId,
+      title: t.chat.newConversation,
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     setConversations(prev => [newConversation, ...prev]);
     setCurrentConversationId(newConversation.id);
@@ -78,20 +154,26 @@ const Index = () => {
     if (conversations.length > 1) {
       setConversations(prev => prev.filter(conv => conv.id !== id));
       if (currentConversationId === id) {
-        setCurrentConversationId(conversations.find(conv => conv.id !== id)?.id || 'default');
+        const projectConversations = currentProjectId 
+          ? conversations.filter(conv => conv.projectId === currentProjectId && conv.id !== id)
+          : conversations.filter(conv => conv.projectId === null && conv.id !== id);
+        
+        setCurrentConversationId(projectConversations[0]?.id || 'default');
       }
     }
   };
 
   const handleRenameConversation = (id: string, newTitle: string) => {
     setConversations(prev => prev.map(conv => 
-      conv.id === id ? { ...conv, title: newTitle } : conv
+      conv.id === id 
+        ? { ...conv, title: newTitle, updatedAt: new Date() } 
+        : conv
     ));
   };
 
   const handleCopyMessage = (content: string) => {
     navigator.clipboard.writeText(content);
-    showSuccess("Message copié");
+    showSuccess(t.messages.copied);
   };
 
   const handleEditMessage = (messageId: string, newContent: string) => {
@@ -101,7 +183,8 @@ const Index = () => {
             ...conv,
             messages: conv.messages.map(msg =>
               msg.id === messageId ? { ...msg, content: newContent } : msg
-            )
+            ),
+            updatedAt: new Date()
           }
         : conv
     ));
@@ -117,7 +200,7 @@ const Index = () => {
     
     setConversations(prev => prev.map(conv =>
       conv.id === currentConversationId
-        ? { ...conv, messages: messagesToKeep }
+        ? { ...conv, messages: messagesToKeep, updatedAt: new Date() }
         : conv
     ));
 
@@ -153,7 +236,8 @@ const Index = () => {
         ? {
             ...conv,
             messages: [...conv.messages, userMessage],
-            title: shouldUpdateTitle ? content.slice(0, 50) + (content.length > 50 ? '...' : '') : conv.title
+            title: shouldUpdateTitle ? content.slice(0, 50) + (content.length > 50 ? '...' : '') : conv.title,
+            updatedAt: new Date()
           }
         : conv
     );
@@ -186,7 +270,7 @@ const Index = () => {
 
       const finalConversations = updatedConversations.map(conv =>
         conv.id === currentConversationId
-          ? { ...conv, messages: [...conv.messages, aiResponse] }
+          ? { ...conv, messages: [...conv.messages, aiResponse], updatedAt: new Date() }
           : conv
       );
 
@@ -196,14 +280,14 @@ const Index = () => {
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "Désolé, je rencontre des difficultés techniques. Pouvez-vous réessayer ?",
+        content: t.messages.technicalError,
         role: 'assistant',
         timestamp: new Date(),
       };
       
       const errorConversations = updatedConversations.map(conv =>
         conv.id === currentConversationId
-          ? { ...conv, messages: [...conv.messages, errorMessage] }
+          ? { ...conv, messages: [...conv.messages, errorMessage], updatedAt: new Date() }
           : conv
       );
 
@@ -218,13 +302,27 @@ const Index = () => {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <div className="h-screen flex bg-white dark:bg-gray-900">
-        {/* Sidebar */}
+        {/* Project Manager Sidebar */}
+        <ProjectManager
+          projects={projects}
+          onCreateProject={handleCreateProject}
+          onUpdateProject={handleUpdateProject}
+          onDeleteProject={handleDeleteProject}
+          onSelectProject={handleSelectProject}
+          currentProjectId={currentProjectId}
+          language={selectedLanguage}
+        />
+
+        {/* Conversations Sidebar */}
         <ChatSidebar
+          conversations={conversations}
+          currentProjectId={currentProjectId}
           onNewChat={handleNewChat}
           onSelectConversation={handleSelectConversation}
           onDeleteConversation={handleDeleteConversation}
           onRenameConversation={handleRenameConversation}
           currentConversationId={currentConversationId}
+          language={selectedLanguage}
         />
 
         {/* Main Chat Area */}
@@ -263,17 +361,19 @@ const Index = () => {
                       onEditMessage={handleEditMessage}
                       onCopyMessage={handleCopyMessage}
                       onRegenerateResponse={handleRegenerateResponse}
+                      language={selectedLanguage}
                     />
                   ))}
                   {isLoading && (
                     <ChatMessage
                       id="loading"
-                      content=""
+                      content={t.messages.generating}
                       role="assistant"
                       timestamp={new Date()}
                       isGenerating={true}
                       onEditMessage={() => {}}
                       onCopyMessage={() => {}}
+                      language={selectedLanguage}
                     />
                   )}
                 </>
@@ -286,7 +386,7 @@ const Index = () => {
           <ChatInput
             onSendMessage={(content) => handleSendMessage(content, false)}
             isLoading={isLoading}
-            placeholder="Message mAI..."
+            language={selectedLanguage}
           />
         </div>
       </div>
