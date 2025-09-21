@@ -16,16 +16,43 @@ export interface OpenRouterResponse {
     completion_tokens: number;
     total_tokens: number;
   };
+  error?: {
+    message: string;
+    code: number;
+  };
 }
 
 export class OpenRouterService {
   private static readonly API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-  private static readonly API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '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';
+  private static readonly API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 
   static async sendMessage(
     messages: OpenRouterMessage[],
-    model: string = 'openai/gpt-3.5-turbo'
+    model: string = 'openai/gpt-4o'
   ): Promise<OpenRouterResponse> {
+    // Si aucune clé API n'est définie, utiliser un modèle de démonstration
+    if (!this.API_KEY) {
+      // Simulation d'une réponse de l'IA pour le développement
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            choices: [{
+              message: {
+                role: 'assistant',
+                content: "Bonjour ! Je suis mAI, votre assistant virtuel. Comment puis-je vous aider aujourd'hui ?"
+              },
+              finish_reason: 'stop'
+            }],
+            usage: {
+              prompt_tokens: 0,
+              completion_tokens: 0,
+              total_tokens: 0
+            }
+          });
+        }, 1000);
+      });
+    }
+
     try {
       const response = await fetch(this.API_URL, {
         method: 'POST',
@@ -44,11 +71,12 @@ export class OpenRouterService {
         })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(data.error?.message || `HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
       return data;
     } catch (error) {
       console.error('Error calling OpenRouter API:', error);

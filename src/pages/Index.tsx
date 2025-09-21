@@ -276,12 +276,19 @@ const Index = () => {
       );
 
       setConversations(finalConversations);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
+      
+      let errorMessageContent = t.messages.technicalError;
+      
+      // Message d'erreur plus spécifique si c'est un problème d'API
+      if (error.message && !error.message.includes('technical difficulties')) {
+        errorMessageContent = `Erreur: ${error.message}`;
+      }
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: t.messages.technicalError,
+        content: errorMessageContent,
         role: 'assistant',
         timestamp: new Date(),
       };
