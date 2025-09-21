@@ -70,14 +70,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               <AvatarFallback className={
                 role === 'user' 
                   ? 'bg-gray-500 text-white' 
-                  : 'bg-green-500 text-white'
+                  : 'bg-transparent'
               }>
                 {role === 'user' ? (
                   <User className="w-4 h-4" />
                 ) : isGenerating ? (
                   <Star className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Star className="w-4 h-4" />
+                  <img 
+                    src="/logo.png" 
+                    alt="mAI Logo" 
+                    className="w-8 h-8 object-contain"
+                  />
                 )}
               </AvatarFallback>
             </Avatar>

@@ -42,8 +42,12 @@ const ImageMessage: React.FC<ImageMessageProps> = ({ image, onRegenerate }) => {
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex gap-4">
           <div className="flex-shrink-0">
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm">🖼️</span>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center">
+              <img 
+                src="/logo.png" 
+                alt="mAI Logo" 
+                className="w-8 h-8 object-contain"
+              />
             </div>
           </div>
 
