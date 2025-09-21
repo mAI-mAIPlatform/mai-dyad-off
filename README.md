@@ -16,3 +16,9 @@
 ## 📜 Licence
 
 MIT License — libre d’utilisation et de modification, en conservant le crédit à **mAIDevlopers**.
+
+---
+
+## 📦 Versions
+
+Consulte toutes les versions et mises à jour de **mAI** ici : [mAI Releases](https://github.com/mAI-mAIPlatform/m-updates-releases-mai)
