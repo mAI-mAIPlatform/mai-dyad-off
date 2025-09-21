@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { showSuccess } from "@/utils/toast";
 import { useTranslation } from "@/utils/i18n";
+import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageProps {
   id: string;
@@ -17,7 +18,7 @@ interface ChatMessageProps {
   onEditMessage: (id: string, newContent: string) => void;
   onCopyMessage: (content: string) => void;
   onRegenerateResponse?: (messageId: string, newContent: string) => void;
-  language: string; // Ajout de la propriété language
+  language: string;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -164,12 +165,25 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             ) : (
               <>
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-wrap leading-relaxed">
+                  <ReactMarkdown
+                    components={{
+                      img: ({ node, ...props }) => (
+                        <img 
+                          {...props} 
+                          className="max-w-full h-auto rounded-lg my-2"
+                          alt={props.alt || "Image générée"}
+                        />
+                      ),
+                      p: ({ node, ...props }) => (
+                        <p {...props} className="whitespace-pre-wrap leading-relaxed" />
+                      )
+                    }}
+                  >
                     {role === 'assistant' && !isGenerating ? displayedText : content}
-                    {isTyping && (
-                      <span className="inline-block w-2 h-4 bg-current ml-1 animate-pulse align-middle"></span>
-                    )}
-                  </p>
+                  </ReactMarkdown>
+                  {isTyping && (
+                    <span className="inline-block w-2 h-4 bg-current ml-1 animate-pulse align-middle"></span>
+                  )}
                 </div>
 
                 {/* Actions - Masqué pendant la frappe */}

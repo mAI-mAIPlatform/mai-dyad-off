@@ -10,6 +10,7 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import { SpeechToTextService } from "@/services/speechToText";
 import { showSuccess, showError } from "@/utils/toast";
 import { useTranslation } from "@/utils/i18n";
+import ImageGenerationModal from "@/components/ImageGenerationModal";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -164,6 +165,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
+  const handleImageGenerated = (imageUrl: string) => {
+    // Ajouter l'URL de l'image au message
+    const imageMarkdown = `![Image générée](${imageUrl})`;
+    setInput(prev => prev ? `${prev}\n${imageMarkdown}` : imageMarkdown);
+  };
+
   const getVoiceButtonState = () => {
     if (isRecording) return 'recording';
     if (isListening) return 'listening';
@@ -269,6 +276,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
             >
               <Paperclip className="w-5 h-5" />
             </Button>
+
+            {/* Image Generation Button */}
+            <ImageGenerationModal 
+              onImageGenerated={handleImageGenerated}
+              language={language}
+            />
 
             {/* Textarea */}
             <div className="flex-1 relative">
