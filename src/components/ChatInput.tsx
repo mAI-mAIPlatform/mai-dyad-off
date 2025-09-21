@@ -30,7 +30,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     handleFileSelect,
     handleFileUpload,
     resetFile
-  } = useFileUpload(language);
+  } = useFileUpload(); // Correction: appel sans paramètre
   
   const t = useTranslation(language);
 
