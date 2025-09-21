@@ -5,7 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { showSuccess, showError } from "@/utils/toast";
 import { OpenRouterService, OpenRouterMessage } from "@/services/openrouter";
 import { ImageGenerationService, GeneratedImage } from "@/services/image-generation";
-import ProjectSidebar from "@/components/ProjectSidebar";
+import ChatSidebar from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ImageMessage from "@/components/ImageMessage";
 import ChatInput from "@/components/ChatInput";
@@ -26,16 +26,6 @@ interface Conversation {
   id: string;
   messages: Message[];
   title: string;
-  projectId?: string; // Référence au projet
-}
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  createdAt: Date;
-  conversationIds: string[];
 }
 
 const Index = () => {
@@ -46,7 +36,6 @@ const Index = () => {
       messages: []
     }
   ]);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState('default');
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -146,7 +135,7 @@ const Index = () => {
           : conv
       ));
     } catch (error) {
-      showError(`Erreur lors de la régénération de l'image: ${(error as Error).message}`);
+      showError("Erreur lors de la régénération de l'image");
     } finally {
       setIsGeneratingImage(false);
     }
@@ -287,7 +276,7 @@ const Index = () => {
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `Désolé, je n'ai pas pu générer l'image. Erreur: ${(error as Error).message}`,
+        content: "Désolé, je n'ai pas pu générer l'image. Veuillez réessayer.",
         role: 'assistant',
         timestamp: new Date(),
         type: 'text'
@@ -300,39 +289,9 @@ const Index = () => {
       );
 
       setConversations(errorConversations);
-      showError(`Erreur lors de la génération de l'image: ${(error as Error).message}`);
     } finally {
       setIsGeneratingImage(false);
     }
-  };
-
-  const handleCreateProject = (projectData: Omit<Project, 'id' | 'createdAt' | 'conversationIds'>) => {
-    const newProject: Project = {
-      id: Date.now().toString(),
-      ...projectData,
-      createdAt: new Date(),
-      conversationIds: []
-    };
-    
-    setProjects(prev => [...prev, newProject]);
-  };
-
-  const handleAddConversationToProject = (conversationId: string, projectId: string) => {
-    setConversations(prev => 
-      prev.map(conv => 
-        conv.id === conversationId 
-          ? { ...conv, projectId } 
-          : conv
-      )
-    );
-    
-    setProjects(prev => 
-      prev.map(project => 
-        project.id === projectId 
-          ? { ...project, conversationIds: [...project.conversationIds, conversationId] } 
-          : project
-      )
-    );
   };
 
   const shouldShowGreeting = currentConversation.messages.length === 0;
@@ -341,16 +300,12 @@ const Index = () => {
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <div className="h-screen flex bg-white dark:bg-gray-900">
         {/* Sidebar */}
-        <ProjectSidebar
-          projects={projects}
-          conversations={conversations}
-          currentConversationId={currentConversationId}
+        <ChatSidebar
           onNewChat={handleNewChat}
           onSelectConversation={handleSelectConversation}
           onDeleteConversation={handleDeleteConversation}
           onRenameConversation={handleRenameConversation}
-          onProjectCreate={handleCreateProject}
-          onAddConversationToProject={handleAddConversationToProject}
+          currentConversationId={currentConversationId}
         />
 
         {/* Main Chat Area */}
