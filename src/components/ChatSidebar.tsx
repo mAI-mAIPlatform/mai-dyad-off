@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, MessageSquare, Trash2, Edit, Check, X, Folder } from "lucide-react";
 import { useTranslation } from "@/utils/i18n";
 import IconPicker from "./IconPicker";
+import * as LucideIcons from "lucide-react";
 
 interface Conversation {
   id: string;
@@ -59,10 +60,10 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [editTitle, setEditTitle] = useState('');
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
-  const [newProjectIcon, setNewProjectIcon] = useState('📁');
+  const [newProjectIcon, setNewProjectIcon] = useState('folder');
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editProjectName, setEditProjectName] = useState('');
-  const [editProjectIcon, setEditProjectIcon] = useState('📁');
+  const [editProjectIcon, setEditProjectIcon] = useState('folder');
   
   const t = useTranslation(language);
 
@@ -104,7 +105,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     if (newProjectName.trim()) {
       onCreateProject(newProjectName.trim(), newProjectIcon);
       setNewProjectName('');
-      setNewProjectIcon('📁');
+      setNewProjectIcon('folder');
       setIsCreatingProject(false);
     }
   };
@@ -137,6 +138,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     if (e.key === 'Escape') {
       cancelProjectEdit(e as unknown as React.MouseEvent);
     }
+  };
+
+  const renderIcon = (iconName: string) => {
+    const IconComponent = (LucideIcons as any)[iconName.charAt(0).toUpperCase() + iconName.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase())] || Folder;
+    return <IconComponent className="w-4 h-4 text-black dark:text-white" />;
   };
 
   return (
@@ -197,7 +203,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 onClick={() => {
                   setIsCreatingProject(false);
                   setNewProjectName('');
-                  setNewProjectIcon('📁');
+                  setNewProjectIcon('folder');
                 }}
                 className="h-8"
               >
@@ -222,7 +228,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             onClick={() => onSelectProject(null)}
           >
             <div className="flex items-center gap-3">
-              <span className="text-lg">📁</span>
+              <Folder className="w-4 h-4 text-black dark:text-white" />
               <span className="font-medium">Toutes les conversations</span>
             </div>
           </Card>
@@ -256,7 +262,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     </>
                   ) : (
                     <>
-                      <span className="text-lg">{project.icon}</span>
+                      <div className="flex items-center justify-center w-5 h-5">
+                        {renderIcon(project.icon)}
+                      </div>
                       <span className="font-medium truncate">
                         {project.name}
                       </span>
