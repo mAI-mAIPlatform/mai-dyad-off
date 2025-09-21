@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Download, Copy, RefreshCw } from "lucide-react";
+import { Download, Copy, RefreshCw, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { showSuccess, showError } from "@/utils/toast";
@@ -43,11 +43,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({ image, onRegenerate }) => {
         <div className="flex gap-4">
           <div className="flex-shrink-0">
             <div className="w-8 h-8 rounded-full flex items-center justify-center">
-              <img 
-                src="/logo.png" 
-                alt="mAI Logo" 
-                className="w-8 h-8 object-contain"
-              />
+              <Star className="w-6 h-6 text-black dark:text-white" />
             </div>
           </div>
 

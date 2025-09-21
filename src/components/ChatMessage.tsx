@@ -77,11 +77,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 ) : isGenerating ? (
                   <Star className="w-4 h-4 animate-spin" />
                 ) : (
-                  <img 
-                    src="/logo.png" 
-                    alt="mAI Logo" 
-                    className="w-8 h-8 object-contain"
-                  />
+                  <Star className="w-4 h-4 text-black dark:text-white" />
                 )}
               </AvatarFallback>
             </Avatar>

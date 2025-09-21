@@ -16,11 +16,7 @@ const GreetingMessage: React.FC<GreetingMessageProps> = ({ content }) => {
         <div className="flex justify-center mb-6">
           <Avatar className="w-16 h-16">
             <AvatarFallback className="bg-transparent">
-              <img 
-                src="/logo.png" 
-                alt="mAI Logo" 
-                className="w-16 h-16 object-contain"
-              />
+              <Star className="w-8 h-8 text-black dark:text-white" />
             </AvatarFallback>
           </Avatar>
         </div>
