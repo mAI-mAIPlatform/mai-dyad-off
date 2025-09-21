@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from "next-themes";
 import { showSuccess, showError } from "@/utils/toast";
 import { OpenRouterService, OpenRouterMessage } from "@/services/openrouter";
-import ProjectManager from "@/components/ProjectManager";
 import ChatSidebar from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
@@ -302,25 +301,19 @@ const Index = () => {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <div className="h-screen flex bg-white dark:bg-gray-900">
-        {/* Project Manager Sidebar */}
-        <ProjectManager
-          projects={projects}
-          onCreateProject={handleCreateProject}
-          onUpdateProject={handleUpdateProject}
-          onDeleteProject={handleDeleteProject}
-          onSelectProject={handleSelectProject}
-          currentProjectId={currentProjectId}
-          language={selectedLanguage}
-        />
-
-        {/* Conversations Sidebar */}
+        {/* Sidebar intégrée avec projets et conversations */}
         <ChatSidebar
+          projects={projects}
           conversations={conversations}
           currentProjectId={currentProjectId}
           onNewChat={handleNewChat}
           onSelectConversation={handleSelectConversation}
           onDeleteConversation={handleDeleteConversation}
           onRenameConversation={handleRenameConversation}
+          onCreateProject={handleCreateProject}
+          onUpdateProject={handleUpdateProject}
+          onDeleteProject={handleDeleteProject}
+          onSelectProject={handleSelectProject}
           currentConversationId={currentConversationId}
           language={selectedLanguage}
         />
