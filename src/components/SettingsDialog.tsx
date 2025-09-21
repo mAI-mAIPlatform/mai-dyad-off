@@ -120,7 +120,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
         {/* Version et bouton sauvegarder */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="text-xs text-gray-500">
-            26 0.5 (Public Update)
+            26 0.8 (Public Update)
           </div>
           <Button onClick={handleSave} size="sm">
             Sauvegarder
