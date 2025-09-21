@@ -65,8 +65,8 @@ export const translations: Record<string, Translation> = {
     },
     chat: {
       newConversation: "Nouvelle conversation",
-      placeholder: "Message mAI...",
-      disclaimer: "mAI peut faire des erreurs. Vérifiez les informations importantes.",
+      placeholder: "Discutez...",
+      disclaimer: "Les réponses d'mAI peuvent être incorrectes ou inexactes.",
       listening: "En écoute... (cliquez sur le micro pour arrêter)",
       sendFile: "Envoyer fichier",
       fileUploadError: "Erreur lors de l'upload du fichier",
