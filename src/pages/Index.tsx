@@ -55,7 +55,7 @@ const Index = () => {
   const [userName, setUserName] = useState('Utilisateur');
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
   const [betaFeaturesEnabled, setBetaFeaturesEnabled] = useState(false);
-  const [iconColor, setIconColor] = useState('text-black dark:text-white');
+  const [iconColor, setIconColor] = useState('black');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const t = useTranslation(selectedLanguage);

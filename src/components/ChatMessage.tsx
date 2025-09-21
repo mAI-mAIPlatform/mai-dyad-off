@@ -64,6 +64,22 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     }
   }, [content, role, isGenerating]);
 
+  const getIconColorClass = () => {
+    const colorMap: Record<string, string> = {
+      'black': 'text-black dark:text-white',
+      'blue': 'text-blue-600',
+      'red': 'text-red-600',
+      'yellow': 'text-yellow-600',
+      'gray': 'text-gray-500',
+      'green': 'text-green-600',
+      'purple': 'text-purple-600',
+      'pink': 'text-pink-600',
+      'indigo': 'text-indigo-600',
+      'orange': 'text-orange-600'
+    };
+    return colorMap[iconColor] || 'text-black dark:text-white';
+  };
+
   const handleCopy = () => {
     onCopyMessage(content);
     showSuccess(t.messages.copied);
@@ -116,9 +132,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 {role === 'user' ? (
                   <User className="w-4 h-4" />
                 ) : isGenerating ? (
-                  <Star className={`w-4 h-4 animate-spin ${iconColor}`} />
+                  <Star className={`w-4 h-4 animate-spin ${getIconColorClass()}`} />
                 ) : (
-                  <Star className={`w-4 h-4 ${iconColor}`} />
+                  <Star className={`w-4 h-4 ${getIconColorClass()}`} />
                 )}
               </AvatarFallback>
             </Avatar>
@@ -197,7 +213,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                       className="h-7 px-2 text-xs"
                       onClick={handleCopy}
                     >
-                      <Copy className={`w-3 h-3 mr-1 ${iconColor}`} />
+                      <Copy className="w-3 h-3 mr-1" />
                       {t.messages.copy}
                     </Button>
                     {role === 'user' && (
@@ -207,7 +223,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                         className="h-7 px-2 text-xs"
                         onClick={handleEdit}
                       >
-                        <Edit className={`w-3 h-3 mr-1 ${iconColor}`} />
+                        <Edit className="w-3 h-3 mr-1" />
                         {t.messages.edit}
                       </Button>
                     )}

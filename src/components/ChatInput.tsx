@@ -36,6 +36,22 @@ const ChatInput: React.FC<ChatInputProps> = ({
   
   const t = useTranslation(language);
 
+  const getIconColorClass = () => {
+    const colorMap: Record<string, string> = {
+      'black': 'text-black dark:text-white',
+      'blue': 'text-blue-600',
+      'red': 'text-red-600',
+      'yellow': 'text-yellow-600',
+      'gray': 'text-gray-500',
+      'green': 'text-green-600',
+      'purple': 'text-purple-600',
+      'pink': 'text-pink-600',
+      'indigo': 'text-indigo-600',
+      'orange': 'text-orange-600'
+    };
+    return colorMap[iconColor] || 'text-black dark:text-white';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -86,7 +102,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className={`w-4 h-4 text-blue-600 ${iconColor}`} />
+                <FileText className="w-4 h-4 text-blue-600" />
                 <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                   {selectedFile.name}
                 </span>
@@ -126,7 +142,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               onClick={handleFileButtonClick}
               disabled={isUploading}
             >
-              <Paperclip className={`w-5 h-5 ${iconColor}`} />
+              <Paperclip className="w-5 h-5" />
             </Button>
 
             {/* Textarea - Même hauteur que les boutons */}
@@ -156,7 +172,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               ) : selectedFile ? (
                 t.chat.sendFile
               ) : (
-                <Send className={`w-4 h-4 ${iconColor}`} />
+                <Send className={`w-4 h-4 ${getIconColorClass()}`} />
               )}
             </Button>
           </div>

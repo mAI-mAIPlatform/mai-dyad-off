@@ -73,15 +73,16 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   ];
 
   const iconColors = [
-    { id: 'black', name: 'Noir', value: 'text-black dark:text-white' },
-    { id: 'blue', name: 'Bleu', value: 'text-blue-600 dark:text-blue-400' },
-    { id: 'red', name: 'Rouge', value: 'text-red-600 dark:text-red-400' },
-    { id: 'yellow', name: 'Jaune', value: 'text-yellow-600 dark:text-yellow-400' },
-    { id: 'green', name: 'Vert', value: 'text-green-600 dark:text-green-400' },
-    { id: 'purple', name: 'Violet', value: 'text-purple-600 dark:text-purple-400' },
-    { id: 'pink', name: 'Rose', value: 'text-pink-600 dark:text-pink-400' },
-    { id: 'gray', name: 'Gris', value: 'text-gray-600 dark:text-gray-400' },
-    { id: 'orange', name: 'Orange', value: 'text-orange-600 dark:text-orange-400' }
+    { id: 'black', name: 'Noir', value: 'black' },
+    { id: 'blue', name: 'Bleu', value: 'blue-600' },
+    { id: 'red', name: 'Rouge', value: 'red-600' },
+    { id: 'yellow', name: 'Jaune', value: 'yellow-600' },
+    { id: 'gray', name: 'Gris', value: 'gray-500' },
+    { id: 'green', name: 'Vert', value: 'green-600' },
+    { id: 'purple', name: 'Violet', value: 'purple-600' },
+    { id: 'pink', name: 'Rose', value: 'pink-600' },
+    { id: 'indigo', name: 'Indigo', value: 'indigo-600' },
+    { id: 'orange', name: 'Orange', value: 'orange-600' }
   ];
 
   const handleSave = () => {
@@ -108,7 +109,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
   const getColorClass = (colorId: string) => {
     const color = iconColors.find(c => c.id === colorId);
-    return color ? color.value : 'text-black dark:text-white';
+    return color ? `text-${color.value}` : 'text-black dark:text-white';
   };
 
   return (
@@ -118,7 +119,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
           <Settings className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Paramètres</DialogTitle>
           <DialogDescription>
@@ -153,9 +154,41 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
             </p>
           </div>
 
+          {/* Couleur des icônes */}
+          <div className="grid gap-2">
+            <Label htmlFor="icon-color">Couleur des icônes (Bêta)</Label>
+            <Select 
+              value={localIconColor} 
+              onValueChange={setLocalIconColor}
+              disabled={!localBetaFeaturesEnabled}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionnez une couleur">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded-full ${getColorClass(localIconColor)} bg-current`} />
+                    <span>{iconColors.find(c => c.id === localIconColor)?.name || 'Couleur'}</span>
+                  </div>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {iconColors.map((color) => (
+                  <SelectItem key={color.id} value={color.id}>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-4 h-4 rounded-full ${getColorClass(color.id)} bg-current`} />
+                      <span>{color.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500">
+              Couleur des icônes de projets, étoiles et autres éléments
+            </p>
+          </div>
+
           {/* Langue */}
           <div className="grid gap-2">
-            <Label htmlFor="language">Langue</Label>
+            <Label htmlFor="language">Langue (Bêta)</Label>
             <Select 
               value={localSelectedLanguage} 
               onValueChange={setLocalSelectedLanguage}
@@ -175,33 +208,6 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          {/* Couleur des icônes */}
-          <div className="grid gap-2">
-            <Label htmlFor="icon-color">Couleur des icônes</Label>
-            <Select 
-              value={localIconColor} 
-              onValueChange={setLocalIconColor}
-              disabled={!localBetaFeaturesEnabled}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionnez une couleur" />
-              </SelectTrigger>
-              <SelectContent>
-                {iconColors.map((color) => (
-                  <SelectItem key={color.id} value={color.id}>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-4 h-4 rounded-full ${getColorClass(color.id)} bg-current`}></div>
-                      <span>{color.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-gray-500">
-              Couleur des icônes de projets, étoiles et autres éléments
-            </p>
           </div>
 
           {/* Modèle IA */}
