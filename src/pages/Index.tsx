@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from "next-themes";
 import { showSuccess, showError } from "@/utils/toast";
 import { OpenRouterService, OpenRouterMessage } from "@/services/openrouter";
@@ -39,7 +39,7 @@ const Index = () => {
   const [currentConversationId, setCurrentConversationId] = useState('default');
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('openai/gpt-3.5-turbo');
+  const [selectedModel, setSelectedModel] = useState('openai/gpt-4o');
   const [userName, setUserName] = useState('Utilisateur');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -107,6 +107,24 @@ const Index = () => {
     ));
   };
 
+  const handleRegenerateResponse = async (messageId: string, newContent: string) => {
+    // Trouver le message utilisateur modifié
+    const userMessageIndex = currentConversation.messages.findIndex(msg => msg.id === messageId);
+    if (userMessageIndex === -1) return;
+
+    // Supprimer toutes les réponses de l'IA après le message modifié
+    const messagesToKeep = currentConversation.messages.slice(0, userMessageIndex + 1);
+    
+    setConversations(prev => prev.map(conv =>
+      conv.id === currentConversationId
+        ? { ...conv, messages: messagesToKeep }
+        : conv
+    ));
+
+    // Régénérer la réponse de l'IA
+    await handleSendMessage(newContent, true);
+  };
+
   const handleUserNameChange = (name: string) => {
     setUserName(name);
     localStorage.setItem('userName', name);
@@ -141,7 +159,7 @@ const Index = () => {
     }
   };
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, isRegeneration = false) => {
     if (!content.trim() || isLoading || isGeneratingImage) return;
 
     // Vérifier si c'est une demande de génération d'image
@@ -348,6 +366,7 @@ const Index = () => {
                         timestamp={message.timestamp}
                         onEditMessage={handleEditMessage}
                         onCopyMessage={handleCopyMessage}
+                        onRegenerateResponse={handleRegenerateResponse}
                       />
                     )
                   ))}
@@ -370,7 +389,7 @@ const Index = () => {
 
           {/* Chat Input */}
           <ChatInput
-            onSendMessage={handleSendMessage}
+            onSendMessage={(content) => handleSendMessage(content, false)}
             isLoading={isLoading || isGeneratingImage}
             placeholder="Message mAI ou demandez une image..."
           />

@@ -15,6 +15,7 @@ interface ChatMessageProps {
   isGenerating?: boolean;
   onEditMessage: (id: string, newContent: string) => void;
   onCopyMessage: (content: string) => void;
+  onRegenerateResponse?: (messageId: string, newContent: string) => void;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -24,7 +25,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   timestamp,
   isGenerating = false,
   onEditMessage,
-  onCopyMessage
+  onCopyMessage,
+  onRegenerateResponse
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(content);
@@ -66,6 +68,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   const handleSaveEdit = () => {
     if (editedContent.trim() && editedContent !== content) {
       onEditMessage(id, editedContent.trim());
+      
+      // Régénérer la réponse de l'IA si c'est un message utilisateur modifié
+      if (role === 'user' && onRegenerateResponse) {
+        onRegenerateResponse(id, editedContent.trim());
+      }
     }
     setIsEditing(false);
   };
