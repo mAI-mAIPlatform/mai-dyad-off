@@ -33,6 +33,8 @@ interface SettingsDialogProps {
   onLanguageChange: (language: string) => void;
   betaFeaturesEnabled: boolean;
   onBetaFeaturesChange: (enabled: boolean) => void;
+  iconColor: string;
+  onIconColorChange: (color: string) => void;
 }
 
 const SettingsDialog: React.FC<SettingsDialogProps> = ({
@@ -43,13 +45,16 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   selectedLanguage,
   onLanguageChange,
   betaFeaturesEnabled,
-  onBetaFeaturesChange
+  onBetaFeaturesChange,
+  iconColor,
+  onIconColorChange
 }) => {
   const [localUserName, setLocalUserName] = useState(userName);
   const { theme, setTheme } = useTheme();
   const [localSelectedModel, setLocalSelectedModel] = useState(selectedModel);
   const [localSelectedLanguage, setLocalSelectedLanguage] = useState(selectedLanguage);
   const [localBetaFeaturesEnabled, setLocalBetaFeaturesEnabled] = useState(betaFeaturesEnabled);
+  const [localIconColor, setLocalIconColor] = useState(iconColor);
 
   const models = [
     { id: 'openai/gpt-4o', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
@@ -67,16 +72,28 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     { id: 'pt', name: 'Portugais', flag: 'PT' }
   ];
 
+  const iconColors = [
+    { id: 'black', name: 'Noir' },
+    { id: 'blue', name: 'Bleu' },
+    { id: 'red', name: 'Rouge' },
+    { id: 'yellow', name: 'Jaune' },
+    { id: 'gray', name: 'Gris' },
+    { id: 'green', name: 'Vert' },
+    { id: 'purple', name: 'Violet' }
+  ];
+
   const handleSave = () => {
     onUserNameChange(localUserName);
     onModelChange(localSelectedModel);
     onLanguageChange(localSelectedLanguage);
     onBetaFeaturesChange(localBetaFeaturesEnabled);
+    onIconColorChange(localIconColor);
     // Sauvegarder les paramètres dans localStorage
     localStorage.setItem('userName', localUserName);
     localStorage.setItem('selectedModel', localSelectedModel);
     localStorage.setItem('selectedLanguage', localSelectedLanguage);
     localStorage.setItem('betaFeaturesEnabled', localBetaFeaturesEnabled.toString());
+    localStorage.setItem('iconColor', localIconColor);
     localStorage.setItem('theme', theme || 'system');
     showSuccess("Paramètres sauvegardés avec succès");
   };
@@ -127,6 +144,45 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
             <p className="text-xs text-gray-500">
               Activez les fonctionnalités expérimentales de l'application
             </p>
+          </div>
+
+          {/* Couleur des icônes (Bêta) */}
+          <div className="grid gap-2">
+            <Label htmlFor="icon-color">Couleur des icônes (Bêta)</Label>
+            <Select 
+              value={localIconColor} 
+              onValueChange={setLocalIconColor}
+              disabled={!localBetaFeaturesEnabled}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionnez une couleur" />
+              </SelectTrigger>
+              <SelectContent>
+                {iconColors.map((color) => (
+                  <SelectItem key={color.id} value={color.id}>
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className={`w-4 h-4 rounded-full ${
+                          color.id === 'black' ? 'bg-black' :
+                          color.id === 'blue' ? 'bg-blue-500' :
+                          color.id === 'red' ? 'bg-red-500' :
+                          color.id === 'yellow' ? 'bg-yellow-500' :
+                          color.id === 'gray' ? 'bg-gray-500' :
+                          color.id === 'green' ? 'bg-green-500' :
+                          'bg-purple-500'
+                        }`}
+                      ></div>
+                      <span>{color.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {!localBetaFeaturesEnabled && (
+              <p className="text-xs text-gray-500">
+                Fonctionnalité disponible uniquement en mode Bêta
+              </p>
+            )}
           </div>
 
           {/* Langue */}

@@ -39,6 +39,7 @@ interface ChatSidebarProps {
   onSelectProject: (id: string | null) => void;
   currentConversationId: string;
   language: string;
+  iconColor?: string;
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
@@ -54,7 +55,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onDeleteProject,
   onSelectProject,
   currentConversationId,
-  language
+  language,
+  iconColor = 'black'
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -142,7 +144,19 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   const renderIcon = (iconName: string) => {
     const IconComponent = (LucideIcons as any)[iconName.charAt(0).toUpperCase() + iconName.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase())] || Folder;
-    return <IconComponent className="w-4 h-4 text-black dark:text-white" />;
+    return <IconComponent className={`w-4 h-4 ${getIconColorClass()}`} />;
+  };
+
+  const getIconColorClass = () => {
+    switch (iconColor) {
+      case 'blue': return 'text-blue-500';
+      case 'red': return 'text-red-500';
+      case 'yellow': return 'text-yellow-500';
+      case 'gray': return 'text-gray-500';
+      case 'green': return 'text-green-500';
+      case 'purple': return 'text-purple-500';
+      default: return 'text-black dark:text-white';
+    }
   };
 
   return (
@@ -154,14 +168,14 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             onClick={onNewChat}
             className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className={`w-4 h-4 mr-2 ${getIconColorClass()}`} />
             {t.chat.newConversation}
           </Button>
           <Button
             onClick={() => setIsCreatingProject(true)}
             className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
           >
-            <Folder className="w-4 h-4 mr-2" />
+            <Folder className={`w-4 h-4 mr-2 ${getIconColorClass()}`} />
             Nouveau projet
           </Button>
         </div>
@@ -175,6 +189,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
               <IconPicker
                 selectedIcon={newProjectIcon}
                 onIconChange={setNewProjectIcon}
+                iconColor={iconColor}
               />
               <Input
                 value={newProjectName}
@@ -194,7 +209,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 onClick={handleCreateProject}
                 className="flex-1 h-8"
               >
-                <Check className="w-4 h-4 mr-1" />
+                <Check className={`w-4 h-4 mr-1 ${getIconColorClass()}`} />
                 Créer
               </Button>
               <Button
@@ -207,7 +222,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 }}
                 className="h-8"
               >
-                <X className="w-4 h-4" />
+                <X className={`w-4 h-4 ${getIconColorClass()}`} />
               </Button>
             </div>
           </Card>
@@ -228,7 +243,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             onClick={() => onSelectProject(null)}
           >
             <div className="flex items-center gap-3">
-              <Folder className="w-4 h-4 text-black dark:text-white" />
+              <Folder className={`w-4 h-4 ${getIconColorClass()}`} />
               <span className="font-medium">Toutes les conversations</span>
             </div>
           </Card>
@@ -250,6 +265,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                       <IconPicker
                         selectedIcon={editProjectIcon}
                         onIconChange={setEditProjectIcon}
+                        iconColor={iconColor}
                       />
                       <Input
                         value={editProjectName}
@@ -280,7 +296,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                       className="h-6 w-6 text-green-500 hover:text-green-600"
                       onClick={(e) => saveProjectEdit(project.id, e)}
                     >
-                      <Check className="w-3 h-3" />
+                      <Check className={`w-3 h-3 ${getIconColorClass()}`} />
                     </Button>
                     <Button
                       variant="ghost"
@@ -288,7 +304,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                       className="h-6 w-6 text-gray-500 hover:text-gray-600"
                       onClick={cancelProjectEdit}
                     >
-                      <X className="w-3 h-3" />
+                      <X className={`w-3 h-3 ${getIconColorClass()}`} />
                     </Button>
                   </div>
                 ) : (
@@ -299,7 +315,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                       className="h-6 w-6 text-gray-400 hover:text-blue-500"
                       onClick={(e) => startEditingProject(project, e)}
                     >
-                      <Edit className="w-3 h-3" />
+                      <Edit className={`w-3 h-3 ${getIconColorClass()}`} />
                     </Button>
                     <Button
                       variant="ghost"
@@ -310,7 +326,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         onDeleteProject(project.id);
                       }}
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className={`w-3 h-3 ${getIconColorClass()}`} />
                     </Button>
                   </div>
                 )}
@@ -336,7 +352,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <MessageSquare className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  <MessageSquare className={`w-4 h-4 text-gray-500 ${getIconColorClass()}`} />
                   {editingId === conversation.id ? (
                     <Input
                       value={editTitle}
@@ -362,7 +378,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           className="h-6 w-6 text-green-500 hover:text-green-600"
                           onClick={(e) => saveEdit(conversation.id, e)}
                         >
-                          <Check className="w-3 h-3" />
+                          <Check className={`w-3 h-3 ${getIconColorClass()}`} />
                         </Button>
                         <Button
                           variant="ghost"
@@ -370,7 +386,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           className="h-6 w-6 text-gray-500 hover:text-gray-600"
                           onClick={cancelEdit}
                         >
-                          <X className="w-3 h-3" />
+                          <X className={`w-3 h-3 ${getIconColorClass()}`} />
                         </Button>
                       </>
                     ) : (
@@ -381,7 +397,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           className="h-6 w-6 text-gray-400 hover:text-blue-500"
                           onClick={(e) => startEditing(conversation.id, conversation.title, e)}
                         >
-                          <Edit className="w-3 h-3" />
+                          <Edit className={`w-3 h-3 ${getIconColorClass()}`} />
                         </Button>
                         <Button
                           variant="ghost"
@@ -392,7 +408,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                             onDeleteConversation(conversation.id);
                           }}
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className={`w-3 h-3 ${getIconColorClass()}`} />
                         </Button>
                       </>
                     )}

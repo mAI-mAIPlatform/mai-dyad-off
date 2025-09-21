@@ -19,6 +19,7 @@ interface ChatMessageProps {
   onCopyMessage: (content: string) => void;
   onRegenerateResponse?: (messageId: string, newContent: string) => void;
   language: string;
+  iconColor?: string;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -30,7 +31,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   onEditMessage,
   onCopyMessage,
   onRegenerateResponse,
-  language
+  language,
+  iconColor = 'black'
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(content);
@@ -99,6 +101,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     }
   };
 
+  const getIconColorClass = () => {
+    switch (iconColor) {
+      case 'blue': return 'text-blue-500';
+      case 'red': return 'text-red-500';
+      case 'yellow': return 'text-yellow-500';
+      case 'gray': return 'text-gray-500';
+      case 'green': return 'text-green-500';
+      case 'purple': return 'text-purple-500';
+      default: return 'text-black dark:text-white';
+    }
+  };
+
   return (
     <div className={`group py-4 ${role === 'user' ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}`}>
       <div className="max-w-4xl mx-auto px-4">
@@ -112,11 +126,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                   : 'bg-transparent'
               }>
                 {role === 'user' ? (
-                  <User className="w-4 h-4" />
+                  <User className={`w-4 h-4 ${getIconColorClass()}`} />
                 ) : isGenerating ? (
-                  <Star className="w-4 h-4 animate-spin" />
+                  <Star className={`w-4 h-4 animate-spin ${getIconColorClass()}`} />
                 ) : (
-                  <Star className="w-4 h-4 text-black dark:text-white" />
+                  <Star className={`w-4 h-4 ${getIconColorClass()}`} />
                 )}
               </AvatarFallback>
             </Avatar>
@@ -195,7 +209,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                       className="h-7 px-2 text-xs"
                       onClick={handleCopy}
                     >
-                      <Copy className="w-3 h-3 mr-1" />
+                      <Copy className={`w-3 h-3 mr-1 ${getIconColorClass()}`} />
                       {t.messages.copy}
                     </Button>
                     {role === 'user' && (
@@ -205,7 +219,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                         className="h-7 px-2 text-xs"
                         onClick={handleEdit}
                       >
-                        <Edit className="w-3 h-3 mr-1" />
+                        <Edit className={`w-3 h-3 mr-1 ${getIconColorClass()}`} />
                         {t.messages.edit}
                       </Button>
                     )}

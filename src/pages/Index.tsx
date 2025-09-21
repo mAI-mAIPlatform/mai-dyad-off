@@ -55,6 +55,7 @@ const Index = () => {
   const [userName, setUserName] = useState('Utilisateur');
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
   const [betaFeaturesEnabled, setBetaFeaturesEnabled] = useState(false);
+  const [iconColor, setIconColor] = useState('black');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const t = useTranslation(selectedLanguage);
@@ -73,6 +74,7 @@ const Index = () => {
     const savedUserName = localStorage.getItem('userName');
     const savedLanguage = localStorage.getItem('selectedLanguage');
     const savedBetaFeatures = localStorage.getItem('betaFeaturesEnabled');
+    const savedIconColor = localStorage.getItem('iconColor');
     if (savedUserName) {
       setUserName(savedUserName);
     }
@@ -81,6 +83,9 @@ const Index = () => {
     }
     if (savedBetaFeatures) {
       setBetaFeaturesEnabled(savedBetaFeatures === 'true');
+    }
+    if (savedIconColor) {
+      setIconColor(savedIconColor);
     }
   }, []);
 
@@ -227,6 +232,11 @@ const Index = () => {
     localStorage.setItem('betaFeaturesEnabled', enabled.toString());
   };
 
+  const handleIconColorChange = (color: string) => {
+    setIconColor(color);
+    localStorage.setItem('iconColor', color);
+  };
+
   const handleSendMessage = async (content: string, isRegeneration = false) => {
     if (!content.trim() || isLoading) return;
 
@@ -335,6 +345,7 @@ const Index = () => {
           onSelectProject={handleSelectProject}
           currentConversationId={currentConversationId}
           language={selectedLanguage}
+          iconColor={iconColor}
         />
 
         {/* Main Chat Area */}
@@ -354,6 +365,8 @@ const Index = () => {
                 onLanguageChange={handleLanguageChange}
                 betaFeaturesEnabled={betaFeaturesEnabled}
                 onBetaFeaturesChange={handleBetaFeaturesChange}
+                iconColor={iconColor}
+                onIconColorChange={handleIconColorChange}
               />
             </div>
           </div>
@@ -362,7 +375,7 @@ const Index = () => {
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
               {shouldShowGreeting ? (
-                <GreetingMessage content={generateGreetingMessages(userName, selectedLanguage)[0].content} />
+                <GreetingMessage content={generateGreetingMessages(userName, selectedLanguage)[0].content} iconColor={iconColor} />
               ) : (
                 <>
                   {currentConversation.messages.map((message) => (
@@ -376,6 +389,7 @@ const Index = () => {
                       onCopyMessage={handleCopyMessage}
                       onRegenerateResponse={handleRegenerateResponse}
                       language={selectedLanguage}
+                      iconColor={iconColor}
                     />
                   ))}
                   {isLoading && (
@@ -388,6 +402,7 @@ const Index = () => {
                       onEditMessage={() => {}}
                       onCopyMessage={() => {}}
                       language={selectedLanguage}
+                      iconColor={iconColor}
                     />
                   )}
                 </>
@@ -401,6 +416,7 @@ const Index = () => {
             onSendMessage={(content) => handleSendMessage(content, false)}
             isLoading={isLoading}
             language={selectedLanguage}
+            iconColor={iconColor}
           />
         </div>
       </div>
