@@ -23,7 +23,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
     {
       id: 'openai/gpt-4o',
       name: 'm-4.0',
-      description: 'GPT-4 Omni, rapide et polyvalent'
+      description: 'Pour les tâches quotidiennes, rapide'
     },
     {
       id: 'openai/gpt-4-turbo',
