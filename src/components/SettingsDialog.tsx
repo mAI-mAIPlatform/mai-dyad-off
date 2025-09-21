@@ -103,7 +103,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
           {/* Langue */}
           <div className="grid gap-2">
-            <Label htmlFor="language">Langue</Label>
+            <Label htmlFor="language">Langue (Bêta)</Label>
             <Select value={localSelectedLanguage} onValueChange={setLocalSelectedLanguage}>
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionnez une langue" />
