@@ -410,37 +410,48 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         </Button>
                       </>
                     ) : movingConversationId === conversation.id ? (
-                      <>
+                      <div className="flex items-center gap-1">
+                        {/* Bouton pour déplacer vers "Toutes les conversations" */}
                         <Button
                           variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 text-blue-500 hover:text-blue-600"
+                          size="sm"
+                          className="h-6 px-2 text-xs bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-800"
                           onClick={(e) => moveConversationToProject(null, e)}
                           title="Déplacer vers Toutes les conversations"
                         >
-                          <Folder className="w-2 h-2" />
+                          <Folder className={`w-3 h-3 mr-1 ${getIconColorClass()}`} />
+                          <span>Toutes</span>
                         </Button>
+                        
+                        {/* Boutons pour déplacer vers chaque projet */}
                         {projects.map((project) => (
                           <Button
                             key={project.id}
                             variant="ghost"
-                            size="icon"
-                            className="h-5 w-5 text-blue-500 hover:text-blue-600"
+                            size="sm"
+                            className="h-6 px-2 text-xs bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-800"
                             onClick={(e) => moveConversationToProject(project.id, e)}
                             title={`Déplacer vers ${project.name}`}
                           >
-                            {renderIcon(project.icon)}
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 mr-1">
+                                {renderIcon(project.icon)}
+                              </div>
+                              <span className="truncate max-w-[80px]">{project.name}</span>
+                            </div>
                           </Button>
                         ))}
+                        
+                        {/* Bouton pour annuler */}
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-5 w-5 text-gray-500 hover:text-gray-600"
+                          className="h-6 w-6 text-gray-500 hover:text-gray-600"
                           onClick={cancelMove}
                         >
-                          <X className="w-2 h-2" />
+                          <X className="w-3 h-3" />
                         </Button>
-                      </>
+                      </div>
                     ) : (
                       <>
                         <Button
