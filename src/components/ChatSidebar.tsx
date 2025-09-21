@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, MessageSquare, Trash2, Edit, Check, X, Folder, Move } from "lucide-react";
 import { useTranslation } from "@/utils/i18n";
 import IconPicker from "./IconPicker";
+import MoveToProjectDialog from "./MoveToProjectDialog";
 import * as LucideIcons from "lucide-react";
 
 interface Conversation {
@@ -68,7 +69,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editProjectName, setEditProjectName] = useState('');
   const [editProjectIcon, setEditProjectIcon] = useState('folder');
-  const [movingConversationId, setMovingConversationId] = useState<string | null>(null);
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+  const [selectedConversationToMove, setSelectedConversationToMove] = useState<string | null>(null);
   
   const t = useTranslation(language);
 
@@ -162,20 +164,16 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   const startMovingConversation = (conversationId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setMovingConversationId(conversationId);
+    setSelectedConversationToMove(conversationId);
+    setMoveDialogOpen(true);
   };
 
-  const moveConversationToProject = (projectId: string | null, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (movingConversationId) {
-      onMoveConversationToProject(movingConversationId, projectId);
-      setMovingConversationId(null);
+  const handleMoveToProject = (projectId: string | null) => {
+    if (selectedConversationToMove) {
+      onMoveConversationToProject(selectedConversationToMove, projectId);
+      setSelectedConversationToMove(null);
+      setMoveDialogOpen(false);
     }
-  };
-
-  const cancelMove = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setMovingConversationId(null);
   };
 
   const renderIcon = (iconName: string) => {
@@ -185,218 +183,137 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   };
 
   return (
-    <div className="w-80 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col">
-      <div className="p-3 border-b border-gray-200 dark:border-gray-800">
-        <div className="space-y-2">
-          <Button
-            onClick={onNewChat}
-            className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-sm h-8"
-          >
-            <Plus className={`w-3 h-3 mr-2 ${getIconColorClass()}`} />
-            {t.chat.newConversation}
-          </Button>
-          <Button
-            onClick={() => setIsCreatingProject(true)}
-            className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-sm h-8"
-          >
-            <Folder className={`w-3 h-3 mr-2 ${getIconColorClass()}`} />
-            Nouveau projet
-          </Button>
-        </div>
-      </div>
-
-      {isCreatingProject && (
+    <>
+      <div className="w-80 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col">
         <div className="p-3 border-b border-gray-200 dark:border-gray-800">
-          <Card className="p-2">
-            <div className="flex items-center gap-2 mb-2">
-              <IconPicker
-                selectedIcon={newProjectIcon}
-                onIconChange={setNewProjectIcon}
-              />
-              <Input
-                value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleCreateProject();
-                  if (e.key === 'Escape') setIsCreatingProject(false);
-                }}
-                placeholder="Nom du projet"
-                className="flex-1 h-7 text-sm"
-                autoFocus
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                onClick={handleCreateProject}
-                className="flex-1 h-7 text-xs"
-              >
-                <Check className="w-3 h-3 mr-1" />
-                Créer
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setIsCreatingProject(false);
-                  setNewProjectName('');
-                  setNewProjectIcon('folder');
-                }}
-                className="h-7 text-xs"
-              >
-                <X className="w-3 h-3" />
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {projects.length > 0 && (
-        <div className="p-2 border-b border-gray-200 dark:border-gray-800">
-          <h3 className="text-xs font-medium mb-2 px-2 text-gray-500 uppercase tracking-wide">Projets</h3>
-          <div className="space-y-1">
-            <Card
-              className={`p-2 cursor-pointer transition-colors text-sm ${
-                currentProjectId === null
-                  ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                  : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-              onClick={() => onSelectProject(null)}
+          <div className="space-y-2">
+            <Button
+              onClick={onNewChat}
+              className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-sm h-8"
             >
-              <div className="flex items-center gap-2">
-                <Folder className={`w-3 h-3 ${getIconColorClass()}`} />
-                <span className="font-medium truncate">Toutes les conversations</span>
+              <Plus className={`w-3 h-3 mr-2 ${getIconColorClass()}`} />
+              {t.chat.newConversation}
+            </Button>
+            <Button
+              onClick={() => setIsCreatingProject(true)}
+              className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-sm h-8"
+            >
+              <Folder className={`w-3 h-3 mr-2 ${getIconColorClass()}`} />
+              Nouveau projet
+            </Button>
+          </div>
+        </div>
+
+        {isCreatingProject && (
+          <div className="p-3 border-b border-gray-200 dark:border-gray-800">
+            <Card className="p-2">
+              <div className="flex items-center gap-2 mb-2">
+                <IconPicker
+                  selectedIcon={newProjectIcon}
+                  onIconChange={setNewProjectIcon}
+                />
+                <Input
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCreateProject();
+                    if (e.key === 'Escape') setIsCreatingProject(false);
+                  }}
+                  placeholder="Nom du projet"
+                  className="flex-1 h-7 text-sm"
+                  autoFocus
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleCreateProject}
+                  className="flex-1 h-7 text-xs"
+                >
+                  <Check className="w-3 h-3 mr-1" />
+                  Créer
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsCreatingProject(false);
+                    setNewProjectName('');
+                    setNewProjectIcon('folder');
+                  }}
+                  className="h-7 text-xs"
+                >
+                  <X className="w-3 h-3" />
+                </Button>
               </div>
             </Card>
+          </div>
+        )}
 
-            {projects.map((project) => (
+        {projects.length > 0 && (
+          <div className="p-2 border-b border-gray-200 dark:border-gray-800">
+            <h3 className="text-xs font-medium mb-2 px-2 text-gray-500 uppercase tracking-wide">Projets</h3>
+            <div className="space-y-1">
               <Card
-                key={project.id}
                 className={`p-2 cursor-pointer transition-colors text-sm ${
-                  currentProjectId === project.id
+                  currentProjectId === null
                     ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                     : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
-                onClick={() => onSelectProject(project.id)}
+                onClick={() => onSelectProject(null)}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    {editingProjectId === project.id ? (
-                      <>
-                        <IconPicker
-                          selectedIcon={editProjectIcon}
-                          onIconChange={setEditProjectIcon}
-                        />
-                        <Input
-                          value={editProjectName}
-                          onChange={(e) => setEditProjectName(e.target.value)}
-                          onKeyDown={(e) => handleProjectKeyPress(e, project.id)}
-                          className="h-6 text-sm flex-1"
-                          autoFocus
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center justify-center w-4 h-4">
-                          {renderIcon(project.icon)}
-                        </div>
-                        <span className="font-medium truncate text-xs">
-                          {project.name}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  
-                  {editingProjectId === project.id ? (
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 text-green-500 hover:text-green-600"
-                        onClick={(e) => saveProjectEdit(project.id, e)}
-                      >
-                        <Check className="w-2 h-2" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 text-gray-500 hover:text-gray-600"
-                        onClick={cancelProjectEdit}
-                      >
-                        <X className="w-2 h-2" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 text-gray-400 hover:text-blue-500"
-                        onClick={(e) => startEditingProject(project, e)}
-                      >
-                        <Edit className="w-2 h-2" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 text-gray-400 hover:text-red-500"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteProject(project.id);
-                        }}
-                      >
-                        <Trash2 className="w-2 h-2" />
-                      </Button>
-                    </div>
-                  )}
+                <div className="flex items-center gap-2">
+                  <Folder className={`w-3 h-3 ${getIconColorClass()}`} />
+                  <span className="font-medium truncate">Toutes les conversations</span>
                 </div>
               </Card>
-            ))}
-          </div>
-        </div>
-      )}
 
-      <div className="flex-1 overflow-y-auto p-2">
-        <h3 className="text-xs font-medium mb-2 px-2 text-gray-500 uppercase tracking-wide">Conversations</h3>
-        <div className="space-y-1">
-          {filteredConversations.map((conversation) => (
-            <Card
-              key={conversation.id}
-              className={`p-2 cursor-pointer transition-colors text-sm ${
-                currentConversationId === conversation.id
-                  ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                  : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-              onClick={() => onSelectConversation(conversation.id)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <MessageSquare className={`w-3 h-3 text-gray-500 flex-shrink-0 ${getIconColorClass()}`} />
-                  {editingId === conversation.id ? (
-                    <Input
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      onKeyDown={(e) => handleKeyPress(e, conversation.id)}
-                      className="h-6 text-sm flex-1"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <span className="font-medium truncate text-xs">
-                      {conversation.title}
-                    </span>
-                  )}
-                </div>
-                {conversation.id !== 'default' && (
-                  <div className="flex items-center gap-1">
-                    {editingId === conversation.id ? (
-                      <>
+              {projects.map((project) => (
+                <Card
+                  key={project.id}
+                  className={`p-2 cursor-pointer transition-colors text-sm ${
+                    currentProjectId === project.id
+                      ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                      : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                  onClick={() => onSelectProject(project.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      {editingProjectId === project.id ? (
+                        <>
+                          <IconPicker
+                            selectedIcon={editProjectIcon}
+                            onIconChange={setEditProjectIcon}
+                          />
+                          <Input
+                            value={editProjectName}
+                            onChange={(e) => setEditProjectName(e.target.value)}
+                            onKeyDown={(e) => handleProjectKeyPress(e, project.id)}
+                            className="h-6 text-sm flex-1"
+                            autoFocus
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-center w-4 h-4">
+                            {renderIcon(project.icon)}
+                          </div>
+                          <span className="font-medium truncate text-xs">
+                            {project.name}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    
+                    {editingProjectId === project.id ? (
+                      <div className="flex items-center gap-1">
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-5 w-5 text-green-500 hover:text-green-600"
-                          onClick={(e) => saveEdit(conversation.id, e)}
+                          onClick={(e) => saveProjectEdit(project.id, e)}
                         >
                           <Check className="w-2 h-2" />
                         </Button>
@@ -404,70 +321,18 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           variant="ghost"
                           size="icon"
                           className="h-5 w-5 text-gray-500 hover:text-gray-600"
-                          onClick={cancelEdit}
+                          onClick={cancelProjectEdit}
                         >
                           <X className="w-2 h-2" />
                         </Button>
-                      </>
-                    ) : movingConversationId === conversation.id ? (
-                      <div className="flex items-center gap-1">
-                        {/* Bouton pour déplacer vers "Toutes les conversations" */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2 text-xs bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-800"
-                          onClick={(e) => moveConversationToProject(null, e)}
-                          title="Déplacer vers Toutes les conversations"
-                        >
-                          <Folder className={`w-3 h-3 mr-1 ${getIconColorClass()}`} />
-                          <span>Toutes</span>
-                        </Button>
-                        
-                        {/* Boutons pour déplacer vers chaque projet */}
-                        {projects.map((project) => (
-                          <Button
-                            key={project.id}
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2 text-xs bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-800"
-                            onClick={(e) => moveConversationToProject(project.id, e)}
-                            title={`Déplacer vers ${project.name}`}
-                          >
-                            <div className="flex items-center">
-                              <div className="w-3 h-3 mr-1">
-                                {renderIcon(project.icon)}
-                              </div>
-                              <span className="truncate max-w-[80px]">{project.name}</span>
-                            </div>
-                          </Button>
-                        ))}
-                        
-                        {/* Bouton pour annuler */}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-gray-500 hover:text-gray-600"
-                          onClick={cancelMove}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
                       </div>
                     ) : (
-                      <>
+                      <div className="flex items-center gap-1">
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-5 w-5 text-gray-400 hover:text-blue-500"
-                          onClick={(e) => startMovingConversation(conversation.id, e)}
-                          title="Ajouter au dossier"
-                        >
-                          <Move className="w-2 h-2" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 text-gray-400 hover:text-blue-500"
-                          onClick={(e) => startEditing(conversation.id, conversation.title, e)}
+                          onClick={(e) => startEditingProject(project, e)}
                         >
                           <Edit className="w-2 h-2" />
                         </Button>
@@ -477,24 +342,124 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           className="h-5 w-5 text-gray-400 hover:text-red-500"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onDeleteConversation(conversation.id);
+                            onDeleteProject(project.id);
                           }}
                         >
                           <Trash2 className="w-2 h-2" />
                         </Button>
-                      </>
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {conversation.updatedAt.toLocaleDateString()}
-              </p>
-            </Card>
-          ))}
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto p-2">
+          <h3 className="text-xs font-medium mb-2 px-2 text-gray-500 uppercase tracking-wide">Conversations</h3>
+          <div className="space-y-1">
+            {filteredConversations.map((conversation) => (
+              <Card
+                key={conversation.id}
+                className={`p-2 cursor-pointer transition-colors text-sm ${
+                  currentConversationId === conversation.id
+                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                    : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+                onClick={() => onSelectConversation(conversation.id)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <MessageSquare className={`w-3 h-3 text-gray-500 flex-shrink-0 ${getIconColorClass()}`} />
+                    {editingId === conversation.id ? (
+                      <Input
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        onKeyDown={(e) => handleKeyPress(e, conversation.id)}
+                        className="h-6 text-sm flex-1"
+                        autoFocus
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <span className="font-medium truncate text-xs">
+                        {conversation.title}
+                      </span>
+                    )}
+                  </div>
+                  {conversation.id !== 'default' && (
+                    <div className="flex items-center gap-1">
+                      {editingId === conversation.id ? (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-green-500 hover:text-green-600"
+                            onClick={(e) => saveEdit(conversation.id, e)}
+                          >
+                            <Check className="w-2 h-2" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-gray-500 hover:text-gray-600"
+                            onClick={cancelEdit}
+                          >
+                            <X className="w-2 h-2" />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-gray-400 hover:text-blue-500"
+                            onClick={(e) => startMovingConversation(conversation.id, e)}
+                            title="Déplacer vers un dossier"
+                          >
+                            <Move className="w-2 h-2" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-gray-400 hover:text-blue-500"
+                            onClick={(e) => startEditing(conversation.id, conversation.title, e)}
+                          >
+                            <Edit className="w-2 h-2" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-gray-400 hover:text-red-500"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteConversation(conversation.id);
+                            }}
+                          >
+                            <Trash2 className="w-2 h-2" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {conversation.updatedAt.toLocaleDateString()}
+                </p>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+
+      <MoveToProjectDialog
+        open={moveDialogOpen}
+        onOpenChange={setMoveDialogOpen}
+        projects={projects}
+        onMoveToProject={handleMoveToProject}
+        iconColor={iconColor}
+      />
+    </>
   );
 };
 
