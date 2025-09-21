@@ -6,6 +6,7 @@ import { User, Copy, Edit, Check, X, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { showSuccess } from "@/utils/toast";
+import { useTranslation } from "@/utils/i18n";
 
 interface ChatMessageProps {
   id: string;
@@ -16,6 +17,7 @@ interface ChatMessageProps {
   onEditMessage: (id: string, newContent: string) => void;
   onCopyMessage: (content: string) => void;
   onRegenerateResponse?: (messageId: string, newContent: string) => void;
+  language: string; // Ajout de la propriété language
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -26,12 +28,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   isGenerating = false,
   onEditMessage,
   onCopyMessage,
-  onRegenerateResponse
+  onRegenerateResponse,
+  language
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(content);
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  
+  const t = useTranslation(language);
 
   useEffect(() => {
     if (role === 'assistant' && !isGenerating && content) {
@@ -58,6 +63,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
   const handleCopy = () => {
     onCopyMessage(content);
+    showSuccess(t.messages.copied);
   };
 
   const handleEdit = () => {
@@ -119,7 +125,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="font-medium text-sm">
-                {role === 'user' ? 'Vous' : 'mAI'}
+                {role === 'user' ? t.messages.you : 'mAI'}
               </span>
               <span className="text-xs text-gray-500">
                 {timestamp.toLocaleTimeString()}
@@ -142,7 +148,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     className="h-8 px-3 text-xs"
                   >
                     <Check className="w-3 h-3 mr-1" />
-                    Enregistrer
+                    {t.messages.save}
                   </Button>
                   <Button
                     variant="outline"
@@ -151,7 +157,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     className="h-8 px-3 text-xs"
                   >
                     <X className="w-3 h-3 mr-1" />
-                    Annuler
+                    {t.messages.cancel}
                   </Button>
                 </div>
               </div>
@@ -176,7 +182,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                       onClick={handleCopy}
                     >
                       <Copy className="w-3 h-3 mr-1" />
-                      Copier
+                      {t.messages.copy}
                     </Button>
                     {role === 'user' && (
                       <Button
@@ -186,7 +192,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                         onClick={handleEdit}
                       >
                         <Edit className="w-3 h-3 mr-1" />
-                        Modifier
+                        {t.messages.edit}
                       </Button>
                     )}
                   </div>
