@@ -88,7 +88,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     return colorMap[iconColor] || 'text-black dark:text-white';
   };
 
-  // Filtrer les conversations par projet
   const filteredConversations = currentProjectId 
     ? conversations.filter(conv => conv.projectId === currentProjectId)
     : conversations.filter(conv => conv.projectId === null);
@@ -180,13 +179,13 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   };
 
   const renderIcon = (iconName: string) => {
-    const IconComponent = (LucideIcons as any)[iconName.charAt(0).toUpperCase() + iconName.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase())] || Folder;
+    const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+    const IconComponent = (LucideIcons as any)[formattedIconName] || Folder;
     return <IconComponent className={`w-4 h-4 ${getIconColorClass()}`} />;
   };
 
   return (
     <div className="w-80 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col">
-      {/* Header */}
       <div className="p-3 border-b border-gray-200 dark:border-gray-800">
         <div className="space-y-2">
           <Button
@@ -206,7 +205,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         </div>
       </div>
 
-      {/* Create Project Form */}
       {isCreatingProject && (
         <div className="p-3 border-b border-gray-200 dark:border-gray-800">
           <Card className="p-2">
@@ -253,12 +251,10 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         </div>
       )}
 
-      {/* Projects List - Only show if there are projects */}
       {projects.length > 0 && (
         <div className="p-2 border-b border-gray-200 dark:border-gray-800">
           <h3 className="text-xs font-medium mb-2 px-2 text-gray-500 uppercase tracking-wide">Projets</h3>
           <div className="space-y-1">
-            {/* Default "Toutes les conversations" item */}
             <Card
               className={`p-2 cursor-pointer transition-colors text-sm ${
                 currentProjectId === null
@@ -361,7 +357,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         </div>
       )}
 
-      {/* Conversations List */}
       <div className="flex-1 overflow-y-auto p-2">
         <h3 className="text-xs font-medium mb-2 px-2 text-gray-500 uppercase tracking-wide">Conversations</h3>
         <div className="space-y-1">

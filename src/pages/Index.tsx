@@ -89,7 +89,6 @@ const Index = () => {
     }
   }, []);
 
-  // Gestion des projets
   const handleCreateProject = (name: string, icon: string) => {
     const newProject: Project = {
       id: Date.now().toString(),
@@ -114,12 +113,10 @@ const Index = () => {
   const handleDeleteProject = (id: string) => {
     setProjects(prev => prev.filter(project => project.id !== id));
     
-    // Déplacer les conversations de ce projet vers "Toutes les conversations"
     setConversations(prev => prev.map(conv => 
       conv.projectId === id ? { ...conv, projectId: null } : conv
     ));
     
-    // Si le projet actuel est supprimé, revenir à "Toutes les conversations"
     if (currentProjectId === id) {
       setCurrentProjectId(null);
     }
@@ -130,7 +127,6 @@ const Index = () => {
   const handleSelectProject = (id: string | null) => {
     setCurrentProjectId(id);
     
-    // Sélectionner la première conversation du projet ou créer une nouvelle
     const projectConversations = id 
       ? conversations.filter(conv => conv.projectId === id)
       : conversations.filter(conv => conv.projectId === null);
@@ -145,7 +141,7 @@ const Index = () => {
   const handleNewChat = () => {
     const newConversation: Conversation = {
       id: Date.now().toString(),
-      projectId: currentProjectId, // Associer au projet courant
+      projectId: currentProjectId,
       title: t.chat.newConversation,
       messages: [],
       createdAt: new Date(),
@@ -187,9 +183,8 @@ const Index = () => {
         : conv
     ));
     
-    // Si la conversation déplacée est la conversation actuelle et qu'elle n'est plus dans le projet courant
-    if (conversationId === currentConversationId && conv.projectId !== currentProjectId) {
-      // Sélectionner la première conversation du projet courant ou créer une nouvelle
+    const conversation = conversations.find(conv => conv.id === conversationId);
+    if (conversationId === currentConversationId && conversation?.projectId !== currentProjectId) {
       const projectConversations = currentProjectId 
         ? conversations.filter(conv => conv.projectId === currentProjectId && conv.id !== conversationId)
         : conversations.filter(conv => conv.projectId === null && conv.id !== conversationId);
@@ -224,11 +219,9 @@ const Index = () => {
   };
 
   const handleRegenerateResponse = async (messageId: string, newContent: string) => {
-    // Trouver le message utilisateur modifié
     const userMessageIndex = currentConversation.messages.findIndex(msg => msg.id === messageId);
     if (userMessageIndex === -1) return;
 
-    // Supprimer toutes les réponses de l'IA après le message modifié
     const messagesToKeep = currentConversation.messages.slice(0, userMessageIndex + 1);
     
     setConversations(prev => prev.map(conv =>
@@ -237,7 +230,6 @@ const Index = () => {
         : conv
     ));
 
-    // Régénérer la réponse de l'IA
     await handleSendMessage(newContent, true);
   };
 
@@ -271,7 +263,6 @@ const Index = () => {
       timestamp: new Date(),
     };
 
-    // Mettre à jour le titre de la conversation avec le premier message
     const shouldUpdateTitle = currentConversation.messages.length === 0 && !isRegeneration;
 
     const updatedConversations = conversations.map(conv =>
@@ -289,7 +280,6 @@ const Index = () => {
     setIsLoading(true);
 
     try {
-      // Prendre les 10 derniers messages pour le contexte
       const apiMessages: OpenRouterMessage[] = currentConversation.messages
         .slice(-10)
         .map(msg => ({
@@ -297,7 +287,6 @@ const Index = () => {
           content: msg.content
         }));
 
-      // Ajouter le nouveau message
       apiMessages.push({
         role: 'user',
         content: content.trim()
@@ -325,7 +314,6 @@ const Index = () => {
       
       let errorMessageContent = t.messages.technicalError;
       
-      // Message d'erreur plus spécifique si c'est un problème d'API
       if (error.message && !error.message.includes('technical difficulties')) {
         errorMessageContent = `Erreur: ${error.message}`;
       }
@@ -354,7 +342,6 @@ const Index = () => {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <div className="h-screen flex bg-white dark:bg-gray-900">
-        {/* Sidebar intégrée avec projets et conversations */}
         <ChatSidebar
           projects={projects}
           conversations={conversations}
@@ -373,9 +360,7 @@ const Index = () => {
           iconColor={iconColor}
         />
 
-        {/* Main Chat Area */}
         <div className="flex-1 flex flex-col">
-          {/* Header */}
           <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
             <div className="max-w-4xl mx-auto flex items-center justify-between">
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -396,11 +381,13 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Messages Area */}
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
               {shouldShowGreeting ? (
-                <GreetingMessage content={generateGreetingMessages(userName, selectedLanguage)[0].content} />
+                <GreetingMessage 
+                  content={generateGreetingMessages(userName, selectedLanguage)[0].content} 
+                  iconColor={iconColor}
+                />
               ) : (
                 <>
                   {currentConversation.messages.map((message) => (
@@ -436,7 +423,6 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Chat Input */}
           <ChatInput
             onSendMessage={(content) => handleSendMessage(content, false)}
             isLoading={isLoading}
