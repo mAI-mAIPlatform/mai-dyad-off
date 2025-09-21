@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Plus, MessageSquare, Trash2, Edit, Check, X } from "lucide-react";
+import { useTranslation } from "@/utils/i18n";
 
 interface Conversation {
   id: string;
@@ -18,6 +19,7 @@ interface ChatSidebarProps {
   onDeleteConversation: (id: string) => void;
   onRenameConversation: (id: string, newTitle: string) => void;
   currentConversationId: string;
+  language: string;
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
@@ -25,7 +27,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onSelectConversation,
   onDeleteConversation,
   onRenameConversation,
-  currentConversationId
+  currentConversationId,
+  language
 }) => {
   const [conversations, setConversations] = useState<Conversation[]>([
     {
@@ -36,11 +39,13 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   ]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  
+  const t = useTranslation(language);
 
   const handleNewChat = () => {
     const newConversation: Conversation = {
       id: Date.now().toString(),
-      title: "Nouvelle conversation",
+      title: t.chat.newConversation,
       timestamp: new Date()
     };
     setConversations(prev => [newConversation, ...prev]);
@@ -96,7 +101,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
           className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Nouvelle conversation
+          {t.chat.newConversation}
         </Button>
       </div>
 

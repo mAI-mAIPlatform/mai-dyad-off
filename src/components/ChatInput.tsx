@@ -7,17 +7,20 @@ import { Send, Paperclip, Mic, MicOff, FileText, X } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { showSuccess, showError } from "@/utils/toast";
+import { useTranslation } from "@/utils/i18n";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
   isLoading: boolean;
   placeholder?: string;
+  language: string;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
   isLoading,
-  placeholder = "Message mAI..."
+  placeholder,
+  language
 }) => {
   const [input, setInput] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -37,6 +40,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
     handleFileUpload,
     resetFile
   } = useFileUpload();
+  
+  const t = useTranslation(language);
 
   // Mettre à jour l'input avec la transcription vocale
   useEffect(() => {
@@ -57,11 +62,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
     if (selectedFile && !isUploading) {
       try {
         const fileContent = await handleFileUpload();
-        onSendMessage(`Voici le contenu du fichier ${selectedFile.name}:\n\n${fileContent}`);
+        onSendMessage(`${t.chat.sendFile} ${selectedFile.name}:\n\n${fileContent}`);
         resetFile();
         return;
       } catch (error) {
-        showError("Erreur lors de l'upload du fichier");
+        showError(t.chat.fileUploadError);
         return;
       }
     }
@@ -157,7 +162,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={placeholder}
+                placeholder={placeholder || t.chat.placeholder}
                 disabled={isLoading || isUploading}
                 className="min-h-[60px] max-h-32 resize-none pr-12 py-3 text-base"
                 rows={1}
@@ -198,7 +203,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               ) : isLoading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : selectedFile ? (
-                "Envoyer fichier"
+                t.chat.sendFile
               ) : (
                 <Send className="w-4 h-4" />
               )}
@@ -210,13 +215,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
         {isListening && (
           <div className="mt-2 flex items-center gap-2">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <span className="text-xs text-red-500">En écoute... (cliquez sur le micro pour arrêter)</span>
+            <span className="text-xs text-red-500">{t.chat.listening}</span>
           </div>
         )}
 
         {/* Disclaimer */}
         <p className="text-xs text-center text-gray-500 mt-3">
-          mAI peut faire des erreurs. Vérifiez les informations importantes.
+          {t.chat.disclaimer}
         </p>
       </div>
     </div>

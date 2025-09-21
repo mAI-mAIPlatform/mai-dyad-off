@@ -23,6 +23,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
 import { showSuccess } from "@/utils/toast";
+import { useTranslation } from "@/utils/i18n";
 
 interface SettingsDialogProps {
   selectedModel: string;
@@ -45,21 +46,23 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const { theme, setTheme } = useTheme();
   const [localSelectedModel, setLocalSelectedModel] = useState(selectedModel);
   const [localSelectedLanguage, setLocalSelectedLanguage] = useState(selectedLanguage);
+  
+  const t = useTranslation(selectedLanguage);
 
   const models = [
-    { id: 'openai/gpt-4o', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
-    { id: 'openai/gpt-4-turbo', name: 'm-4.3-mini', description: 'Ecologique, court' },
-    { id: 'anthropic/claude-3-5-sonnet', name: 'm-4.5 Pro', description: 'Professionnel, précis' },
-    { id: 'anthropic/claude-3-opus', name: 'm-4.7o', description: 'Précis, long' },
-    { id: 'google/gemini-2.0-flash-thinking-exp', name: 'm-4.9+', description: 'Rapide, court' }
+    { id: 'openai/gpt-4o', name: 'm-4.0', description: t.models['m-4.0'] },
+    { id: 'openai/gpt-4-turbo', name: 'm-4.3-mini', description: t.models['m-4.3-mini'] },
+    { id: 'anthropic/claude-3-5-sonnet', name: 'm-4.5 Pro', description: t.models['m-4.5 Pro'] },
+    { id: 'anthropic/claude-3-opus', name: 'm-4.7o', description: t.models['m-4.7o'] },
+    { id: 'google/gemini-2.0-flash-thinking-exp', name: 'm-4.9+', description: t.models['m-4.9+'] }
   ];
 
   const languages = [
-    { id: 'fr', name: 'Français', flag: 'FR' },
-    { id: 'en', name: 'Anglais', flag: 'EN' },
-    { id: 'es', name: 'Espagnol', flag: 'ES' },
-    { id: 'de', name: 'Allemand', flag: 'DE' },
-    { id: 'pt', name: 'Portugais', flag: 'PT' }
+    { id: 'fr', name: t.languages.fr, flag: '🇫🇷' },
+    { id: 'en', name: t.languages.en, flag: '🇬🇧' },
+    { id: 'es', name: t.languages.es, flag: '🇪🇸' },
+    { id: 'de', name: t.languages.de, flag: '🇩🇪' },
+    { id: 'pt', name: t.languages.pt, flag: '🇵🇹' }
   ];
 
   const handleSave = () => {
@@ -71,7 +74,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     localStorage.setItem('selectedModel', localSelectedModel);
     localStorage.setItem('selectedLanguage', localSelectedLanguage);
     localStorage.setItem('theme', theme || 'system');
-    showSuccess("Paramètres sauvegardés avec succès");
+    showSuccess(t.messages.copied);
   };
 
   return (
@@ -83,30 +86,30 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Paramètres</DialogTitle>
+          <DialogTitle>{t.settings.title}</DialogTitle>
           <DialogDescription>
-            Configurez vos préférences d'application.
+            {t.settings.description}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-6 py-4">
           {/* Nom utilisateur */}
           <div className="grid gap-2">
-            <Label htmlFor="userName">Votre nom</Label>
+            <Label htmlFor="userName">{t.settings.userName}</Label>
             <Input
               id="userName"
               value={localUserName}
               onChange={(e) => setLocalUserName(e.target.value)}
-              placeholder="Entrez votre nom"
+              placeholder={t.settings.userName}
             />
           </div>
 
           {/* Langue */}
           <div className="grid gap-2">
-            <Label htmlFor="language">Langue (Bêta)</Label>
+            <Label htmlFor="language">{t.settings.language}</Label>
             <Select value={localSelectedLanguage} onValueChange={setLocalSelectedLanguage}>
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionnez une langue" />
+                <SelectValue placeholder={t.settings.language} />
               </SelectTrigger>
               <SelectContent>
                 {languages.map((language) => (
@@ -123,10 +126,10 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
           {/* Modèle IA */}
           <div className="grid gap-2">
-            <Label htmlFor="model">Modèle IA</Label>
+            <Label htmlFor="model">{t.settings.model}</Label>
             <Select value={localSelectedModel} onValueChange={setLocalSelectedModel}>
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionnez un modèle d'mAI" />
+                <SelectValue placeholder={t.settings.model} />
               </SelectTrigger>
               <SelectContent>
                 {models.map((model) => (
@@ -143,7 +146,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
           {/* Thème */}
           <div className="flex items-center justify-between">
-            <Label htmlFor="theme">Mode sombre</Label>
+            <Label htmlFor="theme">{t.settings.darkMode}</Label>
             <Switch
               id="theme"
               checked={theme === 'dark'}
@@ -155,10 +158,10 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
         {/* Version et bouton sauvegarder */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="text-xs text-gray-500">
-            26 0.8 (Public Update)
+            {t.settings.version}
           </div>
           <Button onClick={handleSave} size="sm">
-            Sauvegarder
+            {t.settings.save}
           </Button>
         </div>
       </DialogContent>

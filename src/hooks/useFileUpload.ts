@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { showError } from '@/utils/toast';
+import { useTranslation } from '@/utils/i18n';
 
 interface FileUploadHook {
   selectedFile: File | null;
@@ -11,16 +12,18 @@ interface FileUploadHook {
   resetFile: () => void;
 }
 
-export const useFileUpload = (): FileUploadHook => {
+export const useFileUpload = (language: string = 'fr'): FileUploadHook => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  
+  const t = useTranslation(language);
 
   const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       // Vérifier la taille du fichier (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        showError("Le fichier ne doit pas dépasser 5MB");
+        showError(t.chat.fileSizeError);
         return;
       }
       
@@ -36,13 +39,13 @@ export const useFileUpload = (): FileUploadHook => {
       ];
       
       if (!allowedTypes.includes(file.type)) {
-        showError("Type de fichier non supporté. Formats acceptés: TXT, PDF, DOC, DOCX, CSV, XLS, XLSX");
+        showError(t.chat.fileTypeError);
         return;
       }
 
       setSelectedFile(file);
     }
-  }, []);
+  }, [t]);
 
   const handleFileUpload = useCallback(async (): Promise<string> => {
     if (!selectedFile) {
@@ -74,11 +77,11 @@ export const useFileUpload = (): FileUploadHook => {
       return extractedText;
     } catch (error) {
       console.error('Erreur lors de l\'upload:', error);
-      throw new Error("Erreur lors de l'upload du fichier");
+      throw new Error(t.chat.fileUploadError);
     } finally {
       setIsUploading(false);
     }
-  }, [selectedFile]);
+  }, [selectedFile, t]);
 
   const resetFile = useCallback(() => {
     setSelectedFile(null);
