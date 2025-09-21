@@ -81,6 +81,12 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     showSuccess("Paramètres sauvegardés avec succès");
   };
 
+  const getVersionText = () => {
+    return localBetaFeaturesEnabled 
+      ? "26 1.0 (Bêta Update)" 
+      : "26 0.8 (Public Update)";
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -181,7 +187,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
         {/* Version et bouton sauvegarder */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="text-xs text-gray-500">
-            26 0.8 (Public Update)
+            {getVersionText()}
           </div>
           <Button onClick={handleSave} size="sm">
             Sauvegarder
