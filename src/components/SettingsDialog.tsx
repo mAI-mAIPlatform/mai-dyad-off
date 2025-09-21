@@ -44,9 +44,9 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const models = [
     { id: 'openai/gpt-4o', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
     { id: 'openai/gpt-4-turbo', name: 'm-4.3-mini', description: 'Ecologique, court' },
-    { id: 'anthropic/claude-3-5-sonnet', name: 'm-4.5 Pro', description: 'Claude 3.5, précis et créatif' },
-    { id: 'anthropic/claude-3-opus', name: 'm-4.9 Opus', description: 'Claude 3 Opus, performance maximale' },
-    { id: 'google/gemini-2.0-flash-thinking-exp', name: 'm-5.0 Flash', description: 'Gemini 2.0, ultra rapide' }
+    { id: 'anthropic/claude-3-5-sonnet', name: 'm-4.5 Pro', description: 'Professionnel, précis' },
+    { id: 'anthropic/claude-3-opus', name: 'm-4.7o', description: 'Précis, long' },
+    { id: 'google/gemini-2.0-flash-thinking-exp', name: 'm-4.9+', description: 'Rapide, court' }
   ];
 
   const handleSave = () => {
@@ -91,7 +91,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
             <Label htmlFor="model">Modèle IA</Label>
             <Select value={localSelectedModel} onValueChange={setLocalSelectedModel}>
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionnez un modèle" />
+                <SelectValue placeholder="Sélectionnez un modèle d'mAI" />
               </SelectTrigger>
               <SelectContent>
                 {models.map((model) => (
@@ -120,7 +120,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
         {/* Version et bouton sauvegarder */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="text-xs text-gray-500">
-            Version 1.0.0
+            26 0.5 (Public Update)
           </div>
           <Button onClick={handleSave} size="sm">
             Sauvegarder
