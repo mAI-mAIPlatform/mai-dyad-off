@@ -43,8 +43,8 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
   const models = [
     { id: 'openai/gpt-4o', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
-    { id: 'openai/gpt-4-turbo', name: 'm-4.3-mini', description: 'GPT-4 Turbo, professionnel' },
-    { id: 'anthropic/claude-3-5-sonnet', name: 'm-4.7 Sonnet', description: 'Claude 3.5, précis et créatif' },
+    { id: 'openai/gpt-4-turbo', name: 'm-4.3-mini', description: 'Ecologique, court' },
+    { id: 'anthropic/claude-3-5-sonnet', name: 'm-4.5 Pro', description: 'Claude 3.5, précis et créatif' },
     { id: 'anthropic/claude-3-opus', name: 'm-4.9 Opus', description: 'Claude 3 Opus, performance maximale' },
     { id: 'google/gemini-2.0-flash-thinking-exp', name: 'm-5.0 Flash', description: 'Gemini 2.0, ultra rapide' }
   ];
