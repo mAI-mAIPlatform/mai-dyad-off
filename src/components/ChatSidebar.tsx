@@ -184,28 +184,28 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   return (
     <>
-      <div className="w-80 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col">
-        <div className="p-3 border-b border-gray-200 dark:border-gray-800">
-          <div className="space-y-2">
+      <div className="w-64 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col">
+        <div className="p-2 border-b border-gray-200 dark:border-gray-800">
+          <div className="space-y-1">
             <Button
               onClick={onNewChat}
-              className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-sm h-8"
+              className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-xs h-7"
             >
-              <Plus className={`w-3 h-3 mr-2 ${getIconColorClass()}`} />
+              <Plus className={`w-3 h-3 mr-1 ${getIconColorClass()}`} />
               {t.chat.newConversation}
             </Button>
             <Button
               onClick={() => setIsCreatingProject(true)}
-              className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-sm h-8"
+              className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-xs h-7"
             >
-              <Folder className={`w-3 h-3 mr-2 ${getIconColorClass()}`} />
+              <Folder className={`w-3 h-3 mr-1 ${getIconColorClass()}`} />
               Nouveau projet
             </Button>
           </div>
         </div>
 
         {isCreatingProject && (
-          <div className="p-3 border-b border-gray-200 dark:border-gray-800">
+          <div className="p-2 border-b border-gray-200 dark:border-gray-800">
             <Card className="p-2">
               <div className="flex items-center gap-2 mb-2">
                 <IconPicker
@@ -220,11 +220,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     if (e.key === 'Escape') setIsCreatingProject(false);
                   }}
                   placeholder="Nom du projet"
-                  className="flex-1 h-7 text-sm"
+                  className="flex-1 h-7 text-xs"
                   autoFocus
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 <Button
                   size="sm"
                   onClick={handleCreateProject}
@@ -252,10 +252,10 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
         {projects.length > 0 && (
           <div className="p-2 border-b border-gray-200 dark:border-gray-800">
-            <h3 className="text-xs font-medium mb-2 px-2 text-gray-500 uppercase tracking-wide">Projets</h3>
+            <h3 className="text-xs font-medium mb-1 px-1 text-gray-500 uppercase tracking-wide">Projets</h3>
             <div className="space-y-1">
               <Card
-                className={`p-2 cursor-pointer transition-colors text-sm ${
+                className={`p-2 cursor-pointer transition-colors text-xs ${
                   currentProjectId === null
                     ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                     : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -271,7 +271,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
               {projects.map((project) => (
                 <Card
                   key={project.id}
-                  className={`p-2 cursor-pointer transition-colors text-sm ${
+                  className={`p-2 cursor-pointer transition-colors text-xs ${
                     currentProjectId === project.id
                       ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                       : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -290,7 +290,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                             value={editProjectName}
                             onChange={(e) => setEditProjectName(e.target.value)}
                             onKeyDown={(e) => handleProjectKeyPress(e, project.id)}
-                            className="h-6 text-sm flex-1"
+                            className="h-6 text-xs flex-1"
                             autoFocus
                             onClick={(e) => e.stopPropagation()}
                           />
@@ -300,7 +300,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           <div className="flex items-center justify-center w-4 h-4">
                             {renderIcon(project.icon)}
                           </div>
-                          <span className="font-medium truncate text-xs">
+                          <span className="font-medium truncate">
                             {project.name}
                           </span>
                         </>
@@ -357,12 +357,12 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         )}
 
         <div className="flex-1 overflow-y-auto p-2">
-          <h3 className="text-xs font-medium mb-2 px-2 text-gray-500 uppercase tracking-wide">Conversations</h3>
+          <h3 className="text-xs font-medium mb-1 px-1 text-gray-500 uppercase tracking-wide">Conversations</h3>
           <div className="space-y-1">
             {filteredConversations.map((conversation) => (
               <Card
                 key={conversation.id}
-                className={`p-2 cursor-pointer transition-colors text-sm ${
+                className={`p-2 cursor-pointer transition-colors text-xs ${
                   currentConversationId === conversation.id
                     ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                     : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -377,12 +377,12 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
                         onKeyDown={(e) => handleKeyPress(e, conversation.id)}
-                        className="h-6 text-sm flex-1"
+                        className="h-6 text-xs flex-1"
                         autoFocus
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
-                      <span className="font-medium truncate text-xs">
+                      <span className="font-medium truncate">
                         {conversation.title}
                       </span>
                     )}
