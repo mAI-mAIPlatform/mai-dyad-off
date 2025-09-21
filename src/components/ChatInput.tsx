@@ -162,13 +162,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
             <Button
               type="submit"
               disabled={(!input.trim() && !selectedFile) || isLoading || isUploading}
-              className="h-10 px-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:text-gray-500"
+              className="h-10 px-4 bg-white hover:bg-gray-100 disabled:bg-gray-300 disabled:text-gray-500 border border-gray-300 text-gray-700"
               size="lg"
             >
               {isUploading ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
               ) : isLoading ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
               ) : selectedFile ? (
                 t.chat.sendFile
               ) : (
