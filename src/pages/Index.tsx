@@ -251,22 +251,19 @@ const Index = () => {
           content: msg.content
         }));
 
-      // Ajouter le message utilisateur
-      apiMessages.push({
-        role: 'user',
-        content: newContent.trim()
-      });
-
-      // Appliquer les options de régénération
-      let prompt = newContent.trim();
+      // Ajouter le message utilisateur avec les instructions de longueur
+      let userPrompt = newContent.trim();
       
       if (options?.length === 'shorter') {
-        prompt = `Réponds de manière plus concise à cette demande : ${newContent.trim()}`;
+        userPrompt = `Réponds de manière très concise et brève à cette demande : ${userPrompt}`;
       } else if (options?.length === 'longer') {
-        prompt = `Développe davantage cette réponse : ${newContent.trim()}`;
+        userPrompt = `Développe davantage cette réponse avec plus de détails et d'explications : ${userPrompt}`;
       }
 
-      apiMessages[apiMessages.length - 1].content = prompt;
+      apiMessages.push({
+        role: 'user',
+        content: userPrompt
+      });
 
       const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages, selectedLanguage);
       
