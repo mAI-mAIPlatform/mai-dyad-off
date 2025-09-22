@@ -27,7 +27,7 @@ interface Conversation {
   title: string;
   createdAt: Date;
   updatedAt: Date;
-  model: string; // Ajout du modèle par conversation
+  model: string;
 }
 
 interface Project {
@@ -48,13 +48,13 @@ const Index = () => {
       messages: [],
       createdAt: new Date(),
       updatedAt: new Date(),
-      model: 'openai/gpt-4o' // Modèle par défaut
+      model: 'openai/gpt-4o'
     }
   ]);
   const [currentConversationId, setCurrentConversationId] = useState('default');
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [defaultModel, setDefaultModel] = useState('openai/gpt-4o'); // Modèle par défaut
+  const [defaultModel, setDefaultModel] = useState('openai/gpt-4o');
   const [userName, setUserName] = useState('Utilisateur');
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
   const [betaFeaturesEnabled, setBetaFeaturesEnabled] = useState(false);
@@ -154,7 +154,7 @@ const Index = () => {
       messages: [],
       createdAt: new Date(),
       updatedAt: new Date(),
-      model: defaultModel // Utiliser le modèle par défaut
+      model: defaultModel
     };
     setConversations(prev => [newConversation, ...prev]);
     setCurrentConversationId(newConversation.id);
@@ -275,6 +275,13 @@ const Index = () => {
     ));
   };
 
+  const generateImage = async (prompt: string): Promise<string> => {
+    // Remplacer les espaces par des %20 pour l'URL
+    const encodedPrompt = encodeURIComponent(prompt);
+    // Retourner l'URL de l'image générée
+    return `https://image.pollinations.ai/prompt/${encodedPrompt}`;
+  };
+
   const handleSendMessage = async (content: string, isRegeneration = false) => {
     if (!content.trim() || isLoading) return;
 
@@ -302,36 +309,64 @@ const Index = () => {
     setIsLoading(true);
 
     try {
-      const apiMessages: OpenRouterMessage[] = currentConversation.messages
-        .slice(-10)
-        .map(msg => ({
-          role: msg.role,
-          content: msg.content
-        }));
+      // Vérifier si le message est une demande de génération d'image
+      const isImageRequest = content.toLowerCase().includes('image') || 
+                            content.toLowerCase().includes('dessin') || 
+                            content.toLowerCase().includes('dessine') ||
+                            content.toLowerCase().includes('photo') ||
+                            content.toLowerCase().includes('illustration');
 
-      apiMessages.push({
-        role: 'user',
-        content: content.trim()
-      });
+      if (isImageRequest) {
+        // Générer l'image
+        const imageUrl = await generateImage(content);
+        
+        // Créer un message avec l'image
+        const imageMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: `Voici l'image générée selon votre demande :\n\n![Image générée](${imageUrl})`,
+          role: 'assistant',
+          timestamp: new Date(),
+        };
 
-      const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages, selectedLanguage);
-      // Utiliser le modèle de la conversation
-      const response = await OpenRouterService.sendMessage(formattedMessages, currentConversation.model);
-      
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        content: response.choices[0].message.content,
-        role: 'assistant',
-        timestamp: new Date(),
-      };
+        const finalConversations = updatedConversations.map(conv =>
+          conv.id === currentConversationId
+            ? { ...conv, messages: [...conv.messages, imageMessage], updatedAt: new Date() }
+            : conv
+        );
 
-      const finalConversations = updatedConversations.map(conv =>
-        conv.id === currentConversationId
-          ? { ...conv, messages: [...conv.messages, aiResponse], updatedAt: new Date() }
-          : conv
-      );
+        setConversations(finalConversations);
+      } else {
+        // Message normal - appel à l'API OpenRouter
+        const apiMessages: OpenRouterMessage[] = currentConversation.messages
+          .slice(-10)
+          .map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }));
 
-      setConversations(finalConversations);
+        apiMessages.push({
+          role: 'user',
+          content: content.trim()
+        });
+
+        const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages, selectedLanguage);
+        const response = await OpenRouterService.sendMessage(formattedMessages, currentConversation.model);
+        
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          content: response.choices[0].message.content,
+          role: 'assistant',
+          timestamp: new Date(),
+        };
+
+        const finalConversations = updatedConversations.map(conv =>
+          conv.id === currentConversationId
+            ? { ...conv, messages: [...conv.messages, aiResponse], updatedAt: new Date() }
+            : conv
+        );
+
+        setConversations(finalConversations);
+      }
     } catch (error: any) {
       console.error('Error:', error);
       
