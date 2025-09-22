@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "next-themes";
 import { showSuccess } from "@/utils/toast";
 
@@ -35,6 +36,10 @@ interface SettingsDialogProps {
   onBetaFeaturesChange: (enabled: boolean) => void;
   iconColor: string;
   onIconColorChange: (color: string) => void;
+  customInstructions: string;
+  onCustomInstructionsChange: (instructions: string) => void;
+  selectedPersonality: string;
+  onPersonalityChange: (personality: string) => void;
 }
 
 const SettingsDialog: React.FC<SettingsDialogProps> = ({
@@ -47,7 +52,11 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   betaFeaturesEnabled,
   onBetaFeaturesChange,
   iconColor,
-  onIconColorChange
+  onIconColorChange,
+  customInstructions,
+  onCustomInstructionsChange,
+  selectedPersonality,
+  onPersonalityChange
 }) => {
   const [localUserName, setLocalUserName] = useState(userName);
   const { theme, setTheme } = useTheme();
@@ -55,6 +64,8 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const [localSelectedLanguage, setLocalSelectedLanguage] = useState(selectedLanguage);
   const [localBetaFeaturesEnabled, setLocalBetaFeaturesEnabled] = useState(betaFeaturesEnabled);
   const [localIconColor, setLocalIconColor] = useState(iconColor);
+  const [localCustomInstructions, setLocalCustomInstructions] = useState(customInstructions);
+  const [localSelectedPersonality, setLocalSelectedPersonality] = useState(selectedPersonality);
 
   const models = [
     { id: 'openai/gpt-4o', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
@@ -85,12 +96,26 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     { id: 'orange', name: 'Orange', value: 'orange-600' }
   ];
 
+  const personalities = [
+    { id: 'default', name: 'Défaut', description: 'Personnalité standard et neutre' },
+    { id: 'professional', name: 'Professionnel', description: 'Formel, précis et orienté résultats' },
+    { id: 'empathetic', name: 'Empathique', description: 'Bienveillant, compréhensif et encourageant' },
+    { id: 'genz', name: 'Génération Z', description: 'Décontracté, moderne avec des expressions actuelles' },
+    { id: 'depressive', name: 'Dépressif', description: 'Pessimiste et mélancolique' },
+    { id: 'enthusiastic', name: 'Enthousiaste', description: 'Énergique et positif' },
+    { id: 'sarcastic', name: 'Sarcastique', description: 'Ironique et humoristique' },
+    { id: 'technical', name: 'Technique', description: 'Précis, détaillé et orienté données' }
+  ];
+
   const handleSave = () => {
     onUserNameChange(localUserName);
     onModelChange(localSelectedModel);
     onLanguageChange(localSelectedLanguage);
     onBetaFeaturesChange(localBetaFeaturesEnabled);
     onIconColorChange(localIconColor);
+    onCustomInstructionsChange(localCustomInstructions);
+    onPersonalityChange(localSelectedPersonality);
+    
     // Sauvegarder les paramètres dans localStorage
     localStorage.setItem('userName', localUserName);
     localStorage.setItem('defaultModel', localSelectedModel);
@@ -98,6 +123,9 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     localStorage.setItem('betaFeaturesEnabled', localBetaFeaturesEnabled.toString());
     localStorage.setItem('iconColor', localIconColor);
     localStorage.setItem('theme', theme || 'system');
+    localStorage.setItem('customInstructions', localCustomInstructions);
+    localStorage.setItem('selectedPersonality', localSelectedPersonality);
+    
     showSuccess("Paramètres sauvegardés avec succès");
   };
 
@@ -112,6 +140,11 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     return color ? `text-${color.value}` : 'text-black dark:text-white';
   };
 
+  const getPersonalityDescription = (personalityId: string) => {
+    const personality = personalities.find(p => p.id === personalityId);
+    return personality ? personality.description : '';
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -119,7 +152,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
           <Settings className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Paramètres</DialogTitle>
           <DialogDescription>
@@ -153,6 +186,54 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
               Activez les fonctionnalités Bêta d'mAI, ces fonctionnalités peuvent contenir des bugs.
             </p>
           </div>
+
+          {/* Personnalisation Bêta */}
+          {localBetaFeaturesEnabled && (
+            <>
+              {/* Personnalité */}
+              <div className="grid gap-2">
+                <Label htmlFor="personality">Personnalité (Bêta)</Label>
+                <Select 
+                  value={localSelectedPersonality} 
+                  onValueChange={setLocalSelectedPersonality}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez une personnalité">
+                      {personalities.find(p => p.id === localSelectedPersonality)?.name || 'Défaut'}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {personalities.map((personality) => (
+                      <SelectItem key={personality.id} value={personality.id}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{personality.name}</span>
+                          <span className="text-xs text-gray-500">{personality.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  Choisissez le ton et le style de réponse d'mAI
+                </p>
+              </div>
+
+              {/* Instructions personnalisées */}
+              <div className="grid gap-2">
+                <Label htmlFor="custom-instructions">Instructions personnalisées (Bêta)</Label>
+                <Textarea
+                  id="custom-instructions"
+                  value={localCustomInstructions}
+                  onChange={(e) => setLocalCustomInstructions(e.target.value)}
+                  placeholder="Ex: Je suis développeur web, parle-moi en termes techniques. Mes préférences sont..."
+                  className="min-h-[80px] resize-none"
+                />
+                <p className="text-xs text-gray-500">
+                  Fournissez des informations sur vous pour personnaliser les réponses d'mAI
+                </p>
+              </div>
+            </>
+          )}
 
           {/* Couleur des icônes */}
           <div className="grid gap-2">

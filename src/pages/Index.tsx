@@ -59,6 +59,8 @@ const Index = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
   const [betaFeaturesEnabled, setBetaFeaturesEnabled] = useState(false);
   const [iconColor, setIconColor] = useState('black');
+  const [customInstructions, setCustomInstructions] = useState('');
+  const [selectedPersonality, setSelectedPersonality] = useState('default');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const t = useTranslation(selectedLanguage);
@@ -79,6 +81,8 @@ const Index = () => {
     const savedBetaFeatures = localStorage.getItem('betaFeaturesEnabled');
     const savedIconColor = localStorage.getItem('iconColor');
     const savedDefaultModel = localStorage.getItem('defaultModel');
+    const savedCustomInstructions = localStorage.getItem('customInstructions');
+    const savedPersonality = localStorage.getItem('selectedPersonality');
     
     if (savedUserName) {
       setUserName(savedUserName);
@@ -95,7 +99,27 @@ const Index = () => {
     if (savedDefaultModel) {
       setDefaultModel(savedDefaultModel);
     }
+    if (savedCustomInstructions) {
+      setCustomInstructions(savedCustomInstructions);
+    }
+    if (savedPersonality) {
+      setSelectedPersonality(savedPersonality);
+    }
   }, []);
+
+  const getPersonalityInstructions = (personality: string): string => {
+    const instructions: Record<string, string> = {
+      'default': 'Réponds de manière standard et neutre.',
+      'professional': 'Réponds de manière formelle, précise et orientée résultats. Utilise un langage professionnel et évite les familiarités.',
+      'empathetic': 'Réponds avec bienveillance, compréhension et encouragement. Sois chaleureux et soutenant.',
+      'genz': 'Réponds de manière décontractée avec des expressions modernes et actuelles. Utilise un langage jeune et dynamique.',
+      'depressive': 'Réponds de manière pessimiste et mélancolique. Exprime du désespoir et de la tristesse.',
+      'enthusiastic': 'Réponds avec énergie et positivité. Sois excité et motivant.',
+      'sarcastic': 'Réponds de manière ironique et humoristique. Utilise du sarcasme et de l\'auto-dérision.',
+      'technical': 'Réponds de manière précise, détaillée et orientée données. Utilise un langage technique et spécialisé.'
+    };
+    return instructions[personality] || instructions['default'];
+  };
 
   const handleCreateProject = (name: string, icon: string) => {
     const newProject: Project = {
@@ -338,6 +362,16 @@ const Index = () => {
     localStorage.setItem('defaultModel', model);
   };
 
+  const handleCustomInstructionsChange = (instructions: string) => {
+    setCustomInstructions(instructions);
+    localStorage.setItem('customInstructions', instructions);
+  };
+
+  const handlePersonalityChange = (personality: string) => {
+    setSelectedPersonality(personality);
+    localStorage.setItem('selectedPersonality', personality);
+  };
+
   const handleConversationModelChange = (model: string) => {
     setConversations(prev => prev.map(conv => 
       conv.id === currentConversationId
@@ -415,12 +449,30 @@ const Index = () => {
             content: msg.content
           }));
 
+        // Ajouter les instructions personnalisées et la personnalité si activées
+        let systemMessage = '';
+        if (betaFeaturesEnabled) {
+          if (customInstructions) {
+            systemMessage += `Informations utilisateur : ${customInstructions}. `;
+          }
+          systemMessage += getPersonalityInstructions(selectedPersonality);
+        }
+
         apiMessages.push({
           role: 'user',
           content: content.trim()
         });
 
         const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages, selectedLanguage);
+        
+        // Ajouter le message système personnalisé en premier
+        if (systemMessage) {
+          formattedMessages.unshift({
+            role: 'system',
+            content: systemMessage
+          });
+        }
+
         const response = await OpenRouterService.sendMessage(formattedMessages, currentConversation.model);
         
         const aiResponse: Message = {
@@ -512,6 +564,10 @@ const Index = () => {
                 onBetaFeaturesChange={handleBetaFeaturesChange}
                 iconColor={iconColor}
                 onIconColorChange={handleIconColorChange}
+                customInstructions={customInstructions}
+                onCustomInstructionsChange={handleCustomInstructionsChange}
+                selectedPersonality={selectedPersonality}
+                onPersonalityChange={handlePersonalityChange}
               />
             </div>
           </div>
