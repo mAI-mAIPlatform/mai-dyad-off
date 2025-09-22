@@ -2,12 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Copy, Edit, Check, X, Star, Image as ImageIcon } from "lucide-react";
+import { User, Copy, Edit, Check, X, Star, RotateCw, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { showSuccess } from "@/utils/toast";
 import { useTranslation } from "@/utils/i18n";
 import ReactMarkdown from 'react-markdown';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ChatMessageProps {
   id: string;
@@ -17,7 +23,7 @@ interface ChatMessageProps {
   isGenerating?: boolean;
   onEditMessage: (id: string, newContent: string) => void;
   onCopyMessage: (content: string) => void;
-  onRegenerateResponse?: (messageId: string, newContent: string) => void;
+  onRegenerateResponse?: (messageId: string, newContent: string, options?: { model?: string, length?: 'shorter' | 'longer' }) => void;
   language: string;
   iconColor: string;
 }
@@ -114,6 +120,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     }
     if (e.key === 'Escape') {
       handleCancelEdit();
+    }
+  };
+
+  const handleRegenerate = (options?: { model?: string, length?: 'shorter' | 'longer' }) => {
+    if (onRegenerateResponse) {
+      onRegenerateResponse(id, content, options);
     }
   };
 
@@ -241,7 +253,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 )}
 
                 {/* Actions - Masqué pendant la frappe */}
-                {!isTyping && (
+                {!isTyping && role === 'assistant' && (
                   <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
@@ -252,17 +264,66 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                       <Copy className="w-3 h-3 mr-1" />
                       {t.messages.copy}
                     </Button>
-                    {role === 'user' && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-xs"
-                        onClick={handleEdit}
-                      >
-                        <Edit className="w-3 h-3 mr-1" />
-                        {t.messages.edit}
-                      </Button>
-                    )}
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                        >
+                          <RotateCw className="w-3 h-3 mr-1" />
+                          Regénérer
+                          <ChevronDown className="w-3 h-3 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-48">
+                        <DropdownMenuItem onClick={() => handleRegenerate({ length: 'shorter' })}>
+                          Plus court
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleRegenerate({ length: 'longer' })}>
+                          Plus long
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleRegenerate({ model: 'openai/gpt-4o' })}>
+                          Modèle m-4.0
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleRegenerate({ model: 'openai/gpt-4-turbo' })}>
+                          Modèle m-4.5 Pro
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleRegenerate({ model: 'anthropic/claude-3-5-sonnet' })}>
+                          Modèle m-4.7 Sonnet
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleRegenerate({ model: 'anthropic/claude-3-opus' })}>
+                          Modèle m-4.9 Opus
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleRegenerate({ model: 'google/gemini-2.0-flash-thinking-exp' })}>
+                          Modèle m-5.0 Flash
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+                
+                {role === 'user' && (
+                  <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={handleCopy}
+                    >
+                      <Copy className="w-3 h-3 mr-1" />
+                      {t.messages.copy}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={handleEdit}
+                    >
+                      <Edit className="w-3 h-3 mr-1" />
+                      {t.messages.edit}
+                    </Button>
                   </div>
                 )}
               </>
