@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from "next-themes";
 import { showSuccess, showError } from "@/utils/toast";
-import { OpenRouterService, type OpenRouterMessage } from "@/services/openrouter";
+import { OpenRouterService, OpenRouterMessage } from "@/services/openrouter";
 import ChatSidebar from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
@@ -65,6 +65,168 @@ const Index = () => {
 
   const currentConversation = conversations.find(conv => conv.id === currentConversationId) || conversations[0];
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [currentConversation.messages]);
+
+  useEffect(() => {
+    const savedUserName = localStorage.getItem('userName');
+    const savedLanguage = localStorage.getItem('selectedLanguage');
+    const savedBetaFeatures = localStorage.getItem('betaFeaturesEnabled');
+    const savedIconColor = localStorage.getItem('iconColor');
+    const savedDefaultModel = localStorage.getItem('defaultModel');
+    
+    if (savedUserName) {
+      setUserName(savedUserName);
+    }
+    if (savedLanguage) {
+      setSelectedLanguage(savedLanguage);
+    }
+    if (savedBetaFeatures) {
+      setBetaFeaturesEnabled(savedBetaFeatures === 'true');
+    }
+    if (savedIconColor) {
+      setIconColor(savedIconColor);
+    }
+    if (savedDefaultModel) {
+      setDefaultModel(savedDefaultModel);
+    }
+  }, []);
+
+  const handleCreateProject = (name: string, icon: string) => {
+    const newProject: Project = {
+      id: Date.now().toString(),
+      name,
+      icon,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    setProjects(prev => [...prev, newProject]);
+    showSuccess(`Projet "${name}" créé avec succès`);
+  };
+
+  const handleUpdateProject = (id: string, name: string, icon: string) => {
+    setProjects(prev => prev.map(project => 
+      project.id === id 
+        ? { ...project, name, icon, updatedAt: new Date() } 
+        : project
+    ));
+    showSuccess("Projet mis à jour");
+  };
+
+  const handleDeleteProject = (id: string) => {
+    setProjects(prev => prev.filter(project => project.id !== id));
+    
+    setConversations(prev => prev.map(conv => 
+      conv.projectId === id ? { ...conv, projectId: null } : conv
+    ));
+    
+    if (currentProjectId === id) {
+      setCurrentProjectId(null);
+    }
+    
+    showSuccess("Projet supprimé");
+  };
+
+  const handleSelectProject = (id: string | null) => {
+    setCurrentProjectId(id);
+    
+    const projectConversations = id 
+      ? conversations.filter(conv => conv.projectId === id)
+      : conversations.filter(conv => conv.projectId === null);
+    
+    if (projectConversations.length > 0) {
+      setCurrentConversationId(projectConversations[0].id);
+    } else {
+      handleNewChat();
+    }
+  };
+
+  const handleNewChat = () => {
+    const newConversation: Conversation = {
+      id: Date.now().toString(),
+      projectId: currentProjectId,
+      title: t.chat.newConversation,
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      model: defaultModel
+    };
+    setConversations(prev => [newConversation, ...prev]);
+    setCurrentConversationId(newConversation.id);
+  };
+
+  const handleSelectConversation = (id: string) => {
+    setCurrentConversationId(id);
+  };
+
+  const handleDeleteConversation = (id: string) => {
+    if (conversations.length > 1) {
+      setConversations(prev => prev.filter(conv => conv.id !== id));
+      if (currentConversationId === id) {
+        const projectConversations = currentProjectId 
+          ? conversations.filter(conv => conv.projectId === currentProjectId && conv.id !== id)
+          : conversations.filter(conv => conv.projectId === null && conv.id !== id);
+        
+        setCurrentConversationId(projectConversations[0]?.id || 'default');
+      }
+    }
+  };
+
+  const handleRenameConversation = (id: string, newTitle: string) => {
+    setConversations(prev => prev.map(conv => 
+      conv.id === id 
+        ? { ...conv, title: newTitle, updatedAt: new Date() } 
+        : conv
+    ));
+  };
+
+  const handleMoveConversationToProject = (conversationId: string, projectId: string | null) => {
+    setConversations(prev => prev.map(conv => 
+      conv.id === conversationId 
+        ? { ...conv, projectId, updatedAt: new Date() } 
+        : conv
+    ));
+    
+    const conversation = conversations.find(conv => conv.id === conversationId);
+    if (conversationId === currentConversationId && conversation?.projectId !== currentProjectId) {
+      const projectConversations = currentProjectId 
+        ? conversations.filter(conv => conv.projectId === currentProjectId && conv.id !== conversationId)
+        : conversations.filter(conv => conv.projectId === null && conv.id !== conversationId);
+      
+      if (projectConversations.length > 0) {
+        setCurrentConversationId(projectConversations[0].id);
+      } else {
+        handleNewChat();
+      }
+    }
+    
+    showSuccess("Conversation déplacée avec succès");
+  };
+
+  const handleCopyMessage = (content: string) => {
+    navigator.clipboard.writeText(content);
+    showSuccess(t.messages.copied);
+  };
+
+  const handleEditMessage = (messageId: string, newContent: string) => {
+    setConversations(prev => prev.map(conv => 
+      conv.id === currentConversationId
+        ? {
+            ...conv,
+            messages: conv.messages.map(msg =>
+              msg.id === messageId ? { ...msg, content: newContent } : msg
+            ),
+            updatedAt: new Date()
+          }
+        : conv
+    ));
+  };
+
   const handleRegenerateResponse = async (messageId: string, newContent: string, options?: { model?: string, length?: 'shorter' | 'longer' }) => {
     const userMessageIndex = currentConversation.messages.findIndex(msg => msg.id === messageId);
     if (userMessageIndex === -1) return;
@@ -91,26 +253,23 @@ const Index = () => {
 
       // Ajouter le message utilisateur avec les instructions de longueur
       let userPrompt = newContent.trim();
-      let systemMessage = "Tu es mAI, un assistant IA utile, amical et professionnel. Réponds en français de manière claire.";
       
       if (options?.length === 'shorter') {
-        systemMessage += " Sois très concis dans ta réponse, maximum 2-3 phrases.";
+        userPrompt = `Réponds de manière très concise et brève à cette demande : ${userPrompt}`;
       } else if (options?.length === 'longer') {
-        systemMessage += " Développe ta réponse avec beaucoup de détails et d'explications.";
+        userPrompt = `Développe davantage cette réponse avec plus de détails et d'explications : ${userPrompt}`;
       }
-
-      apiMessages.unshift({
-        role: 'system',
-        content: systemMessage
-      });
 
       apiMessages.push({
         role: 'user',
         content: userPrompt
       });
 
+      const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages, selectedLanguage);
+      
+      // Utiliser le modèle spécifié ou celui de la conversation
       const modelToUse = options?.model || currentConversation.model;
-      const response = await OpenRouterService.sendMessage(apiMessages, modelToUse);
+      const response = await OpenRouterService.sendMessage(formattedMessages, modelToUse);
       
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -154,201 +313,260 @@ const Index = () => {
     }
   };
 
+  const handleUserNameChange = (name: string) => {
+    setUserName(name);
+    localStorage.setItem('userName', name);
+  };
+
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguage(language);
+    localStorage.setItem('selectedLanguage', language);
+  };
+
+  const handleBetaFeaturesChange = (enabled: boolean) => {
+    setBetaFeaturesEnabled(enabled);
+    localStorage.setItem('betaFeaturesEnabled', enabled.toString());
+  };
+
+  const handleIconColorChange = (color: string) => {
+    setIconColor(color);
+    localStorage.setItem('iconColor', color);
+  };
+
+  const handleDefaultModelChange = (model: string) => {
+    setDefaultModel(model);
+    localStorage.setItem('defaultModel', model);
+  };
+
+  const handleConversationModelChange = (model: string) => {
+    setConversations(prev => prev.map(conv => 
+      conv.id === currentConversationId
+        ? { ...conv, model, updatedAt: new Date() }
+        : conv
+    ));
+  };
+
+  const generateImage = async (prompt: string): Promise<string> => {
+    // Remplacer les espaces par des %20 pour l'URL
+    const encodedPrompt = encodeURIComponent(prompt);
+    // Retourner l'URL de l'image générée
+    return `https://image.pollinations.ai/prompt/${encodedPrompt}`;
+  };
+
+  const handleSendMessage = async (content: string, isRegeneration = false) => {
+    if (!content.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: content.trim(),
+      role: 'user',
+      timestamp: new Date(),
+    };
+
+    const shouldUpdateTitle = currentConversation.messages.length === 0 && !isRegeneration;
+
+    const updatedConversations = conversations.map(conv =>
+      conv.id === currentConversationId
+        ? {
+            ...conv,
+            messages: [...conv.messages, userMessage],
+            title: shouldUpdateTitle ? content.slice(0, 50) + (content.length > 50 ? '...' : '') : conv.title,
+            updatedAt: new Date()
+          }
+        : conv
+    );
+
+    setConversations(updatedConversations);
+    setIsLoading(true);
+
+    try {
+      // Vérifier si le message est une demande de génération d'image
+      const isImageRequest = content.toLowerCase().includes('image') || 
+                            content.toLowerCase().includes('dessin') || 
+                            content.toLowerCase().includes('dessine') ||
+                            content.toLowerCase().includes('photo') ||
+                            content.toLowerCase().includes('illustration');
+
+      if (isImageRequest) {
+        // Générer l'image
+        const imageUrl = await generateImage(content);
+        
+        // Créer un message avec l'image
+        const imageMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: `Voici l'image générée selon votre demande :\n\n![Image générée](${imageUrl})`,
+          role: 'assistant',
+          timestamp: new Date(),
+        };
+
+        const finalConversations = updatedConversations.map(conv =>
+          conv.id === currentConversationId
+            ? { ...conv, messages: [...conv.messages, imageMessage], updatedAt: new Date() }
+            : conv
+        );
+
+        setConversations(finalConversations);
+      } else {
+        // Message normal - appel à l'API OpenRouter
+        const apiMessages: OpenRouterMessage[] = currentConversation.messages
+          .slice(-10)
+          .map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }));
+
+        apiMessages.push({
+          role: 'user',
+          content: content.trim()
+        });
+
+        const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages, selectedLanguage);
+        const response = await OpenRouterService.sendMessage(formattedMessages, currentConversation.model);
+        
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          content: response.choices[0].message.content,
+          role: 'assistant',
+          timestamp: new Date(),
+        };
+
+        const finalConversations = updatedConversations.map(conv =>
+          conv.id === currentConversationId
+            ? { ...conv, messages: [...conv.messages, aiResponse], updatedAt: new Date() }
+            : conv
+        );
+
+        setConversations(finalConversations);
+      }
+    } catch (error: any) {
+      console.error('Error:', error);
+      
+      let errorMessageContent = t.messages.technicalError;
+      
+      if (error.message && !error.message.includes('technical difficulties')) {
+        errorMessageContent = `Erreur: ${error.message}`;
+      }
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: errorMessageContent,
+        role: 'assistant',
+        timestamp: new Date(),
+      };
+      
+      const errorConversations = updatedConversations.map(conv =>
+        conv.id === currentConversationId
+          ? { ...conv, messages: [...conv.messages, errorMessage], updatedAt: new Date() }
+          : conv
+      );
+
+      setConversations(errorConversations);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const shouldShowGreeting = currentConversation.messages.length === 0;
+
   return (
-    <div className="flex h-screen bg-white dark:bg-gray-900">
-      {/* Sidebar */}
-      <div className="w-64 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-          <h1 className="text-xl font-bold">mAI</h1>
-        </div>
-        <div className="flex-1 overflow-y-auto p-2">
-          <div className="space-y-2">
-            <button 
-              className="w-full text-left p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-              onClick={() => {
-                const newId = Date.now().toString();
-                setConversations(prev => [...prev, {
-                  id: newId,
-                  projectId: null,
-                  title: "Nouvelle conversation",
-                  messages: [],
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                  model: defaultModel
-                }]);
-                setCurrentConversationId(newId);
-              }}
-            >
-              + Nouvelle conversation
-            </button>
-            {conversations.map(conv => (
-              <div 
-                key={conv.id}
-                className={`p-2 rounded cursor-pointer ${
-                  currentConversationId === conv.id 
-                    ? 'bg-blue-100 dark:bg-blue-900' 
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`}
-                onClick={() => setCurrentConversationId(conv.id)}
-              >
-                {conv.title}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="border-b border-gray-200 dark:border-gray-800 p-4 flex justify-between items-center">
-          <h2 className="text-lg font-semibold">
-            {currentConversation.title}
-          </h2>
-          <div className="flex items-center gap-2">
-            <ModelDropdown 
-              selectedModel={currentConversation.model}
-              onModelChange={(model) => {
-                setConversations(prev => prev.map(conv => 
-                  conv.id === currentConversationId 
-                    ? { ...conv, model } 
-                    : conv
-                ));
-              }}
-            />
-            <SettingsDialog
-              selectedModel={defaultModel}
-              onModelChange={setDefaultModel}
-              userName={userName}
-              onUserNameChange={setUserName}
-              selectedLanguage={selectedLanguage}
-              onLanguageChange={setSelectedLanguage}
-              betaFeaturesEnabled={betaFeaturesEnabled}
-              onBetaFeaturesChange={setBetaFeaturesEnabled}
-              iconColor={iconColor}
-              onIconColorChange={setIconColor}
-            />
-          </div>
-        </div>
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto">
-          {currentConversation.messages.length === 0 ? (
-            <GreetingMessage 
-              content={generateGreetingMessages(userName, selectedLanguage)[0].content}
-              iconColor={iconColor}
-            />
-          ) : (
-            currentConversation.messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                id={message.id}
-                content={message.content}
-                role={message.role}
-                timestamp={message.timestamp}
-                onEditMessage={(id, newContent) => {
-                  setConversations(prev => prev.map(conv => 
-                    conv.id === currentConversationId
-                      ? {
-                          ...conv,
-                          messages: conv.messages.map(msg => 
-                            msg.id === id ? { ...msg, content: newContent } : msg
-                          ),
-                          updatedAt: new Date()
-                        }
-                      : conv
-                  ));
-                }}
-                onCopyMessage={(content) => {
-                  navigator.clipboard.writeText(content);
-                  showSuccess(t.messages.copied);
-                }}
-                onRegenerateResponse={handleRegenerateResponse}
-                language={selectedLanguage}
-                iconColor={iconColor}
-              />
-            ))
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input */}
-        <ChatInput
-          onSendMessage={async (content) => {
-            const userMessage: Message = {
-              id: Date.now().toString(),
-              content,
-              role: 'user',
-              timestamp: new Date(),
-            };
-
-            // Mettre à jour la conversation avec le message utilisateur
-            const updatedConversations = conversations.map(conv =>
-              conv.id === currentConversationId
-                ? {
-                    ...conv,
-                    messages: [...conv.messages, userMessage],
-                    title: conv.messages.length === 0 ? content.substring(0, 30) + (content.length > 30 ? '...' : '') : conv.title,
-                    updatedAt: new Date()
-                  }
-                : conv
-            );
-
-            setConversations(updatedConversations);
-            setIsLoading(true);
-
-            try {
-              // Préparer les messages pour l'API
-              const apiMessages: OpenRouterMessage[] = [
-                ...updatedConversations.find(c => c.id === currentConversationId)?.messages
-                  .slice(-10) // Limiter à 10 messages
-                  .map(msg => ({
-                    role: msg.role,
-                    content: msg.content
-                  })) || []
-              ];
-
-              const response = await OpenRouterService.sendMessage(
-                apiMessages,
-                currentConversation.model
-              );
-
-              const aiMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                content: response.choices[0].message.content,
-                role: 'assistant',
-                timestamp: new Date(),
-              };
-
-              setConversations(prev => prev.map(conv =>
-                conv.id === currentConversationId
-                  ? { ...conv, messages: [...conv.messages, aiMessage], updatedAt: new Date() }
-                  : conv
-              ));
-            } catch (error) {
-              console.error('Error:', error);
-              const errorMessage: Message = {
-                id: (Date.now() + 2).toString(),
-                content: t.messages.technicalError,
-                role: 'assistant',
-                timestamp: new Date(),
-              };
-              setConversations(prev => prev.map(conv =>
-                conv.id === currentConversationId
-                  ? { ...conv, messages: [...conv.messages, errorMessage], updatedAt: new Date() }
-                  : conv
-              ));
-            } finally {
-              setIsLoading(false);
-            }
-          }}
-          isLoading={isLoading}
-          placeholder={t.chat.placeholder}
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <div className="h-screen flex bg-white dark:bg-gray-900">
+        <ChatSidebar
+          projects={projects}
+          conversations={conversations}
+          currentProjectId={currentProjectId}
+          onNewChat={handleNewChat}
+          onSelectConversation={handleSelectConversation}
+          onDeleteConversation={handleDeleteConversation}
+          onRenameConversation={handleRenameConversation}
+          onCreateProject={handleCreateProject}
+          onUpdateProject={handleUpdateProject}
+          onDeleteProject={handleDeleteProject}
+          onSelectProject={handleSelectProject}
+          onMoveConversationToProject={handleMoveConversationToProject}
+          currentConversationId={currentConversationId}
           language={selectedLanguage}
           iconColor={iconColor}
         />
+
+        <div className="flex-1 flex flex-col">
+          <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
+            <div className="max-w-4xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {currentConversation.title}
+                </h1>
+                <ModelDropdown
+                  selectedModel={currentConversation.model}
+                  onModelChange={handleConversationModelChange}
+                />
+              </div>
+              <SettingsDialog
+                selectedModel={defaultModel}
+                onModelChange={handleDefaultModelChange}
+                userName={userName}
+                onUserNameChange={handleUserNameChange}
+                selectedLanguage={selectedLanguage}
+                onLanguageChange={handleLanguageChange}
+                betaFeaturesEnabled={betaFeaturesEnabled}
+                onBetaFeaturesChange={handleBetaFeaturesChange}
+                iconColor={iconColor}
+                onIconColorChange={handleIconColorChange}
+              />
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-4xl mx-auto">
+              {shouldShowGreeting ? (
+                <GreetingMessage 
+                  content={generateGreetingMessages(userName, selectedLanguage)[0].content} 
+                  iconColor={iconColor}
+                />
+              ) : (
+                <>
+                  {currentConversation.messages.map((message) => (
+                    <ChatMessage
+                      key={message.id}
+                      id={message.id}
+                      content={message.content}
+                      role={message.role}
+                      timestamp={message.timestamp}
+                      onEditMessage={handleEditMessage}
+                      onCopyMessage={handleCopyMessage}
+                      onRegenerateResponse={handleRegenerateResponse}
+                      language={selectedLanguage}
+                      iconColor={iconColor}
+                    />
+                  ))}
+                  {isLoading && (
+                    <ChatMessage
+                      id="loading"
+                      content={t.messages.generating}
+                      role="assistant"
+                      timestamp={new Date()}
+                      isGenerating={true}
+                      onEditMessage={() => {}}
+                      onCopyMessage={() => {}}
+                      language={selectedLanguage}
+                      iconColor={iconColor}
+                    />
+                  )}
+                </>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          <ChatInput
+            onSendMessage={(content) => handleSendMessage(content, false)}
+            isLoading={isLoading}
+            language={selectedLanguage}
+            iconColor={iconColor}
+          />
+        </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 };
 
