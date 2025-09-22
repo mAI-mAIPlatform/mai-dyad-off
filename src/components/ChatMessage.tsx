@@ -295,13 +295,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                           </DropdownMenuSubTrigger>
                           <DropdownMenuSubContent className="w-48">
                             <DropdownMenuItem onClick={() => handleRegenerate({ model: 'openai/gpt-4o' })}>
-                              Modèle m-4.0
+                              m-4.0
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRegenerate({ model: 'openai/gpt-4-turbo' })}>
-                              Modèle m-4.5 Pro
+                              m-4.3-mini
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRegenerate({ model: 'anthropic/claude-3-5-sonnet' })}>
-                              Modèle m-4.7 Sonnet
+                              m-4.5 Pro
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRegenerate({ model: 'anthropic/claude-3-opus' })}>
                               Modèle m-4.9 Opus
