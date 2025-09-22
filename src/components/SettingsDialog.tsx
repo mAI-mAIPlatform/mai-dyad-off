@@ -187,63 +187,66 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
             </p>
           </div>
 
-          {/* Personnalisation Bêta */}
-          {localBetaFeaturesEnabled && (
-            <>
-              {/* Personnalité */}
-              <div className="grid gap-2">
-                <Label htmlFor="personality">Personnalité (Bêta)</Label>
-                <Select 
-                  value={localSelectedPersonality} 
-                  onValueChange={setLocalSelectedPersonality}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez une personnalité">
-                      {personalities.find(p => p.id === localSelectedPersonality)?.name || 'Défaut'}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {personalities.map((personality) => (
-                      <SelectItem key={personality.id} value={personality.id}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{personality.name}</span>
-                          <span className="text-xs text-gray-500">{personality.description}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500">
-                  Choisissez le ton et le style de réponse d'mAI
-                </p>
-              </div>
+          {/* Personnalité */}
+          <div className="grid gap-2">
+            <Label htmlFor="personality" className={!localBetaFeaturesEnabled ? "text-gray-400" : ""}>
+              Personnalité (Bêta)
+            </Label>
+            <Select 
+              value={localSelectedPersonality} 
+              onValueChange={setLocalSelectedPersonality}
+              disabled={!localBetaFeaturesEnabled}
+            >
+              <SelectTrigger className={!localBetaFeaturesEnabled ? "bg-gray-100 dark:bg-gray-800 text-gray-400" : ""}>
+                <SelectValue placeholder="Sélectionnez une personnalité">
+                  {personalities.find(p => p.id === localSelectedPersonality)?.name || 'Défaut'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {personalities.map((personality) => (
+                  <SelectItem key={personality.id} value={personality.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{personality.name}</span>
+                      <span className="text-xs text-gray-500">{personality.description}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500">
+              Choisissez le ton et le style de réponse d'mAI
+            </p>
+          </div>
 
-              {/* Instructions personnalisées */}
-              <div className="grid gap-2">
-                <Label htmlFor="custom-instructions">Instructions personnalisées (Bêta)</Label>
-                <Textarea
-                  id="custom-instructions"
-                  value={localCustomInstructions}
-                  onChange={(e) => setLocalCustomInstructions(e.target.value)}
-                  placeholder="Ex: Je suis développeur web, parle-moi en termes techniques. Mes préférences sont..."
-                  className="min-h-[80px] resize-none"
-                />
-                <p className="text-xs text-gray-500">
-                  Fournissez des informations sur vous pour personnaliser les réponses d'mAI
-                </p>
-              </div>
-            </>
-          )}
+          {/* Instructions personnalisées */}
+          <div className="grid gap-2">
+            <Label htmlFor="custom-instructions" className={!localBetaFeaturesEnabled ? "text-gray-400" : ""}>
+              Instructions personnalisées (Bêta)
+            </Label>
+            <Textarea
+              id="custom-instructions"
+              value={localCustomInstructions}
+              onChange={(e) => setLocalCustomInstructions(e.target.value)}
+              placeholder="Ex: Je suis développeur web, parle-moi en termes techniques. Mes préférences sont..."
+              className="min-h-[80px] resize-none"
+              disabled={!localBetaFeaturesEnabled}
+            />
+            <p className="text-xs text-gray-500">
+              Fournissez des informations sur vous pour personnaliser les réponses d'mAI
+            </p>
+          </div>
 
           {/* Couleur des icônes */}
           <div className="grid gap-2">
-            <Label htmlFor="icon-color">Couleur des icônes (Bêta)</Label>
+            <Label htmlFor="icon-color" className={!localBetaFeaturesEnabled ? "text-gray-400" : ""}>
+              Couleur des icônes (Bêta)
+            </Label>
             <Select 
               value={localIconColor} 
               onValueChange={setLocalIconColor}
               disabled={!localBetaFeaturesEnabled}
             >
-              <SelectTrigger>
+              <SelectTrigger className={!localBetaFeaturesEnabled ? "bg-gray-100 dark:bg-gray-800 text-gray-400" : ""}>
                 <SelectValue placeholder="Sélectionnez une couleur">
                   <div className="flex items-center gap-2">
                     <div className={`w-4 h-4 rounded-full ${getColorClass(localIconColor)} bg-current`} />
@@ -269,13 +272,15 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
           {/* Langue */}
           <div className="grid gap-2">
-            <Label htmlFor="language">Langue (Bêta)</Label>
+            <Label htmlFor="language" className={!localBetaFeaturesEnabled ? "text-gray-400" : ""}>
+              Langue (Bêta)
+            </Label>
             <Select 
               value={localSelectedLanguage} 
               onValueChange={setLocalSelectedLanguage}
               disabled={!localBetaFeaturesEnabled}
             >
-              <SelectTrigger>
+              <SelectTrigger className={!localBetaFeaturesEnabled ? "bg-gray-100 dark:bg-gray-800 text-gray-400" : ""}>
                 <SelectValue placeholder="Sélectionnez une langue" />
               </SelectTrigger>
               <SelectContent>
