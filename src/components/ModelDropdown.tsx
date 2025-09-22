@@ -29,7 +29,7 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
     {
       id: 'openai/gpt-4o',
       name: 'm-4.0',
-      description: 'Pour les tâches quotidiennes, rapide.'
+      description: 'Pour les tâches quotidiennes, rapide'
     },
     {
       id: 'openai/gpt-4-turbo',
@@ -39,17 +39,17 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
     {
       id: 'anthropic/claude-3-5-sonnet',
       name: 'm-4.5 Pro',
-      description: 'Professionnel, précis.'
+      description: 'Professionnel, précis'
     },
     {
       id: 'anthropic/claude-3-opus',
       name: 'm-4.7o',
-      description: 'Précis, long.'
+      description: 'Précis, long'
     },
     {
       id: 'google/gemini-2.0-flash-thinking-exp',
       name: 'm-9+',
-      description: 'Rapide, court.'
+      description: 'Rapide, court'
     }
   ];
 
