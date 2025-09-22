@@ -304,10 +304,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                               m-4.5 Pro
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRegenerate({ model: 'anthropic/claude-3-opus' })}>
-                              Modèle m-4.9 Opus
+                              m-4.7o
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRegenerate({ model: 'google/gemini-2.0-flash-thinking-exp' })}>
-                              Modèle m-5.0 Flash
+                              m-4.9+
                             </DropdownMenuItem>
                           </DropdownMenuSubContent>
                         </DropdownMenuSub>
