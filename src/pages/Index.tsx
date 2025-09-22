@@ -11,6 +11,7 @@ import SettingsDialog from "@/components/SettingsDialog";
 import GreetingMessage from "@/components/GreetingMessage";
 import { generateGreetingMessages } from "@/utils/greetings";
 import { useTranslation } from "@/utils/i18n";
+import ModelDropdown from "@/components/ModelDropdown";
 
 interface Message {
   id: string;
@@ -26,6 +27,7 @@ interface Conversation {
   title: string;
   createdAt: Date;
   updatedAt: Date;
+  model: string; // Ajout du modèle par conversation
 }
 
 interface Project {
@@ -45,13 +47,14 @@ const Index = () => {
       title: "Nouvelle conversation",
       messages: [],
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      model: 'openai/gpt-4o' // Modèle par défaut
     }
   ]);
   const [currentConversationId, setCurrentConversationId] = useState('default');
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('openai/gpt-4o');
+  const [defaultModel, setDefaultModel] = useState('openai/gpt-4o'); // Modèle par défaut
   const [userName, setUserName] = useState('Utilisateur');
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
   const [betaFeaturesEnabled, setBetaFeaturesEnabled] = useState(false);
@@ -75,6 +78,8 @@ const Index = () => {
     const savedLanguage = localStorage.getItem('selectedLanguage');
     const savedBetaFeatures = localStorage.getItem('betaFeaturesEnabled');
     const savedIconColor = localStorage.getItem('iconColor');
+    const savedDefaultModel = localStorage.getItem('defaultModel');
+    
     if (savedUserName) {
       setUserName(savedUserName);
     }
@@ -86,6 +91,9 @@ const Index = () => {
     }
     if (savedIconColor) {
       setIconColor(savedIconColor);
+    }
+    if (savedDefaultModel) {
+      setDefaultModel(savedDefaultModel);
     }
   }, []);
 
@@ -145,7 +153,8 @@ const Index = () => {
       title: t.chat.newConversation,
       messages: [],
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      model: defaultModel // Utiliser le modèle par défaut
     };
     setConversations(prev => [newConversation, ...prev]);
     setCurrentConversationId(newConversation.id);
@@ -253,6 +262,19 @@ const Index = () => {
     localStorage.setItem('iconColor', color);
   };
 
+  const handleDefaultModelChange = (model: string) => {
+    setDefaultModel(model);
+    localStorage.setItem('defaultModel', model);
+  };
+
+  const handleConversationModelChange = (model: string) => {
+    setConversations(prev => prev.map(conv => 
+      conv.id === currentConversationId
+        ? { ...conv, model, updatedAt: new Date() }
+        : conv
+    ));
+  };
+
   const handleSendMessage = async (content: string, isRegeneration = false) => {
     if (!content.trim() || isLoading) return;
 
@@ -293,7 +315,8 @@ const Index = () => {
       });
 
       const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages, selectedLanguage);
-      const response = await OpenRouterService.sendMessage(formattedMessages, selectedModel);
+      // Utiliser le modèle de la conversation
+      const response = await OpenRouterService.sendMessage(formattedMessages, currentConversation.model);
       
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -363,12 +386,18 @@ const Index = () => {
         <div className="flex-1 flex flex-col">
           <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
             <div className="max-w-4xl mx-auto flex items-center justify-between">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {currentConversation.title}
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {currentConversation.title}
+                </h1>
+                <ModelDropdown
+                  selectedModel={currentConversation.model}
+                  onModelChange={handleConversationModelChange}
+                />
+              </div>
               <SettingsDialog
-                selectedModel={selectedModel}
-                onModelChange={setSelectedModel}
+                selectedModel={defaultModel}
+                onModelChange={handleDefaultModelChange}
                 userName={userName}
                 onUserNameChange={handleUserNameChange}
                 selectedLanguage={selectedLanguage}

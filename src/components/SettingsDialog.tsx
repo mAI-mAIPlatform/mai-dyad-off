@@ -93,7 +93,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     onIconColorChange(localIconColor);
     // Sauvegarder les paramètres dans localStorage
     localStorage.setItem('userName', localUserName);
-    localStorage.setItem('selectedModel', localSelectedModel);
+    localStorage.setItem('defaultModel', localSelectedModel);
     localStorage.setItem('selectedLanguage', localSelectedLanguage);
     localStorage.setItem('betaFeaturesEnabled', localBetaFeaturesEnabled.toString());
     localStorage.setItem('iconColor', localIconColor);
@@ -210,9 +210,9 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
             </Select>
           </div>
 
-          {/* Modèle IA */}
+          {/* Modèle IA par défaut */}
           <div className="grid gap-2">
-            <Label htmlFor="model">Modèle IA</Label>
+            <Label htmlFor="model">Modèle IA par défaut</Label>
             <Select value={localSelectedModel} onValueChange={setLocalSelectedModel}>
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionnez un modèle d'mAI" />
@@ -228,6 +228,9 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-gray-500">
+              Ce modèle sera utilisé pour les nouvelles conversations
+            </p>
           </div>
 
           {/* Thème */}
