@@ -150,7 +150,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
               />
             </div>
             <p className="text-xs text-gray-500">
-              Activez les fonctionnalités expérimentales de l'application
+              Activez les fonctionnalités Bêta d'mAI, ces fonctionnalités peuvent contenir des bugs.
             </p>
           </div>
 
