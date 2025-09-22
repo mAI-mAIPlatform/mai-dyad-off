@@ -13,6 +13,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 
 interface ChatMessageProps {
@@ -284,21 +287,30 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                         <DropdownMenuItem onClick={() => handleRegenerate({ length: 'longer' })}>
                           Plus long
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleRegenerate({ model: 'openai/gpt-4o' })}>
-                          Modèle m-4.0
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleRegenerate({ model: 'openai/gpt-4-turbo' })}>
-                          Modèle m-4.5 Pro
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleRegenerate({ model: 'anthropic/claude-3-5-sonnet' })}>
-                          Modèle m-4.7 Sonnet
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleRegenerate({ model: 'anthropic/claude-3-opus' })}>
-                          Modèle m-4.9 Opus
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleRegenerate({ model: 'google/gemini-2.0-flash-thinking-exp' })}>
-                          Modèle m-5.0 Flash
-                        </DropdownMenuItem>
+                        
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger className="cursor-pointer">
+                            Changer de modèle
+                            <ChevronDown className="w-3 h-3 ml-auto" />
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent className="w-48">
+                            <DropdownMenuItem onClick={() => handleRegenerate({ model: 'openai/gpt-4o' })}>
+                              Modèle m-4.0
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRegenerate({ model: 'openai/gpt-4-turbo' })}>
+                              Modèle m-4.5 Pro
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRegenerate({ model: 'anthropic/claude-3-5-sonnet' })}>
+                              Modèle m-4.7 Sonnet
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRegenerate({ model: 'anthropic/claude-3-opus' })}>
+                              Modèle m-4.9 Opus
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRegenerate({ model: 'google/gemini-2.0-flash-thinking-exp' })}>
+                              Modèle m-5.0 Flash
+                            </DropdownMenuItem>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
