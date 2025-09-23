@@ -134,21 +134,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
   // Fonction pour extraire les URLs d'images du contenu
   const extractImageUrls = (text: string): string[] => {
-    // Expression régulière améliorée pour détecter les URLs d'images
-    const urlRegex = /(?:https?:\/\/[^\s/$.?#].[^\s]*\.(?:jpg|jpeg|png|gif|webp))|(?:!\[.*?\]\((https?:\/\/[^\s/$.?#].[^\s]*?\.(?:jpg|jpeg|png|gif|webp))\))/gi;
-    const matches = [];
-    let match;
-    
-    while ((match = urlRegex.exec(text)) !== null) {
-      // Si c'est une image en markdown, prendre l'URL entre parenthèses
-      if (match[1]) {
-        matches.push(match[1]);
-      } else {
-        matches.push(match[0]);
-      }
-    }
-    
-    return matches;
+    // Expression régulière pour détecter les images générées par pollinations.ai
+    const urlRegex = /https?:\/\/image\.pollinations\.ai\/prompt\/[^\s"')>]+/gi;
+    const matches = text.match(urlRegex);
+    return matches ? matches : [];
   };
 
   const imageUrls = extractImageUrls(content);
