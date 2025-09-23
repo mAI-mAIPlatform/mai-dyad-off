@@ -30,29 +30,6 @@ export class OpenRouterService {
     messages: OpenRouterMessage[],
     model: string = 'openai/gpt-4o'
   ): Promise<OpenRouterResponse> {
-    // Si aucune clé API n'est définie, utiliser un modèle de démonstration
-    if (!this.API_KEY) {
-      // Simulation d'une réponse de l'IA pour le développement
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            choices: [{
-              message: {
-                role: 'assistant',
-                content: "Bonjour ! Je suis mAI, votre assistant virtuel. Comment puis-je vous aider aujourd'hui ?"
-              },
-              finish_reason: 'stop'
-            }],
-            usage: {
-              prompt_tokens: 0,
-              completion_tokens: 0,
-              total_tokens: 0
-            }
-          });
-        }, 1000);
-      });
-    }
-
     try {
       const response = await fetch(this.API_URL, {
         method: 'POST',
