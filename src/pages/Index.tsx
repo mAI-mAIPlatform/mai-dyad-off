@@ -289,7 +289,24 @@ const Index = () => {
         content: userPrompt
       });
 
+      // Ajouter les instructions personnalisées et la personnalité si activées
+      let systemMessage = '';
+      if (betaFeaturesEnabled) {
+        if (customInstructions) {
+          systemMessage += `Informations utilisateur : ${customInstructions}. `;
+        }
+        systemMessage += getPersonalityInstructions(selectedPersonality);
+      }
+
       const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages, selectedLanguage);
+      
+      // Ajouter le message système personnalisé en premier
+      if (systemMessage) {
+        formattedMessages.unshift({
+          role: 'system',
+          content: systemMessage
+        });
+      }
       
       // Utiliser le modèle spécifié ou celui de la conversation
       const modelToUse = options?.model || currentConversation.model;
