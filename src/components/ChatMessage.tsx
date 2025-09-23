@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, Copy, Edit, Check, X, Star, RotateCw, ChevronDown, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { showSuccess } from "@/utils/toast";
+import { showSuccess, showError } from "@/utils/toast";
 import { useTranslation } from "@/utils/i18n";
 import ReactMarkdown from 'react-markdown';
 import {
@@ -134,9 +134,21 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
   // Fonction pour extraire les URLs d'images du contenu
   const extractImageUrls = (text: string): string[] => {
-    const urlRegex = /https?:\/\/[^\s/$.?#].[^\s]*\.(?:jpg|jpeg|png|gif|webp)/gi;
-    const matches = text.match(urlRegex);
-    return matches ? matches : [];
+    // Expression régulière améliorée pour détecter les URLs d'images
+    const urlRegex = /(?:https?:\/\/[^\s/$.?#].[^\s]*\.(?:jpg|jpeg|png|gif|webp))|(?:!\[.*?\]\((https?:\/\/[^\s/$.?#].[^\s]*?\.(?:jpg|jpeg|png|gif|webp))\))/gi;
+    const matches = [];
+    let match;
+    
+    while ((match = urlRegex.exec(text)) !== null) {
+      // Si c'est une image en markdown, prendre l'URL entre parenthèses
+      if (match[1]) {
+        matches.push(match[1]);
+      } else {
+        matches.push(match[0]);
+      }
+    }
+    
+    return matches;
   };
 
   const imageUrls = extractImageUrls(content);
