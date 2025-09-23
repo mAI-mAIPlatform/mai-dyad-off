@@ -132,15 +132,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     }
   };
 
-  // Fonction pour extraire l'URL de l'image générée
-  const extractImageUrl = (text: string): string | null => {
-    // Expression régulière pour détecter l'image générée par pollinations.ai
-    const urlRegex = /https?:\/\/image\.pollinations\.ai\/prompt\/[^\s"')>]+/i;
-    const match = text.match(urlRegex);
-    return match ? match[0] : null;
+  // Fonction pour extraire les URLs d'images du contenu
+  const extractImageUrls = (text: string): string[] => {
+    // Expression régulière pour détecter les images générées par pollinations.ai
+    const urlRegex = /https?:\/\/image\.pollinations\.ai\/prompt\/[^\s"')>]+/gi;
+    const matches = text.match(urlRegex);
+    return matches ? matches : [];
   };
 
-  const imageUrl = extractImageUrl(content);
+  const imageUrls = extractImageUrls(content);
 
   // Fonction pour télécharger une image
   const downloadImage = async (url: string) => {
@@ -258,37 +258,41 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                   )}
                 </div>
 
-                {/* Image générée avec options */}
-                {imageUrl && (
-                  <div className="mt-3 relative group/image inline-block">
-                    <img 
-                      src={imageUrl} 
-                      alt="Image générée" 
-                      className="rounded-lg max-w-full h-auto object-cover border border-gray-200 dark:border-gray-700"
-                    />
-                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/image:opacity-100 transition-opacity">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="h-7 px-2 text-xs"
-                        onClick={() => {
-                          navigator.clipboard.writeText(imageUrl);
-                          showSuccess("URL de l'image copiée");
-                        }}
-                      >
-                        <Copy className="w-3 h-3 mr-1" />
-                        Copier
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="h-7 px-2 text-xs"
-                        onClick={() => downloadImage(imageUrl)}
-                      >
-                        <Download className="w-3 h-3 mr-1" />
-                        Télécharger
-                      </Button>
-                    </div>
+                {/* Images générées */}
+                {imageUrls.length > 0 && (
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {imageUrls.map((url, index) => (
+                      <div key={index} className="relative group/image">
+                        <img 
+                          src={url} 
+                          alt={`Image générée ${index + 1}`} 
+                          className="rounded-lg w-full h-auto object-cover border border-gray-200 dark:border-gray-700"
+                        />
+                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/image:opacity-100 transition-opacity">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => {
+                              navigator.clipboard.writeText(url);
+                              showSuccess("URL de l'image copiée");
+                            }}
+                          >
+                            <Copy className="w-3 h-3 mr-1" />
+                            Copier
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => downloadImage(url)}
+                          >
+                            <Download className="w-3 h-3 mr-1" />
+                            Télécharger
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
 
