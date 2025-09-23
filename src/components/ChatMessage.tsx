@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Copy, Edit, Check, X, Star, RotateCw, ChevronDown } from "lucide-react";
+import { User, Copy, Edit, Check, X, Star, RotateCw, ChevronDown, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { showSuccess } from "@/utils/toast";
@@ -141,6 +141,35 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
   const imageUrls = extractImageUrls(content);
 
+  // Fonction pour télécharger une image
+  const downloadImage = async (url: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      
+      // Créer le nom de fichier avec la date et l'heure
+      const now = new Date();
+      const date = now.toISOString().split('T')[0];
+      const time = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+      const filename = `mAImage_${date}_${time}.png`;
+      
+      // Créer un lien de téléchargement
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      
+      showSuccess("Image téléchargée avec succès");
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+      showError("Erreur lors du téléchargement de l'image");
+    }
+  };
+
   return (
     <div className={`group py-4 ${role === 'user' ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}`}>
       <div className="max-w-4xl mx-auto px-4">
@@ -238,18 +267,29 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                           alt={`Image générée ${index + 1}`} 
                           className="rounded-lg w-full h-auto object-cover border border-gray-200 dark:border-gray-700"
                         />
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="absolute top-2 right-2 opacity-0 group-hover/image:opacity-100 transition-opacity h-7 px-2 text-xs"
-                          onClick={() => {
-                            navigator.clipboard.writeText(url);
-                            showSuccess("URL de l'image copiée");
-                          }}
-                        >
-                          <Copy className="w-3 h-3 mr-1" />
-                          Copier
-                        </Button>
+                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/image:opacity-100 transition-opacity">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => {
+                              navigator.clipboard.writeText(url);
+                              showSuccess("URL de l'image copiée");
+                            }}
+                          >
+                            <Copy className="w-3 h-3 mr-1" />
+                            Copier
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => downloadImage(url)}
+                          >
+                            <Download className="w-3 h-3 mr-1" />
+                            Télécharger
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
