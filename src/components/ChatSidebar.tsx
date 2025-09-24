@@ -92,7 +92,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [editProjectIcon, setEditProjectIcon] = useState('folder');
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [selectedConversationToMove, setSelectedConversationToMove] = useState<string | null>(null);
-  const [showGhostButton, setShowGhostButton] = useState(false);
+  const [showGhostButton, setShowGhostButton] = useState(true);
   const [customModelDialogOpen, setCustomModelDialogOpen] = useState(false);
   const [showMAIsManager, setShowMAIsManager] = useState(false);
   
@@ -376,24 +376,18 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   <Button
                     onClick={onNewChat}
                     className="flex-1 justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-xs h-7"
-                    onMouseEnter={() => setShowGhostButton(true)}
-                    onMouseLeave={() => setShowGhostButton(false)}
                   >
                     <Plus className={`w-3 h-3 mr-1 ${getIconColorClass()}`} />
                     {t.chat.newConversation}
                   </Button>
                   
-                  {showGhostButton && (
-                    <Button
-                      onClick={onNewGhostChat}
-                      className="h-7 w-7 p-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
-                      title={t.ghost.newChat}
-                      onMouseEnter={() => setShowGhostButton(true)}
-                      onMouseLeave={() => setShowGhostButton(false)}
-                    >
-                      <Ghost className={`w-3 h-3 ${getIconColorClass()}`} />
-                    </Button>
-                  )}
+                  <Button
+                    onClick={onNewGhostChat}
+                    className="h-7 w-7 p-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+                    title={t.ghost.newChat}
+                  >
+                    <Ghost className={`w-3 h-3 ${getIconColorClass()}`} />
+                  </Button>
                 </div>
                 
                 <Button
