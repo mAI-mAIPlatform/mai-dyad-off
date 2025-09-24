@@ -14,7 +14,6 @@ import {
   Search,
   X
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import CustomModelDialog, { CustomModel } from "./CustomModelDialog";
 import ShareModelDialog from "./ShareModelDialog";
 import { useTranslation } from "@/utils/i18n";
