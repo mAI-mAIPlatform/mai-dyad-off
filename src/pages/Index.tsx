@@ -39,8 +39,18 @@ interface Project {
   updatedAt: Date;
 }
 
+interface CustomModel {
+  id: string;
+  name: string;
+  icon: string;
+  knowledge: string;
+  instructions: string;
+  createdAt: Date;
+}
+
 const Index = () => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [customModels, setCustomModels] = useState<CustomModel[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([
     {
       id: 'default',
@@ -84,6 +94,7 @@ const Index = () => {
     const savedDefaultModel = localStorage.getItem('defaultModel');
     const savedCustomInstructions = localStorage.getItem('customInstructions');
     const savedPersonality = localStorage.getItem('selectedPersonality');
+    const savedCustomModels = localStorage.getItem('customModels');
     
     if (savedUserName) {
       setUserName(savedUserName);
@@ -105,6 +116,9 @@ const Index = () => {
     }
     if (savedPersonality) {
       setSelectedPersonality(savedPersonality);
+    }
+    if (savedCustomModels) {
+      setCustomModels(JSON.parse(savedCustomModels));
     }
   }, []);
 
@@ -414,6 +428,13 @@ const Index = () => {
     ));
   };
 
+  const handleCreateCustomModel = (model: CustomModel) => {
+    const newCustomModels = [...customModels, model];
+    setCustomModels(newCustomModels);
+    localStorage.setItem('customModels', JSON.stringify(newCustomModels));
+    showSuccess(`Modèle "${model.name}" créé avec succès`);
+  };
+
   const generateImage = async (prompt: string): Promise<string> => {
     // Remplacer les espaces par des %20 pour l'URL
     const encodedPrompt = encodeURIComponent(prompt);
@@ -492,6 +513,18 @@ const Index = () => {
           systemMessage += getPersonalityInstructions(selectedPersonality);
         }
 
+        // Vérifier si le modèle utilisé est un modèle personnalisé
+        const customModel = customModels.find(m => m.id === currentConversation.model);
+        if (customModel) {
+          // Ajouter les connaissances et instructions du modèle personnalisé
+          if (customModel.knowledge) {
+            systemMessage += ` Connaissances : ${customModel.knowledge}.`;
+          }
+          if (customModel.instructions) {
+            systemMessage += ` Instructions : ${customModel.instructions}.`;
+          }
+        }
+
         apiMessages.push({
           role: 'user',
           content: content.trim()
@@ -554,6 +587,20 @@ const Index = () => {
 
   const shouldShowGreeting = currentConversation.messages.length === 0;
 
+  // Combiner les modèles par défaut avec les modèles personnalisés
+  const allModels = [
+    { id: 'openai/gpt-4o', name: 'm-4.0', description: t.models['m-4.0'] },
+    { id: 'openai/gpt-4-turbo', name: 'm-4.3-mini', description: t.models['m-4.3-mini'] },
+    { id: 'anthropic/claude-3-5-sonnet', name: 'm-4.5 Pro', description: t.models['m-4.5 Pro'] },
+    { id: 'anthropic/claude-3-opus', name: 'm-4.7o', description: t.models['m-4.7o'] },
+    { id: 'google/gemini-2.0-flash-thinking-exp', name: 'm-4.9+', description: t.models['m-4.9+'] },
+    ...customModels.map(model => ({
+      id: model.id,
+      name: model.name,
+      description: model.instructions || 'Modèle personnalisé'
+    }))
+  ];
+
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <div className="h-screen flex bg-white dark:bg-gray-900">
@@ -574,6 +621,9 @@ const Index = () => {
           language={selectedLanguage}
           iconColor={iconColor}
           onNewGhostChat={handleNewGhostChat}
+          customModels={customModels}
+          onCreateCustomModel={handleCreateCustomModel}
+          betaFeaturesEnabled={betaFeaturesEnabled}
         />
 
         <div className="flex-1 flex flex-col">
@@ -591,6 +641,7 @@ const Index = () => {
                 <ModelDropdown
                   selectedModel={currentConversation.model}
                   onModelChange={handleConversationModelChange}
+                  customModels={customModels}
                 />
               </div>
               <SettingsDialog

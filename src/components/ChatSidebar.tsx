@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, MessageSquare, Trash2, Edit, Check, X, Folder, Move, Ghost } from "lucide-react";
+import { Plus, MessageSquare, Trash2, Edit, Check, X, Folder, Move, Ghost, Star } from "lucide-react";
 import { useTranslation } from "@/utils/i18n";
 import IconPicker from "./IconPicker";
 import MoveToProjectDialog from "./MoveToProjectDialog";
+import CustomModelDialog from "./CustomModelDialog";
 import * as LucideIcons from "lucide-react";
 
 interface Conversation {
@@ -27,6 +28,15 @@ interface Project {
   updatedAt: Date;
 }
 
+interface CustomModel {
+  id: string;
+  name: string;
+  icon: string;
+  knowledge: string;
+  instructions: string;
+  createdAt: Date;
+}
+
 interface ChatSidebarProps {
   projects: Project[];
   conversations: Conversation[];
@@ -44,6 +54,9 @@ interface ChatSidebarProps {
   language: string;
   iconColor: string;
   onNewGhostChat: () => void;
+  customModels: CustomModel[];
+  onCreateCustomModel: (model: CustomModel) => void;
+  betaFeaturesEnabled: boolean;
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
@@ -62,7 +75,10 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   currentConversationId,
   language,
   iconColor,
-  onNewGhostChat
+  onNewGhostChat,
+  customModels,
+  onCreateCustomModel,
+  betaFeaturesEnabled
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -75,6 +91,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [selectedConversationToMove, setSelectedConversationToMove] = useState<string | null>(null);
   const [showGhostButton, setShowGhostButton] = useState(false);
+  const [customModelDialogOpen, setCustomModelDialogOpen] = useState(false);
   
   const t = useTranslation(language);
 
@@ -471,6 +488,22 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             ))}
           </div>
         </div>
+
+        {/* Bouton mAIs (Bêta) */}
+        <div className="p-2 border-t border-gray-200 dark:border-gray-800">
+          <Button
+            onClick={() => setCustomModelDialogOpen(true)}
+            className={`w-full justify-start text-xs h-8 ${
+              betaFeaturesEnabled 
+                ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700' 
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed border border-gray-200 dark:border-gray-700'
+            }`}
+            disabled={!betaFeaturesEnabled}
+          >
+            <Star className={`w-3 h-3 mr-2 ${getIconColorClass()}`} />
+            mAIs (Bêta)
+          </Button>
+        </div>
       </div>
 
       <MoveToProjectDialog
@@ -479,7 +512,15 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         projects={projects}
         onMoveToProject={handleMoveToProject}
         iconColor={iconColor}
-        language={language} // Ajout de la prop manquante
+        language={language}
+      />
+      
+      <CustomModelDialog
+        open={customModelDialogOpen}
+        onOpenChange={setCustomModelDialogOpen}
+        onCreateModel={onCreateCustomModel}
+        iconColor={iconColor}
+        language={language}
       />
     </>
   );
