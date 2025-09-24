@@ -206,7 +206,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 <Button
                   onClick={onNewGhostChat}
                   className="h-7 w-7 p-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
-                  title="Nouvelle conversation Fantôme"
+                  title={t.ghost.newChat}
                   onMouseEnter={() => setShowGhostButton(true)}
                   onMouseLeave={() => setShowGhostButton(false)}
                 >

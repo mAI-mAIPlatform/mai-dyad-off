@@ -189,7 +189,7 @@ const Index = () => {
     const newGhostConversation: Conversation = {
       id: `ghost-${Date.now()}`,
       projectId: currentProjectId,
-      title: `${t.chat.newConversation} (Fantôme)`,
+      title: t.ghost.newChat,
       messages: [],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -198,7 +198,7 @@ const Index = () => {
     };
     setConversations(prev => [newGhostConversation, ...prev]);
     setCurrentConversationId(newGhostConversation.id);
-    showSuccess("Conversation Fantôme créée");
+    showSuccess(t.ghost.created);
   };
 
   const handleSelectConversation = (id: string) => {
@@ -584,7 +584,7 @@ const Index = () => {
                   {currentConversation.title}
                   {currentConversation.isGhost && (
                     <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                      Fantôme
+                      {t.ghost.badge}
                     </span>
                   )}
                 </h1>

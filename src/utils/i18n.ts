@@ -49,6 +49,12 @@ export interface Translation {
     delete: string;
     rename: string;
   };
+  ghost: {
+    mode: string;
+    newChat: string;
+    badge: string;
+    created: string;
+  };
 }
 
 export const translations: Record<string, Translation> = {
@@ -100,6 +106,12 @@ export const translations: Record<string, Translation> = {
     actions: {
       delete: "Supprimer",
       rename: "Renommer"
+    },
+    ghost: {
+      mode: "Fantôme",
+      newChat: "Nouvelle conversation Fantôme",
+      badge: "Fantôme",
+      created: "Conversation Fantôme créée"
     }
   },
   en: {
@@ -150,6 +162,12 @@ export const translations: Record<string, Translation> = {
     actions: {
       delete: "Delete",
       rename: "Rename"
+    },
+    ghost: {
+      mode: "Ghost",
+      newChat: "New Ghost Conversation",
+      badge: "Ghost",
+      created: "Ghost conversation created"
     }
   },
   es: {
@@ -200,6 +218,12 @@ export const translations: Record<string, Translation> = {
     actions: {
       delete: "Eliminar",
       rename: "Renombrar"
+    },
+    ghost: {
+      mode: "Fantasma",
+      newChat: "Nueva Conversación Fantasma",
+      badge: "Fantasma",
+      created: "Conversación fantasma creada"
     }
   },
   de: {
@@ -250,6 +274,12 @@ export const translations: Record<string, Translation> = {
     actions: {
       delete: "Löschen",
       rename: "Umbenennen"
+    },
+    ghost: {
+      mode: "Geist",
+      newChat: "Neue Geister-Konversation",
+      badge: "Geist",
+      created: "Geister-Konversation erstellt"
     }
   },
   pt: {
@@ -300,6 +330,12 @@ export const translations: Record<string, Translation> = {
     actions: {
       delete: "Excluir",
       rename: "Renomear"
+    },
+    ghost: {
+      mode: "Fantasma",
+      newChat: "Nova Conversa Fantasma",
+      badge: "Fantasma",
+      created: "Conversa fantasma criada"
     }
   }
 };
