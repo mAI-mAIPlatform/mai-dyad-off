@@ -48,7 +48,7 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
     },
     {
       id: 'google/gemini-2.0-flash-thinking-exp',
-      name: 'm-9+',
+      name: 'm-4.9+',
       description: 'Rapide, court'
     }
   ];
