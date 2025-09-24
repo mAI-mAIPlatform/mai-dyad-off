@@ -1,81 +1,99 @@
+"use client";
+
 export interface OpenRouterMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: 'system' | 'user' | 'assistant';
   content: string;
 }
 
 export interface OpenRouterResponse {
   choices: Array<{
     message: {
-      role: string;
       content: string;
     };
-    finish_reason: string;
   }>;
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
-  error?: {
-    message: string;
-    code: number;
-  };
 }
 
 export class OpenRouterService {
   private static readonly API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-  private static readonly API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+  private static readonly API_KEY = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
 
-  static async sendMessage(
-    messages: OpenRouterMessage[],
-    model: string = 'openai/gpt-4o'
-  ): Promise<OpenRouterResponse> {
-    try {
-      const response = await fetch(this.API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.API_KEY}`,
-          'HTTP-Referer': window.location.origin,
-          'X-Title': 'mAI Chat Application'
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          temperature: 0.7,
-          max_tokens: 1000,
-          stream: false
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error?.message || `HTTP error! status: ${response.status}`);
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Error calling OpenRouter API:', error);
-      throw error;
+  static async sendMessage(messages: OpenRouterMessage[], model: string): Promise<OpenRouterResponse> {
+    if (!this.API_KEY) {
+      throw new Error('Clé API OpenRouter non configurée');
     }
+
+    const response = await fetch(this.API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.API_KEY}`,
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'Chat Application'
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        max_tokens: 4000,
+        temperature: 0.7,
+        top_p: 0.9,
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      
+      // Gestion spécifique des erreurs OpenRouter
+      if (response.status === 401) {
+        throw new Error('Clé API invalide. Veuillez vérifier votre configuration.');
+      } else if (response.status === 429) {
+        throw new Error('Limite de requêtes dépassée. Veuillez réessayer plus tard.');
+      } else if (response.status === 400) {
+        throw new Error('Requête invalide. Veuillez vérifier vos paramètres.');
+      } else {
+        throw new Error(errorData.error?.message || `Erreur serveur (${response.status})`);
+      }
+    }
+
+    const data = await response.json();
+    return data;
   }
 
-  static formatMessagesForAPI(messages: OpenRouterMessage[], language: string = 'fr'): OpenRouterMessage[] {
-    // Messages système selon la langue choisie
-    const systemMessages: Record<string, string> = {
-      fr: 'Tu es mAI, un assistant IA utile, amical et professionnel. Réponds en français de manière claire et concise.',
-      en: 'You are mAI, a helpful, friendly and professional AI assistant. Respond in English in a clear and concise manner.',
-      es: 'Eres mAI, un asistente de IA útil, amigable y profesional. Responde en español de manera clara y concisa.',
-      de: 'Du bist mAI, ein hilfsbereiter, freundlicher und professioneller KI-Assistent. Antworte auf Deutsch klar und prägnant.',
-      pt: 'És mAI, um assistente de IA útil, amigável e profissional. Responde em português de forma clara e concisa.'
-    };
-
+  static formatMessagesForAPI(messages: OpenRouterMessage[], language: string): OpenRouterMessage[] {
+    // Ajouter un message système pour le contexte linguistique si nécessaire
     const systemMessage: OpenRouterMessage = {
       role: 'system',
-      content: systemMessages[language] || systemMessages.fr
+      content: `Vous êtes un assistant IA utile. Répondez dans la langue: ${language}. Soyez concis, précis et utile.`
     };
 
     return [systemMessage, ...messages];
+  }
+
+  // Méthode pour vérifier la validité de la clé API
+  static async validateApiKey(): Promise<boolean> {
+    if (!this.API_KEY) return false;
+
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
+        headers: {
+          'Authorization': `Bearer ${this.API_KEY}`
+        }
+      });
+
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  // Méthode pour obtenir les modèles disponibles
+  static async getAvailableModels(): Promise<any[]> {
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/models');
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('Erreur lors de la récupération des modèles:', error);
+      return [];
+    }
   }
 }

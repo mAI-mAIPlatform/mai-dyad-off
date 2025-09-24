@@ -1,34 +1,39 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Copy, Edit, Check, X, Star, RotateCw, ChevronDown, Download } from "lucide-react";
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { showSuccess, showError } from "@/utils/toast";
-import { useTranslation } from "@/utils/i18n";
-import ReactMarkdown from 'react-markdown';
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Copy, 
+  Edit, 
+  RotateCcw, 
+  MoreHorizontal,
+  User,
+  Bot,
+  Check,
+  X
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
+import { useTranslation } from "@/utils/i18n";
+import { showSuccess, showError } from "@/utils/toast";
 
 interface ChatMessageProps {
   id: string;
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;
-  isGenerating?: boolean;
-  onEditMessage: (id: string, newContent: string) => void;
+  onEditMessage: (messageId: string, newContent: string) => void;
   onCopyMessage: (content: string) => void;
   onRegenerateResponse?: (messageId: string, newContent: string, options?: { model?: string, length?: 'shorter' | 'longer' }) => void;
   language: string;
   iconColor: string;
+  isGenerating?: boolean;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -36,42 +41,43 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   content,
   role,
   timestamp,
-  isGenerating = false,
   onEditMessage,
   onCopyMessage,
   onRegenerateResponse,
   language,
-  iconColor
+  iconColor,
+  isGenerating = false
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedContent, setEditedContent] = useState(content);
-  const [displayedText, setDisplayedText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  
+  const [editContent, setEditContent] = useState(content);
   const t = useTranslation(language);
 
-  useEffect(() => {
-    if (role === 'assistant' && !isGenerating && content) {
-      setIsTyping(true);
-      setDisplayedText('');
-      
-      let index = 0;
-      const timer = setInterval(() => {
-        if (index < content.length) {
-          setDisplayedText(content.slice(0, index + 1));
-          index++;
-        } else {
-          clearInterval(timer);
-          setIsTyping(false);
-        }
-      }, 15);
+  const handleCopy = () => {
+    onCopyMessage(content);
+  };
 
-      return () => clearInterval(timer);
-    } else {
-      setDisplayedText(content);
-      setIsTyping(false);
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditContent(content);
+  };
+
+  const handleSaveEdit = () => {
+    if (editContent.trim() && editContent !== content) {
+      onEditMessage(id, editContent.trim());
     }
-  }, [content, role, isGenerating]);
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditContent(content);
+    setIsEditing(false);
+  };
+
+  const handleRegenerate = (options?: { model?: string, length?: 'shorter' | 'longer' }) => {
+    if (onRegenerateResponse) {
+      onRegenerateResponse(id, content, options);
+    }
+  };
 
   const getIconColorClass = () => {
     const colorMap: Record<string, string> = {
@@ -89,301 +95,181 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     return colorMap[iconColor] || 'text-black dark:text-white';
   };
 
-  const handleCopy = () => {
-    onCopyMessage(content);
-    showSuccess(t.messages.copied);
+  const getUserAvatar = () => {
+    const savedAvatar = localStorage.getItem('userAvatar');
+    return savedAvatar || '';
   };
 
-  const handleEdit = () => {
-    setIsEditing(true);
-    setEditedContent(content);
+  const getAIAvatar = () => {
+    const savedAIAvatar = localStorage.getItem('aiAvatar');
+    return savedAIAvatar || '';
   };
 
-  const handleSaveEdit = () => {
-    if (editedContent.trim() && editedContent !== content) {
-      onEditMessage(id, editedContent.trim());
-      
-      // Régénérer la réponse de l'IA si c'est un message utilisateur modifié
-      if (role === 'user' && onRegenerateResponse) {
-        onRegenerateResponse(id, editedContent.trim());
-      }
+  const formatContent = (text: string) => {
+    // Gestion des erreurs d'API
+    if (text.includes('User not found') || text.includes('Erreur:')) {
+      return (
+        <div className="text-red-500">
+          <p className="font-medium">Erreur de connexion</p>
+          <p className="text-sm">Veuillez vérifier votre connexion et réessayer.</p>
+        </div>
+      );
     }
-    setIsEditing(false);
-  };
 
-  const handleCancelEdit = () => {
-    setEditedContent(content);
-    setIsEditing(false);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSaveEdit();
+    // Gestion des images
+    const imageMatch = text.match(/!\[.*?\]\((.*?)\)/);
+    if (imageMatch) {
+      return (
+        <div className="space-y-2">
+          <p>{text.replace(/!\[.*?\]\(.*?\)/, '').trim()}</p>
+          <img 
+            src={imageMatch[1]} 
+            alt="Image générée" 
+            className="max-w-full h-auto rounded-lg border"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+            }}
+          />
+        </div>
+      );
     }
-    if (e.key === 'Escape') {
-      handleCancelEdit();
-    }
+
+    // Formatage du texte avec sauts de ligne
+    return text.split('\n').map((line, index) => (
+      <p key={index} className={index > 0 ? 'mt-2' : ''}>
+        {line}
+      </p>
+    ));
   };
 
-  const handleRegenerate = (options?: { model?: string, length?: 'shorter' | 'longer' }) => {
-    if (onRegenerateResponse) {
-      onRegenerateResponse(id, content, options);
-    }
-  };
-
-  // Fonction pour extraire les URLs d'images du contenu
-  const extractImageUrls = (text: string): string[] => {
-    // Expression régulière pour détecter les images générées par pollinations.ai
-    const urlRegex = /https?:\/\/image\.pollinations\.ai\/prompt\/[^\s"')>]+/gi;
-    const matches = text.match(urlRegex);
-    return matches ? matches : [];
-  };
-
-  const imageUrls = extractImageUrls(content);
-
-  // Fonction pour télécharger une image
-  const downloadImage = async (url: string) => {
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      
-      // Créer le nom de fichier avec la date et l'heure
-      const now = new Date();
-      const date = now.toISOString().split('T')[0];
-      const time = now.toTimeString().split(' ')[0].replace(/:/g, '-');
-      const filename = `mAImage_${date}_${time}.png`;
-      
-      // Créer un lien de téléchargement
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
-      
-      showSuccess("Image téléchargée avec succès");
-    } catch (error) {
-      console.error('Erreur lors du téléchargement:', error);
-      showError("Erreur lors du téléchargement de l'image");
-    }
-  };
+  const isUser = role === 'user';
 
   return (
-    <div className={`group py-4 ${role === 'user' ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}`}>
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="flex gap-4">
-          {/* Avatar */}
-          <div className="flex-shrink-0">
-            <Avatar className="w-8 h-8">
-              <AvatarFallback className={
-                role === 'user' 
-                  ? 'bg-gray-500 text-white' 
-                  : 'bg-transparent'
-              }>
-                {role === 'user' ? (
-                  <User className="w-4 h-4" />
-                ) : isGenerating ? (
-                  <Star className={`w-4 h-4 animate-spin ${getIconColorClass()}`} />
-                ) : (
-                  <Star className={`w-4 h-4 ${getIconColorClass()}`} />
-                )}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-
-          {/* Message Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-medium text-sm">
-                {role === 'user' ? t.messages.you : 'mAI'}
-              </span>
-              <span className="text-xs text-gray-500">
-                {timestamp.toLocaleTimeString()}
-              </span>
-            </div>
-            
-            {isEditing ? (
-              <div className="space-y-2">
-                <Textarea
-                  value={editedContent}
-                  onChange={(e) => setEditedContent(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  className="min-h-[100px] resize-none"
-                  autoFocus
-                />
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={handleSaveEdit}
-                    className="h-8 px-3 text-xs"
-                  >
-                    <Check className="w-3 h-3 mr-1" />
-                    {t.messages.save}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCancelEdit}
-                    className="h-8 px-3 text-xs"
-                  >
-                    <X className="w-3 h-3 mr-1" />
-                    {t.messages.cancel}
-                  </Button>
-                </div>
-                </div>
+    <div className={`flex gap-4 mb-6 ${isUser ? 'justify-end' : 'justify-start'}`}>
+      {/* Avatar et contenu de l'IA (à gauche) */}
+      {!isUser && (
+        <div className="flex-shrink-0">
+          <Avatar className="w-8 h-8">
+            {getAIAvatar() ? (
+              <AvatarImage src={getAIAvatar()} alt="AI Avatar" />
             ) : (
-              <>
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <ReactMarkdown
-                    components={{
-                      img: ({ node, ...props }) => (
-                        <img 
-                          {...props} 
-                          className="max-w-full h-auto rounded-lg my-2"
-                          alt={props.alt || "Image générée"}
-                        />
-                      ),
-                      p: ({ node, ...props }) => (
-                        <p {...props} className="whitespace-pre-wrap leading-relaxed" />
-                      )
-                    }}
-                  >
-                    {role === 'assistant' && !isGenerating ? displayedText : content}
-                  </ReactMarkdown>
-                  {isTyping && (
-                    <span className="inline-block w-2 h-4 bg-current ml-1 animate-pulse align-middle"></span>
-                  )}
-                </div>
+              <AvatarFallback className="bg-blue-500 text-white">
+                <Bot className="w-4 h-4" />
+              </AvatarFallback>
+            )}
+          </Avatar>
+        </div>
+      )}
 
-                {/* Images générées */}
-                {imageUrls.length > 0 && (
-                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {imageUrls.map((url, index) => (
-                      <div key={index} className="relative group/image">
-                        <img 
-                          src={url} 
-                          alt={`Image générée ${index + 1}`} 
-                          className="rounded-lg w-full h-auto object-cover border border-gray-200 dark:border-gray-700"
-                        />
-                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/image:opacity-100 transition-opacity">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={() => {
-                              navigator.clipboard.writeText(url);
-                              showSuccess("URL de l'image copiée");
-                            }}
-                          >
-                            <Copy className="w-3 h-3 mr-1" />
-                            {t.messages.copy}
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={() => downloadImage(url)}
-                          >
-                            <Download className="w-3 h-3 mr-1" />
-                            Télécharger
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+      {/* Message */}
+      <div className={`flex-1 ${isUser ? 'max-w-[80%]' : 'max-w-[80%]'}`}>
+        <Card className={`p-4 ${isUser ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'}`}>
+          {isEditing ? (
+            <div className="space-y-2">
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="w-full p-2 border rounded-md resize-none min-h-[100px]"
+                autoFocus
+              />
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" size="sm" onClick={handleCancelEdit}>
+                  <X className="w-3 h-3 mr-1" />
+                  Annuler
+                </Button>
+                <Button size="sm" onClick={handleSaveEdit}>
+                  <Check className="w-3 h-3 mr-1" />
+                  Sauvegarder
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="prose dark:prose-invert max-w-none">
+                {isGenerating ? (
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <div className="animate-pulse bg-gray-300 rounded-full w-2 h-2"></div>
+                    <div className="animate-pulse bg-gray-300 rounded-full w-2 h-2" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="animate-pulse bg-gray-300 rounded-full w-2 h-2" style={{ animationDelay: '0.4s' }}></div>
                   </div>
+                ) : (
+                  formatContent(content)
                 )}
-
-                {/* Actions - Masqué pendant la frappe */}
-                {!isTyping && role === 'assistant' && (
-                  <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+              </div>
+              
+              <div className={`flex items-center justify-between mt-3 text-xs text-gray-500 ${isUser ? 'flex-row-reverse' : ''}`}>
+                <span>{timestamp.toLocaleTimeString()}</span>
+                
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleCopy}
+                    className="h-6 w-6 text-gray-400 hover:text-gray-600"
+                    title={t.messages.copy}
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                  
+                  {isUser && (
                     <Button
                       variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs"
-                      onClick={handleCopy}
+                      size="icon"
+                      onClick={handleEdit}
+                      className="h-6 w-6 text-gray-400 hover:text-gray-600"
+                      title={t.messages.edit}
                     >
-                      <Copy className="w-3 h-3 mr-1" />
-                      {t.messages.copy}
+                      <Edit className="w-3 h-3" />
                     </Button>
-                    
+                  )}
+                  
+                  {!isUser && onRegenerateResponse && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-xs"
+                          size="icon"
+                          className="h-6 w-6 text-gray-400 hover:text-gray-600"
+                          title={t.messages.regenerate}
                         >
-                          <RotateCw className="w-3 h-3 mr-1" />
-                          Regénérer
-                          <ChevronDown className="w-3 h-3 ml-1" />
+                          <RotateCcw className="w-3 h-3" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-48">
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleRegenerate()}>
+                          Régénérer
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleRegenerate({ length: 'shorter' })}>
                           Plus court
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleRegenerate({ length: 'longer' })}>
                           Plus long
                         </DropdownMenuItem>
-                        
-                        <DropdownMenuSub>
-                          <DropdownMenuSubTrigger className="cursor-pointer">
-                            Changer de modèle
-                            <ChevronDown className="w-3 h-3 ml-auto" />
-                          </DropdownMenuSubTrigger>
-                          <DropdownMenuSubContent className="w-48">
-                            <DropdownMenuItem onClick={() => handleRegenerate({ model: 'openai/gpt-4o' })}>
-                              m-4.0
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleRegenerate({ model: 'openai/gpt-4-turbo' })}>
-                              m-4.3-mini
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleRegenerate({ model: 'anthropic/claude-3-5-sonnet' })}>
-                              m-4.5 Pro
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleRegenerate({ model: 'anthropic/claude-3-opus' })}>
-                              m-4.7o
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleRegenerate({ model: 'google/gemini-2.0-flash-thinking-exp' })}>
-                              m-4.9+
-                            </DropdownMenuItem>
-                          </DropdownMenuSubContent>
-                        </DropdownMenuSub>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </div>
-                )}
-                
-                {role === 'user' && (
-                  <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs"
-                      onClick={handleCopy}
-                    >
-                      <Copy className="w-3 h-3 mr-1" />
-                      {t.messages.copy}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs"
-                      onClick={handleEdit}
-                    >
-                      <Edit className="w-3 h-3 mr-1" />
-                      {t.messages.edit}
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </Card>
       </div>
+
+      {/* Avatar de l'utilisateur (à droite) */}
+      {isUser && (
+        <div className="flex-shrink-0">
+          <Avatar className="w-8 h-8">
+            {getUserAvatar() ? (
+              <AvatarImage src={getUserAvatar()} alt="User Avatar" />
+            ) : (
+              <AvatarFallback className="bg-gray-500 text-white">
+                <User className="w-4 h-4" />
+              </AvatarFallback>
+            )}
+          </Avatar>
+        </div>
+      )}
     </div>
   );
 };
