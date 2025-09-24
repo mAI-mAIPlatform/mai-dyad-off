@@ -10,6 +10,14 @@ export interface Translation {
     darkMode: string;
     save: string;
     version: string;
+    userNamePlaceholder?: string;
+    defaultModel?: string;
+    betaFeatures?: string;
+    betaFeaturesDescription?: string;
+    customInstructions?: string;
+    customInstructionsPlaceholder?: string;
+    cancel?: string;
+    saved?: string;
   };
   chat: {
     newConversation: string;
@@ -30,6 +38,7 @@ export interface Translation {
     copied: string;
     technicalError: string;
     generating: string;
+    regenerate?: string;
   };
   languages: {
     fr: string;
@@ -78,7 +87,15 @@ export const translations: Record<string, Translation> = {
       model: "Modèle IA",
       darkMode: "Mode sombre",
       save: "Sauvegarder",
-      version: "26 0.8 (Public Update)"
+      version: "26 0.8 (Public Update)",
+      userNamePlaceholder: "Entrez votre nom",
+      defaultModel: "Modèle par défaut",
+      betaFeatures: "Fonctionnalités Bêta",
+      betaFeaturesDescription: "Activer les fonctionnalités expérimentales",
+      customInstructions: "Instructions personnalisées",
+      customInstructionsPlaceholder: "Informations supplémentaires sur vous ou vos préférences...",
+      cancel: "Annuler",
+      saved: "Paramètres enregistrés"
     },
     chat: {
       newConversation: "Nouvelle conversation",
@@ -98,7 +115,8 @@ export const translations: Record<string, Translation> = {
       cancel: "Annuler",
       copied: "Message copié",
       technicalError: "Désolé, je rencontre des difficultés techniques. Pouvez-vous réessayer ?",
-      generating: "Génération en cours..."
+      generating: "Génération en cours...",
+      regenerate: "Régénérer la réponse"
     },
     languages: {
       fr: "Français",
@@ -145,7 +163,15 @@ export const translations: Record<string, Translation> = {
       model: "AI Model",
       darkMode: "Dark mode",
       save: "Save",
-      version: "26 0.8 (Public Update)"
+      version: "26 0.8 (Public Update)",
+      userNamePlaceholder: "Enter your name",
+      defaultModel: "Default Model",
+      betaFeatures: "Beta Features",
+      betaFeaturesDescription: "Enable experimental features",
+      customInstructions: "Custom Instructions",
+      customInstructionsPlaceholder: "Additional information about you or your preferences...",
+      cancel: "Cancel",
+      saved: "Settings saved"
     },
     chat: {
       newConversation: "New conversation",
@@ -165,7 +191,8 @@ export const translations: Record<string, Translation> = {
       cancel: "Cancel",
       copied: "Message copied",
       technicalError: "Sorry, I'm experiencing technical difficulties. Please try again.",
-      generating: "Generating..."
+      generating: "Generating...",
+      regenerate: "Regenerate response"
     },
     languages: {
       fr: "French",
@@ -212,7 +239,15 @@ export const translations: Record<string, Translation> = {
       model: "Modelo de IA",
       darkMode: "Modo oscuro",
       save: "Guardar",
-      version: "26 0.8 (Public Update)"
+      version: "26 0.8 (Public Update)",
+      userNamePlaceholder: "Ingrese su nombre",
+      defaultModel: "Modelo predeterminado",
+      betaFeatures: "Funciones Beta",
+      betaFeaturesDescription: "Habilitar funciones experimentales",
+      customInstructions: "Instrucciones personalizadas",
+      customInstructionsPlaceholder: "Información adicional sobre usted o sus preferencias...",
+      cancel: "Cancelar",
+      saved: "Configuración guardada"
     },
     chat: {
       newConversation: "Nueva conversación",
@@ -232,7 +267,8 @@ export const translations: Record<string, Translation> = {
       cancel: "Cancelar",
       copied: "Mensaje copiado",
       technicalError: "Lo siento, estoy experimentando dificultades técnicas. Por favor, inténtelo de nuevo.",
-      generating: "Generando..."
+      generating: "Generando...",
+      regenerate: "Regenerar respuesta"
     },
     languages: {
       fr: "Francés",
@@ -279,7 +315,15 @@ export const translations: Record<string, Translation> = {
       model: "KI-Modell",
       darkMode: "Dunkelmodus",
       save: "Speichern",
-      version: "26 0.8 (Public Update)"
+      version: "26 0.8 (Public Update)",
+      userNamePlaceholder: "Geben Sie Ihren Namen ein",
+      defaultModel: "Standardmodell",
+      betaFeatures: "Beta-Funktionen",
+      betaFeaturesDescription: "Experimentelle Funktionen aktivieren",
+      customInstructions: "Benutzerdefinierte Anweisungen",
+      customInstructionsPlaceholder: "Zusätzliche Informationen über Sie oder Ihre Vorlieben...",
+      cancel: "Abbrechen",
+      saved: "Einstellungen gespeichert"
     },
     chat: {
       newConversation: "Neue Konversation",
@@ -299,7 +343,8 @@ export const translations: Record<string, Translation> = {
       cancel: "Abbrechen",
       copied: "Nachricht kopiert",
       technicalError: "Entschuldigung, ich habe technische Schwierigkeiten. Bitte versuchen Sie es erneut.",
-      generating: "Wird generiert..."
+      generating: "Wird generiert...",
+      regenerate: "Antwort regenerieren"
     },
     languages: {
       fr: "Französisch",
@@ -346,7 +391,15 @@ export const translations: Record<string, Translation> = {
       model: "Modelo de IA",
       darkMode: "Modo escuro",
       save: "Salvar",
-      version: "26 0.8 (Public Update)"
+      version: "26 0.8 (Public Update)",
+      userNamePlaceholder: "Digite seu nome",
+      defaultModel: "Modelo padrão",
+      betaFeatures: "Recursos Beta",
+      betaFeaturesDescription: "Ativar recursos experimentais",
+      customInstructions: "Instruções personalizadas",
+      customInstructionsPlaceholder: "Informações adicionais sobre você ou suas preferências...",
+      cancel: "Cancelar",
+      saved: "Configurações salvas"
     },
     chat: {
       newConversation: "Nova conversa",
@@ -366,7 +419,8 @@ export const translations: Record<string, Translation> = {
       cancel: "Cancelar",
       copied: "Mensagem copiada",
       technicalError: "Desculpe, estou com dificuldades técnicas. Por favor, tente novamente.",
-      generating: "Gerando..."
+      generating: "Gerando...",
+      regenerate: "Regenerar resposta"
     },
     languages: {
       fr: "Francês",

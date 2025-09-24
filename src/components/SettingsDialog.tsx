@@ -106,7 +106,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     onUserNameChange(localUserName);
     onCustomInstructionsChange(localCustomInstructions);
     setIsOpen(false);
-    showSuccess(t.settings.saved);
+    showSuccess("Paramètres enregistrés");
   };
 
   const handleAvatarChange = (type: 'user' | 'ai', file: File) => {
@@ -277,13 +277,13 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
               id="userName"
               value={localUserName}
               onChange={(e) => setLocalUserName(e.target.value)}
-              placeholder={t.settings.userNamePlaceholder}
+              placeholder="Entrez votre nom"
             />
           </div>
 
           {/* Section Modèle par défaut */}
           <div className="space-y-3">
-            <Label htmlFor="model">{t.settings.defaultModel}</Label>
+            <Label htmlFor="model">Modèle par défaut</Label>
             <Select value={selectedModel} onValueChange={onModelChange}>
               <SelectTrigger id="model">
                 <SelectValue placeholder="Sélectionnez un modèle" />
@@ -335,9 +335,9 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
           {/* Section Fonctionnalités Bêta */}
           <div className="flex items-center justify-between">
             <Label htmlFor="betaFeatures" className="flex-1">
-              {t.settings.betaFeatures}
+              Fonctionnalités Bêta
               <p className="text-sm text-gray-500 font-normal">
-                {t.settings.betaFeaturesDescription}
+                Activer les fonctionnalités expérimentales
               </p>
             </Label>
             <Switch
@@ -350,12 +350,12 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
           {/* Section Instructions personnalisées (uniquement si bêta activé) */}
           {betaFeaturesEnabled && (
             <div className="space-y-3">
-              <Label htmlFor="customInstructions">{t.settings.customInstructions}</Label>
+              <Label htmlFor="customInstructions">Instructions personnalisées</Label>
               <textarea
                 id="customInstructions"
                 value={localCustomInstructions}
                 onChange={(e) => setLocalCustomInstructions(e.target.value)}
-                placeholder={t.settings.customInstructionsPlaceholder}
+                placeholder="Informations supplémentaires sur vous ou vos préférences..."
                 className="w-full p-3 border rounded-md resize-none min-h-[100px]"
               />
             </div>
@@ -383,10 +383,10 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => setIsOpen(false)}>
-            {t.settings.cancel}
+            Annuler
           </Button>
           <Button onClick={handleSave}>
-            {t.settings.save}
+            Enregistrer
           </Button>
         </div>
       </DialogContent>

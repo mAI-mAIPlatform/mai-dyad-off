@@ -231,7 +231,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6 text-gray-400 hover:text-gray-600"
-                          title={t.messages.regenerate}
+                          title="Régénérer la réponse"
                         >
                           <RotateCcw className="w-3 h-3" />
                         </Button>
