@@ -45,6 +45,7 @@ interface CustomModel {
   icon: string;
   knowledge: string;
   instructions: string;
+  baseModel: string;
   createdAt: Date;
 }
 
@@ -540,7 +541,13 @@ const Index = () => {
           });
         }
 
-        const response = await OpenRouterService.sendMessage(formattedMessages, currentConversation.model);
+        // Utiliser le modèle de base du modèle personnalisé s'il existe
+        let modelToUse = currentConversation.model;
+        if (customModel) {
+          modelToUse = customModel.baseModel;
+        }
+
+        const response = await OpenRouterService.sendMessage(formattedMessages, modelToUse);
         
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),

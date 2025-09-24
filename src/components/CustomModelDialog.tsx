@@ -13,6 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Star, X, Upload, FileText } from "lucide-react";
 import IconPicker from "./IconPicker";
 import { useTranslation } from "@/utils/i18n";
@@ -33,6 +40,7 @@ interface CustomModel {
   icon: string;
   knowledge: string;
   instructions: string;
+  baseModel: string;
   createdAt: Date;
 }
 
@@ -46,6 +54,8 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('star');
   const [instructions, setInstructions] = useState('');
+  const [baseModel, setBaseModel] = useState('openai/gpt-4o');
+  const [knowledge, setKnowledge] = useState('');
   const t = useTranslation(language);
   
   const {
@@ -72,16 +82,24 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
     return colorMap[iconColor] || 'text-black dark:text-white';
   };
 
+  const baseModels = [
+    { id: 'openai/gpt-4o', name: 'm-4.0', description: 'Pour les tâches quotidiennes, rapide' },
+    { id: 'openai/gpt-4-turbo', name: 'm-4.3-mini', description: 'Ecologique, court' },
+    { id: 'anthropic/claude-3-5-sonnet', name: 'm-4.5 Pro', description: 'Professionnel, précis' },
+    { id: 'anthropic/claude-3-opus', name: 'm-4.7o', description: 'Précis, long' },
+    { id: 'google/gemini-2.0-flash-thinking-exp', name: 'm-4.9+', description: 'Rapide, court' }
+  ];
+
   const handleCreate = async () => {
     if (!name.trim()) {
       showError("Veuillez entrer un nom pour le modèle");
       return;
     }
 
-    let knowledge = '';
+    let knowledgeContent = knowledge;
     if (selectedFile) {
       try {
-        knowledge = await handleFileUpload();
+        knowledgeContent = await handleFileUpload();
       } catch (error) {
         showError("Erreur lors de l'upload du fichier");
         return;
@@ -92,8 +110,9 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
       id: `custom-${Date.now()}`,
       name,
       icon,
-      knowledge,
+      knowledge: knowledgeContent,
       instructions: instructions.trim(),
+      baseModel,
       createdAt: new Date()
     };
 
@@ -106,6 +125,8 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
     setName('');
     setIcon('star');
     setInstructions('');
+    setBaseModel('openai/gpt-4o');
+    setKnowledge('');
     resetFile();
   };
 
@@ -150,6 +171,29 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
               />
               <span className="text-sm text-gray-500">Choisissez une icône pour votre modèle</span>
             </div>
+          </div>
+
+          {/* Modèle de base */}
+          <div className="space-y-2">
+            <Label>Modèle de base</Label>
+            <Select value={baseModel} onValueChange={setBaseModel}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionnez un modèle de base" />
+              </SelectTrigger>
+              <SelectContent>
+                {baseModels.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{model.name}</span>
+                      <span className="text-xs text-gray-500">{model.description}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500">
+              Choisissez le modèle IA qui servira de base à votre modèle personnalisé
+            </p>
           </div>
 
           {/* Connaissances (fichier) */}
@@ -199,6 +243,18 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
                 </label>
               )}
             </Card>
+            
+            {/* Ou saisie manuelle des connaissances */}
+            <div className="mt-2">
+              <Label htmlFor="knowledge-text" className="text-xs">Ou saisissez directement les connaissances</Label>
+              <Textarea
+                id="knowledge-text"
+                value={knowledge}
+                onChange={(e) => setKnowledge(e.target.value)}
+                placeholder="Saisissez ici les connaissances que l'IA doit utiliser..."
+                className="min-h-[80px] text-xs"
+              />
+            </div>
           </div>
 
           {/* Instructions */}
