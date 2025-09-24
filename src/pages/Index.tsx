@@ -43,8 +43,10 @@ interface CustomModel {
   id: string;
   name: string;
   icon: string;
+  customIcon?: string;
   knowledge: string;
   instructions: string;
+  description: string;
   baseModel: string;
   createdAt: Date;
 }
@@ -604,7 +606,7 @@ const Index = () => {
     ...customModels.map(model => ({
       id: model.id,
       name: model.name,
-      description: model.instructions || 'Modèle personnalisé'
+      description: model.description || model.instructions || 'Modèle personnalisé'
     }))
   ];
 

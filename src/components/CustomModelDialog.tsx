@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Star, X, Upload, FileText } from "lucide-react";
+import { Star, X, Upload, FileText, ImageIcon } from "lucide-react";
 import IconPicker from "./IconPicker";
 import { useTranslation } from "@/utils/i18n";
 import { useFileUpload } from "@/hooks/useFileUpload";
@@ -38,8 +38,10 @@ interface CustomModel {
   id: string;
   name: string;
   icon: string;
+  customIcon?: string; // URL de l'image uploadée
   knowledge: string;
   instructions: string;
+  description: string;
   baseModel: string;
   createdAt: Date;
 }
@@ -53,9 +55,12 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('star');
+  const [description, setDescription] = useState('');
   const [instructions, setInstructions] = useState('');
   const [baseModel, setBaseModel] = useState('openai/gpt-4o');
   const [knowledge, setKnowledge] = useState('');
+  const [customIconFile, setCustomIconFile] = useState<File | null>(null);
+  const [customIconPreview, setCustomIconPreview] = useState<string>('');
   const t = useTranslation(language);
   
   const {
@@ -90,9 +95,46 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
     { id: 'google/gemini-2.0-flash-thinking-exp', name: 'm-4.9+', description: 'Rapide, court' }
   ];
 
+  const handleCustomIconSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Vérifier le type de fichier
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+      if (!allowedTypes.includes(file.type)) {
+        showError("Type de fichier non supporté. Formats acceptés: PNG, JPEG, JPG, SVG");
+        return;
+      }
+      
+      // Vérifier la taille du fichier (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        showError("L'image ne doit pas dépasser 2MB");
+        return;
+      }
+
+      setCustomIconFile(file);
+      
+      // Créer un preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCustomIconPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveCustomIcon = () => {
+    setCustomIconFile(null);
+    setCustomIconPreview('');
+  };
+
   const handleCreate = async () => {
     if (!name.trim()) {
       showError("Veuillez entrer un nom pour le modèle");
+      return;
+    }
+
+    if (!description.trim()) {
+      showError("Veuillez entrer une description pour le modèle");
       return;
     }
 
@@ -101,7 +143,19 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
       try {
         knowledgeContent = await handleFileUpload();
       } catch (error) {
-        showError("Erreur lors de l'upload du fichier");
+        showError("Erreur lors de l'upload du fichier de connaissances");
+        return;
+      }
+    }
+
+    let customIconUrl = '';
+    if (customIconFile) {
+      // Simuler l'upload de l'image (dans une app réelle, vous utiliseriez une API)
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        customIconUrl = customIconPreview; // Pour la démo, on utilise le data URL
+      } catch (error) {
+        showError("Erreur lors de l'upload de l'image");
         return;
       }
     }
@@ -110,8 +164,10 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
       id: `custom-${Date.now()}`,
       name,
       icon,
+      customIcon: customIconUrl,
       knowledge: knowledgeContent,
       instructions: instructions.trim(),
+      description: description.trim(),
       baseModel,
       createdAt: new Date()
     };
@@ -124,9 +180,12 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
   const resetForm = () => {
     setName('');
     setIcon('star');
+    setDescription('');
     setInstructions('');
     setBaseModel('openai/gpt-4o');
     setKnowledge('');
+    setCustomIconFile(null);
+    setCustomIconPreview('');
     resetFile();
   };
 
@@ -152,7 +211,7 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
         <div className="space-y-4 py-4">
           {/* Nom du modèle */}
           <div className="space-y-2">
-            <Label htmlFor="model-name">Nom du modèle</Label>
+            <Label htmlFor="model-name">Nom du modèle *</Label>
             <Input
               id="model-name"
               value={name}
@@ -161,9 +220,74 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
             />
           </div>
 
-          {/* Icône */}
+          {/* Description */}
           <div className="space-y-2">
-            <Label>Icône</Label>
+            <Label htmlFor="model-description">Description *</Label>
+            <Textarea
+              id="model-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Décrivez brièvement votre modèle personnalisé..."
+              className="min-h-[60px]"
+            />
+          </div>
+
+          {/* Logo personnalisé */}
+          <div className="space-y-2">
+            <Label>Logo personnalisé</Label>
+            <Card className="p-3">
+              <input
+                type="file"
+                onChange={handleCustomIconSelect}
+                className="hidden"
+                accept=".png,.jpg,.jpeg,.svg"
+                id="custom-icon-file"
+              />
+              
+              {customIconPreview ? (
+                <div className="flex flex-col items-center">
+                  <div className="relative">
+                    <img 
+                      src={customIconPreview} 
+                      alt="Logo du modèle" 
+                      className="w-16 h-16 object-contain rounded-lg border border-gray-200"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 text-red-500 hover:text-red-600 bg-white border"
+                      onClick={handleRemoveCustomIcon}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Logo personnalisé
+                  </p>
+                </div>
+              ) : (
+                <label 
+                  htmlFor="custom-icon-file"
+                  className="flex flex-col items-center justify-center cursor-pointer py-4"
+                >
+                  <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500 text-center">
+                    Cliquez pour ajouter un logo personnalisé
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    PNG, JPEG, SVG (max 2MB)
+                  </p>
+                </label>
+              )}
+            </Card>
+            <p className="text-xs text-gray-500">
+              Ou choisissez une icône prédéfinie ci-dessous
+            </p>
+          </div>
+
+          {/* Icône prédéfinie */}
+          <div className="space-y-2">
+            <Label>Icône prédéfinie</Label>
             <div className="flex items-center gap-2">
               <IconPicker
                 selectedIcon={icon}
@@ -278,7 +402,7 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
           </Button>
           <Button
             onClick={handleCreate}
-            disabled={!name.trim() || isUploading}
+            disabled={!name.trim() || !description.trim() || isUploading}
           >
             Créer le modèle
           </Button>
