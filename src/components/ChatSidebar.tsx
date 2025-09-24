@@ -479,6 +479,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         projects={projects}
         onMoveToProject={handleMoveToProject}
         iconColor={iconColor}
+        language={language} // Ajout de la prop manquante
       />
     </>
   );
