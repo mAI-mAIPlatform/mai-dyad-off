@@ -19,7 +19,7 @@ interface Conversation {
   createdAt: Date;
   updatedAt: Date;
   isGhost?: boolean;
-  accessCode?: string; // Ajout du code d'accès
+  accessCode?: string;
 }
 
 interface Project {
@@ -28,7 +28,7 @@ interface Project {
   icon: string;
   createdAt: Date;
   updatedAt: Date;
-  accessCode?: string; // Ajout du code d'accès
+  accessCode?: string;
 }
 
 interface ChatSidebarProps {
@@ -53,8 +53,8 @@ interface ChatSidebarProps {
   onUpdateCustomModel: (model: CustomModel) => void;
   onDeleteCustomModel: (id: string) => void;
   betaFeaturesEnabled: boolean;
-  onSetConversationAccessCode: (id: string, code: string) => void; // Nouvelle prop
-  onSetProjectAccessCode: (id: string, code: string) => void; // Nouvelle prop
+  onSetConversationAccessCode: (id: string, code: string) => void;
+  onSetProjectAccessCode: (id: string, code: string) => void;
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
@@ -105,6 +105,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [accessCodeOld, setAccessCodeOld] = useState('');
   const [accessCodeNew, setAccessCodeNew] = useState('');
   const [accessCodeConfirmNew, setAccessCodeConfirmNew] = useState('');
+  
+  // État pour la vérification des codes d'accès
+  const [accessCodeCheckDialogOpen, setAccessCodeCheckDialogOpen] = useState(false);
+  const [accessCodeCheckInput, setAccessCodeCheckInput] = useState('');
+  const [accessCheckTarget, setAccessCheckTarget] = useState<{type: 'project' | 'conversation', id: string} | null>(null);
   
   const t = useTranslation(language);
 
@@ -227,10 +232,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     setAccessCodeTarget({type, id});
     
     if (target?.accessCode) {
-      // Si un code existe déjà, demander l'ancien code
       setAccessCodeStep('enterOld');
     } else {
-      // Sinon, créer un nouveau code
       setAccessCodeStep('create');
     }
     
@@ -305,6 +308,60 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     }
     if (e.key === 'Escape') {
       handleAccessCodeCancel();
+    }
+  };
+
+  // Fonction pour vérifier l'accès à un élément protégé
+  const checkAccessCode = (type: 'project' | 'conversation', id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const target = type === 'project' 
+      ? projects.find(p => p.id === id)
+      : conversations.find(c => c.id === id);
+    
+    if (target?.accessCode) {
+      setAccessCheckTarget({type, id});
+      setAccessCodeCheckInput('');
+      setAccessCodeCheckDialogOpen(true);
+    } else {
+      // Si pas de code d'accès, sélectionner normalement
+      if (type === 'project') {
+        onSelectProject(id);
+      } else {
+        onSelectConversation(id);
+      }
+    }
+  };
+
+  const handleAccessCodeCheck = () => {
+    if (!accessCheckTarget) return;
+    
+    const target = accessCheckTarget.type === 'project' 
+      ? projects.find(p => p.id === accessCheckTarget.id)
+      : conversations.find(c => c.id === accessCheckTarget.id);
+    
+    if (target?.accessCode === accessCodeCheckInput) {
+      if (accessCheckTarget.type === 'project') {
+        onSelectProject(accessCheckTarget.id);
+      } else {
+        onSelectConversation(accessCheckTarget.id);
+      }
+      setAccessCodeCheckDialogOpen(false);
+      setAccessCodeCheckInput('');
+    }
+  };
+
+  const handleAccessCodeCheckCancel = () => {
+    setAccessCodeCheckDialogOpen(false);
+    setAccessCodeCheckInput('');
+  };
+
+  const handleAccessCodeCheckKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleAccessCodeCheck();
+    }
+    if (e.key === 'Escape') {
+      handleAccessCodeCheckCancel();
     }
   };
 
@@ -421,7 +478,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                           : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
-                      onClick={() => onSelectProject(project.id)}
+                      onClick={(e) => checkAccessCode('project', project.id, e)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -526,7 +583,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                         : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
-                    onClick={() => onSelectConversation(conversation.id)}
+                    onClick={(e) => checkAccessCode('conversation', conversation.id, e)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -816,6 +873,43 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
               >
                 {accessCodeStep === 'create' || accessCodeStep === 'enterNew' ? 'Suivant' : 
                  accessCodeStep === 'confirm' || accessCodeStep === 'confirmNew' ? 'Confirmer' : 'Valider'}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Dialog pour vérifier les codes d'accès */}
+      {accessCodeCheckDialogOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="p-6 w-80">
+            <h3 className="text-lg font-semibold mb-4">Code d'accès requis</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Entrez le code d'accès</label>
+                <Input
+                  type="password"
+                  value={accessCodeCheckInput}
+                  onChange={(e) => setAccessCodeCheckInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  onKeyDown={handleAccessCodeCheckKeyPress}
+                  placeholder="0000"
+                  className="text-center text-lg tracking-widest"
+                  autoFocus
+                />
+                <p className="text-xs text-gray-500 mt-1">Code à 4 chiffres requis</p>
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-2 mt-6">
+              <Button variant="outline" onClick={handleAccessCodeCheckCancel}>
+                Annuler
+              </Button>
+              <Button 
+                onClick={handleAccessCodeCheck}
+                disabled={accessCodeCheckInput.length !== 4}
+              >
+                Valider
               </Button>
             </div>
           </Card>

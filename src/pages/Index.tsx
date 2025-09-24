@@ -30,7 +30,7 @@ interface Conversation {
   updatedAt: Date;
   model: string;
   isGhost?: boolean;
-  accessCode?: string; // Ajout du code d'accès
+  accessCode?: string;
 }
 
 interface Project {
@@ -39,7 +39,7 @@ interface Project {
   icon: string;
   createdAt: Date;
   updatedAt: Date;
-  accessCode?: string; // Ajout du code d'accès
+  accessCode?: string;
 }
 
 const Index = () => {
@@ -132,6 +132,11 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem('conversations', JSON.stringify(conversations));
   }, [conversations]);
+
+  // Sauvegarder l'état des fonctionnalités bêta
+  useEffect(() => {
+    localStorage.setItem('betaFeaturesEnabled', betaFeaturesEnabled.toString());
+  }, [betaFeaturesEnabled]);
 
   const getPersonalityInstructions = (personality: string): string => {
     const instructions: Record<string, string> = {
@@ -274,7 +279,6 @@ const Index = () => {
     showSuccess("Conversation déplacée avec succès");
   };
 
-  // Nouvelles fonctions pour gérer les codes d'accès
   const handleSetProjectAccessCode = (id: string, code: string) => {
     setProjects(prev => prev.map(project => 
       project.id === id 
@@ -327,16 +331,14 @@ const Index = () => {
     setIsLoading(true);
 
     try {
-      // Préparer les messages pour l'API
       const apiMessages: OpenRouterMessage[] = messagesToKeep
-        .slice(0, -1) // Exclure le dernier message utilisateur
-        .slice(-10) // Limiter à 10 messages
+        .slice(0, -1)
+        .slice(-10)
         .map(msg => ({
           role: msg.role,
           content: msg.content
         }));
 
-      // Ajouter le message utilisateur avec les instructions de longueur
       let userPrompt = newContent.trim();
       
       if (options?.length === 'shorter') {
@@ -350,7 +352,6 @@ const Index = () => {
         content: userPrompt
       });
 
-      // Ajouter les instructions personnalisées et la personnalité si activées
       let systemMessage = '';
       if (betaFeaturesEnabled) {
         if (customInstructions) {
@@ -361,7 +362,6 @@ const Index = () => {
 
       const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages, selectedLanguage);
       
-      // Ajouter le message système personnalisé en premier
       if (systemMessage) {
         formattedMessages.unshift({
           role: 'system',
@@ -369,7 +369,6 @@ const Index = () => {
         });
       }
       
-      // Utiliser le modèle spécifié ou celui de la conversation
       const modelToUse = options?.model || currentConversation.model;
       const response = await OpenRouterService.sendMessage(formattedMessages, modelToUse);
       
@@ -479,7 +478,6 @@ const Index = () => {
     setCustomModels(updatedCustomModels);
     localStorage.setItem('customModels', JSON.stringify(updatedCustomModels));
     
-    // Update conversations using this model
     setConversations(prev => prev.map(conv => 
       conv.model === modelId ? { ...conv, model: defaultModel } : conv
     ));
@@ -488,9 +486,7 @@ const Index = () => {
   };
 
   const generateImage = async (prompt: string): Promise<string> => {
-    // Remplacer les espaces par des %20 pour l'URL
     const encodedPrompt = encodeURIComponent(prompt);
-    // Retourner l'URL de l'image générée
     return `https://image.pollinations.ai/prompt/${encodedPrompt}`;
   };
 
@@ -521,7 +517,6 @@ const Index = () => {
     setIsLoading(true);
 
     try {
-      // Vérifier si le message est une demande de génération d'image
       const isImageRequest = content.toLowerCase().includes('image') || 
                             content.toLowerCase().includes('dessin') || 
                             content.toLowerCase().includes('dessine') ||
@@ -529,10 +524,8 @@ const Index = () => {
                             content.toLowerCase().includes('illustration');
 
       if (isImageRequest) {
-        // Générer l'image
         const imageUrl = await generateImage(content);
         
-        // Créer un message avec l'image
         const imageMessage: Message = {
           id: (Date.now() + 1).toString(),
           content: `Voici l'image générée selon votre demande :\n\n![Image générée](${imageUrl})`,
@@ -548,7 +541,6 @@ const Index = () => {
 
         setConversations(finalConversations);
       } else {
-        // Message normal - appel à l'API OpenRouter
         const apiMessages: OpenRouterMessage[] = currentConversation.messages
           .slice(-10)
           .map(msg => ({
@@ -556,7 +548,6 @@ const Index = () => {
             content: msg.content
           }));
 
-        // Ajouter les instructions personnalisées et la personnalité si activées
         let systemMessage = '';
         if (betaFeaturesEnabled) {
           if (customInstructions) {
@@ -565,10 +556,8 @@ const Index = () => {
           systemMessage += getPersonalityInstructions(selectedPersonality);
         }
 
-        // Vérifier si le modèle utilisé est un modèle personnalisé
         const customModel = customModels.find(m => m.id === currentConversation.model);
         if (customModel) {
-          // Ajouter les connaissances et instructions du modèle personnalisé
           if (customModel.knowledge) {
             systemMessage += ` Connaissances : ${customModel.knowledge}.`;
           }
@@ -584,7 +573,6 @@ const Index = () => {
 
         const formattedMessages = OpenRouterService.formatMessagesForAPI(apiMessages, selectedLanguage);
         
-        // Ajouter le message système personnalisé en premier
         if (systemMessage) {
           formattedMessages.unshift({
             role: 'system',
@@ -592,7 +580,6 @@ const Index = () => {
           });
         }
 
-        // Utiliser le modèle de base du modèle personnalisé s'il existe
         let modelToUse = currentConversation.model;
         if (customModel) {
           modelToUse = customModel.baseModel;
@@ -645,7 +632,6 @@ const Index = () => {
 
   const shouldShowGreeting = currentConversation.messages.length === 0;
 
-  // Combiner les modèles par défaut avec les modèles personnalisés
   const allModels = [
     { id: 'openai/gpt-4o', name: 'm-4.0', description: t.models['m-4.0'] },
     { id: 'openai/gpt-4-turbo', name: 'm-4.3-mini', description: t.models['m-4.3-mini'] },
