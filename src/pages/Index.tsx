@@ -28,6 +28,7 @@ interface Conversation {
   createdAt: Date;
   updatedAt: Date;
   model: string;
+  isGhost?: boolean;
 }
 
 interface Project {
@@ -160,8 +161,8 @@ const Index = () => {
     setCurrentProjectId(id);
     
     const projectConversations = id 
-      ? conversations.filter(conv => conv.projectId === id)
-      : conversations.filter(conv => conv.projectId === null);
+      ? conversations.filter(conv => conv.projectId === id && !conv.isGhost)
+      : conversations.filter(conv => conv.projectId === null && !conv.isGhost);
     
     if (projectConversations.length > 0) {
       setCurrentConversationId(projectConversations[0].id);
@@ -184,6 +185,22 @@ const Index = () => {
     setCurrentConversationId(newConversation.id);
   };
 
+  const handleNewGhostChat = () => {
+    const newGhostConversation: Conversation = {
+      id: `ghost-${Date.now()}`,
+      projectId: currentProjectId,
+      title: `${t.chat.newConversation} (Fantôme)`,
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      model: defaultModel,
+      isGhost: true
+    };
+    setConversations(prev => [newGhostConversation, ...prev]);
+    setCurrentConversationId(newGhostConversation.id);
+    showSuccess("Conversation Fantôme créée");
+  };
+
   const handleSelectConversation = (id: string) => {
     setCurrentConversationId(id);
   };
@@ -193,8 +210,8 @@ const Index = () => {
       setConversations(prev => prev.filter(conv => conv.id !== id));
       if (currentConversationId === id) {
         const projectConversations = currentProjectId 
-          ? conversations.filter(conv => conv.projectId === currentProjectId && conv.id !== id)
-          : conversations.filter(conv => conv.projectId === null && conv.id !== id);
+          ? conversations.filter(conv => conv.projectId === currentProjectId && conv.id !== id && !conv.isGhost)
+          : conversations.filter(conv => conv.projectId === null && conv.id !== id && !conv.isGhost);
         
         setCurrentConversationId(projectConversations[0]?.id || 'default');
       }
@@ -219,8 +236,8 @@ const Index = () => {
     const conversation = conversations.find(conv => conv.id === conversationId);
     if (conversationId === currentConversationId && conversation?.projectId !== currentProjectId) {
       const projectConversations = currentProjectId 
-        ? conversations.filter(conv => conv.projectId === currentProjectId && conv.id !== conversationId)
-        : conversations.filter(conv => conv.projectId === null && conv.id !== conversationId);
+        ? conversations.filter(conv => conv.projectId === currentProjectId && conv.id !== conversationId && !conv.isGhost)
+        : conversations.filter(conv => conv.projectId === null && conv.id !== conversationId && !conv.isGhost);
       
       if (projectConversations.length > 0) {
         setCurrentConversationId(projectConversations[0].id);
@@ -556,6 +573,7 @@ const Index = () => {
           currentConversationId={currentConversationId}
           language={selectedLanguage}
           iconColor={iconColor}
+          onNewGhostChat={handleNewGhostChat}
         />
 
         <div className="flex-1 flex flex-col">
@@ -564,6 +582,11 @@ const Index = () => {
               <div className="flex items-center gap-3">
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                   {currentConversation.title}
+                  {currentConversation.isGhost && (
+                    <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                      Fantôme
+                    </span>
+                  )}
                 </h1>
                 <ModelDropdown
                   selectedModel={currentConversation.model}
