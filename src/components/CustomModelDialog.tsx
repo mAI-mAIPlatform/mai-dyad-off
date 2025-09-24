@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Star, X, Upload, FileText, ImageIcon } from "lucide-react";
+import { Star, X, Upload, FileText, ImageIcon, Edit } from "lucide-react";
 import IconPicker from "./IconPicker";
 import { useTranslation } from "@/utils/i18n";
 import { useFileUpload } from "@/hooks/useFileUpload";
@@ -30,26 +30,33 @@ interface CustomModelDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreateModel: (model: CustomModel) => void;
+  onUpdateModel?: (model: CustomModel) => void;
+  onDeleteModel?: (id: string) => void;
+  editingModel?: CustomModel | null;
   iconColor: string;
   language: string;
 }
 
-interface CustomModel {
+export interface CustomModel {
   id: string;
   name: string;
   icon: string;
-  customIcon?: string; // URL de l'image uploadée
+  customIcon?: string;
   knowledge: string;
   instructions: string;
   description: string;
   baseModel: string;
   createdAt: Date;
+  updatedAt?: Date;
 }
 
 const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
   open,
   onOpenChange,
   onCreateModel,
+  onUpdateModel,
+  onDeleteModel,
+  editingModel,
   iconColor,
   language
 }) => {
@@ -70,6 +77,22 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
     handleFileUpload,
     resetFile
   } = useFileUpload();
+
+  useEffect(() => {
+    if (editingModel) {
+      setName(editingModel.name);
+      setIcon(editingModel.icon);
+      setDescription(editingModel.description);
+      setInstructions(editingModel.instructions);
+      setBaseModel(editingModel.baseModel);
+      setKnowledge(editingModel.knowledge);
+      if (editingModel.customIcon) {
+        setCustomIconPreview(editingModel.customIcon);
+      }
+    } else {
+      resetForm();
+    }
+  }, [editingModel, open]);
 
   const getIconColorClass = () => {
     const colorMap: Record<string, string> = {
@@ -98,14 +121,12 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
   const handleCustomIconSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Vérifier le type de fichier
       const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
       if (!allowedTypes.includes(file.type)) {
         showError("Type de fichier non supporté. Formats acceptés: PNG, JPEG, JPG, SVG");
         return;
       }
       
-      // Vérifier la taille du fichier (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
         showError("L'image ne doit pas dépasser 2MB");
         return;
@@ -113,7 +134,6 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
 
       setCustomIconFile(file);
       
-      // Créer un preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setCustomIconPreview(e.target?.result as string);
@@ -127,7 +147,7 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
     setCustomIconPreview('');
   };
 
-  const handleCreate = async () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       showError("Veuillez entrer un nom pour le modèle");
       return;
@@ -148,20 +168,19 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
       }
     }
 
-    let customIconUrl = '';
+    let customIconUrl = customIconPreview;
     if (customIconFile) {
-      // Simuler l'upload de l'image (dans une app réelle, vous utiliseriez une API)
       try {
         await new Promise(resolve => setTimeout(resolve, 1000));
-        customIconUrl = customIconPreview; // Pour la démo, on utilise le data URL
+        customIconUrl = customIconPreview;
       } catch (error) {
         showError("Erreur lors de l'upload de l'image");
         return;
       }
     }
 
-    const newModel: CustomModel = {
-      id: `custom-${Date.now()}`,
+    const modelData: CustomModel = {
+      id: editingModel?.id || `custom-${Date.now()}`,
       name,
       icon,
       customIcon: customIconUrl,
@@ -169,12 +188,25 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
       instructions: instructions.trim(),
       description: description.trim(),
       baseModel,
-      createdAt: new Date()
+      createdAt: editingModel?.createdAt || new Date(),
+      updatedAt: new Date()
     };
 
-    onCreateModel(newModel);
+    if (editingModel && onUpdateModel) {
+      onUpdateModel(modelData);
+    } else {
+      onCreateModel(modelData);
+    }
+    
     resetForm();
     onOpenChange(false);
+  };
+
+  const handleDelete = () => {
+    if (editingModel && onDeleteModel) {
+      onDeleteModel(editingModel.id);
+      onOpenChange(false);
+    }
   };
 
   const resetForm = () => {
@@ -193,6 +225,8 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
     resetFile();
   };
 
+  const isEditing = !!editingModel;
+
   return (
     <Dialog open={open} onOpenChange={(open) => {
       if (!open) {
@@ -202,9 +236,11 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
     }}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Créer un modèle personnalisé</DialogTitle>
+          <DialogTitle>
+            {isEditing ? 'Modifier le modèle' : 'Créer un modèle personnalisé'}
+          </DialogTitle>
           <DialogDescription>
-            Définissez un modèle IA personnalisé avec vos propres instructions et connaissances
+            {isEditing ? 'Modifiez votre modèle IA personnalisé' : 'Définissez un modèle IA personnalisé avec vos propres instructions et connaissances'}
           </DialogDescription>
         </DialogHeader>
 
@@ -315,9 +351,6 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500">
-              Choisissez le modèle IA qui servira de base à votre modèle personnalisé
-            </p>
           </div>
 
           {/* Connaissances (fichier) */}
@@ -393,19 +426,31 @@ const CustomModelDialog: React.FC<CustomModelDialogProps> = ({
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Annuler
-          </Button>
-          <Button
-            onClick={handleCreate}
-            disabled={!name.trim() || !description.trim() || isUploading}
-          >
-            Créer le modèle
-          </Button>
+        <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+          {isEditing && onDeleteModel && (
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              className="mr-auto"
+            >
+              Supprimer
+            </Button>
+          )}
+          
+          <div className="flex gap-2 ml-auto">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={!name.trim() || !description.trim() || isUploading}
+            >
+              {isEditing ? 'Enregistrer' : 'Créer le modèle'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
