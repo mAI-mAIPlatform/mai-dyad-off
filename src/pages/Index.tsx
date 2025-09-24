@@ -30,6 +30,7 @@ interface Conversation {
   updatedAt: Date;
   model: string;
   isGhost?: boolean;
+  accessCode?: string; // Ajout du code d'accès
 }
 
 interface Project {
@@ -38,6 +39,7 @@ interface Project {
   icon: string;
   createdAt: Date;
   updatedAt: Date;
+  accessCode?: string; // Ajout du code d'accès
 }
 
 const Index = () => {
@@ -87,6 +89,8 @@ const Index = () => {
     const savedCustomInstructions = localStorage.getItem('customInstructions');
     const savedPersonality = localStorage.getItem('selectedPersonality');
     const savedCustomModels = localStorage.getItem('customModels');
+    const savedProjects = localStorage.getItem('projects');
+    const savedConversations = localStorage.getItem('conversations');
     
     if (savedUserName) {
       setUserName(savedUserName);
@@ -112,7 +116,22 @@ const Index = () => {
     if (savedCustomModels) {
       setCustomModels(JSON.parse(savedCustomModels));
     }
+    if (savedProjects) {
+      setProjects(JSON.parse(savedProjects));
+    }
+    if (savedConversations) {
+      setConversations(JSON.parse(savedConversations));
+    }
   }, []);
+
+  // Sauvegarder les projets et conversations dans le localStorage
+  useEffect(() => {
+    localStorage.setItem('projects', JSON.stringify(projects));
+  }, [projects]);
+
+  useEffect(() => {
+    localStorage.setItem('conversations', JSON.stringify(conversations));
+  }, [conversations]);
 
   const getPersonalityInstructions = (personality: string): string => {
     const instructions: Record<string, string> = {
@@ -253,6 +272,25 @@ const Index = () => {
     }
     
     showSuccess("Conversation déplacée avec succès");
+  };
+
+  // Nouvelles fonctions pour gérer les codes d'accès
+  const handleSetProjectAccessCode = (id: string, code: string) => {
+    setProjects(prev => prev.map(project => 
+      project.id === id 
+        ? { ...project, accessCode: code, updatedAt: new Date() } 
+        : project
+    ));
+    showSuccess("Code d'accès du projet mis à jour");
+  };
+
+  const handleSetConversationAccessCode = (id: string, code: string) => {
+    setConversations(prev => prev.map(conv => 
+      conv.id === id 
+        ? { ...conv, accessCode: code, updatedAt: new Date() } 
+        : conv
+    ));
+    showSuccess("Code d'accès de la conversation mis à jour");
   };
 
   const handleCopyMessage = (content: string) => {
@@ -646,6 +684,8 @@ const Index = () => {
           onUpdateCustomModel={handleUpdateCustomModel}
           onDeleteCustomModel={handleDeleteCustomModel}
           betaFeaturesEnabled={betaFeaturesEnabled}
+          onSetConversationAccessCode={handleSetConversationAccessCode}
+          onSetProjectAccessCode={handleSetProjectAccessCode}
         />
 
         <div className="flex-1 flex flex-col">
