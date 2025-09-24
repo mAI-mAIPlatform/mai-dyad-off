@@ -191,27 +191,29 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
       <div className="w-64 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col">
         <div className="p-2 border-b border-gray-200 dark:border-gray-800">
           <div className="space-y-1 relative">
-            <Button
-              onClick={onNewChat}
-              className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-xs h-7"
-              onMouseEnter={() => setShowGhostButton(true)}
-              onMouseLeave={() => setShowGhostButton(false)}
-            >
-              <Plus className={`w-3 h-3 mr-1 ${getIconColorClass()}`} />
-              {t.chat.newConversation}
-            </Button>
-            
-            {showGhostButton && (
+            <div className="flex gap-1">
               <Button
-                onClick={onNewGhostChat}
-                className="absolute right-0 top-0 h-7 w-7 p-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
-                title="Nouvelle conversation Fantôme"
+                onClick={onNewChat}
+                className="flex-1 justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-xs h-7"
                 onMouseEnter={() => setShowGhostButton(true)}
                 onMouseLeave={() => setShowGhostButton(false)}
               >
-                <Ghost className={`w-3 h-3 ${getIconColorClass()}`} />
+                <Plus className={`w-3 h-3 mr-1 ${getIconColorClass()}`} />
+                {t.chat.newConversation}
               </Button>
-            )}
+              
+              {showGhostButton && (
+                <Button
+                  onClick={onNewGhostChat}
+                  className="h-7 w-7 p-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+                  title="Nouvelle conversation Fantôme"
+                  onMouseEnter={() => setShowGhostButton(true)}
+                  onMouseLeave={() => setShowGhostButton(false)}
+                >
+                  <Ghost className={`w-3 h-3 ${getIconColorClass()}`} />
+                </Button>
+              )}
+            </div>
             
             <Button
               onClick={() => setIsCreatingProject(true)}
