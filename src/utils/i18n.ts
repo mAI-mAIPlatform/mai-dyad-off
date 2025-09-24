@@ -60,6 +60,12 @@ export interface Translation {
     createFolderFirst: string;
     createdOn: string;
   };
+  ghost: {
+    mode: string;
+    newChat: string;
+    badge: string;
+    created: string;
+  };
 }
 
 export const translations: Record<string, Translation> = {
@@ -122,6 +128,12 @@ export const translations: Record<string, Translation> = {
       noFolders: "Aucun dossier créé",
       createFolderFirst: "Créez d'abord un dossier pour organiser vos conversations",
       createdOn: "Projet créé le"
+    },
+    ghost: {
+      mode: "Fantôme",
+      newChat: "Nouvelle conversation Fantôme",
+      badge: "Fantôme",
+      created: "Conversation Fantôme créée"
     }
   },
   en: {
@@ -183,6 +195,12 @@ export const translations: Record<string, Translation> = {
       noFolders: "No folders created",
       createFolderFirst: "Create a folder first to organize your conversations",
       createdOn: "Project created on"
+    },
+    ghost: {
+      mode: "Ghost",
+      newChat: "New Ghost Conversation",
+      badge: "Ghost",
+      created: "Ghost conversation created"
     }
   },
   es: {
@@ -244,6 +262,12 @@ export const translations: Record<string, Translation> = {
       noFolders: "Ninguna carpeta creada",
       createFolderFirst: "Cree primero una carpeta para organizar sus conversaciones",
       createdOn: "Proyecto creado el"
+    },
+    ghost: {
+      mode: "Fantasma",
+      newChat: "Nueva Conversación Fantasma",
+      badge: "Fantasma",
+      created: "Conversación fantasma creada"
     }
   },
   de: {
@@ -305,6 +329,12 @@ export const translations: Record<string, Translation> = {
       noFolders: "Keine Ordner erstellt",
       createFolderFirst: "Erstellen Sie zuerst einen Ordner, um Ihre Konversationen zu organisieren",
       createdOn: "Projekt erstellt am"
+    },
+    ghost: {
+      mode: "Geist",
+      newChat: "Neue Geister-Konversation",
+      badge: "Geist",
+      created: "Geister-Konversation erstellt"
     }
   },
   pt: {
@@ -366,6 +396,12 @@ export const translations: Record<string, Translation> = {
       noFolders: "Nenhuma pasta criada",
       createFolderFirst: "Crie uma pasta primeiro para organizar suas conversas",
       createdOn: "Projeto criado em"
+    },
+    ghost: {
+      mode: "Fantasma",
+      newChat: "Nova Conversa Fantasma",
+      badge: "Fantasma",
+      created: "Conversa fantasma criada"
     }
   }
 };

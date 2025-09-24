@@ -28,7 +28,7 @@ interface MoveToProjectDialogProps {
   projects: Project[];
   onMoveToProject: (projectId: string | null) => void;
   iconColor: string;
-  language: string;
+  language: string; // Ajout de la prop manquante
 }
 
 const MoveToProjectDialog: React.FC<MoveToProjectDialogProps> = ({
@@ -37,7 +37,7 @@ const MoveToProjectDialog: React.FC<MoveToProjectDialogProps> = ({
   projects,
   onMoveToProject,
   iconColor,
-  language
+  language // Ajout de la prop manquante
 }) => {
   const t = useTranslation(language);
 
