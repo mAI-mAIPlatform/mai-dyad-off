@@ -13,12 +13,14 @@ export interface OpenRouterResponse {
   }>;
 }
 
+// Utiliser import.meta.env pour Vite au lieu de process.env
+const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+
 export class OpenRouterService {
   private static readonly API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-  private static readonly API_KEY = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
 
   static async sendMessage(messages: OpenRouterMessage[], model: string): Promise<OpenRouterResponse> {
-    if (!this.API_KEY) {
+    if (!API_KEY) {
       throw new Error('Clé API OpenRouter non configurée');
     }
 
@@ -26,7 +28,7 @@ export class OpenRouterService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.API_KEY}`,
+        'Authorization': `Bearer ${API_KEY}`,
         'HTTP-Referer': window.location.origin,
         'X-Title': 'Chat Application'
       },
@@ -70,12 +72,12 @@ export class OpenRouterService {
 
   // Méthode pour vérifier la validité de la clé API
   static async validateApiKey(): Promise<boolean> {
-    if (!this.API_KEY) return false;
+    if (!API_KEY) return false;
 
     try {
       const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
         headers: {
-          'Authorization': `Bearer ${this.API_KEY}`
+          'Authorization': `Bearer ${API_KEY}`
         }
       });
 
