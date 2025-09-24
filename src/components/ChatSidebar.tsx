@@ -206,7 +206,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 <Button
                   onClick={onNewGhostChat}
                   className="h-7 w-7 p-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
-                  title={t.chat.newConversation + " (Fantôme)"}
+                  title={t.ghost.newChat}
                   onMouseEnter={() => setShowGhostButton(true)}
                   onMouseLeave={() => setShowGhostButton(false)}
                 >
@@ -220,7 +220,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
               className="w-full justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-xs h-7"
             >
               <Folder className={`w-3 h-3 mr-1 ${getIconColorClass()}`} />
-              {t.actions.newProject || "Nouveau projet"}
+              Nouveau projet
             </Button>
           </div>
         </div>
@@ -240,7 +240,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     if (e.key === 'Enter') handleCreateProject();
                     if (e.key === 'Escape') setIsCreatingProject(false);
                   }}
-                  placeholder={t.actions.projectName || "Nom du projet"}
+                  placeholder="Nom du projet"
                   className="flex-1 h-7 text-xs"
                   autoFocus
                 />
@@ -252,7 +252,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   className="flex-1 h-7 text-xs"
                 >
                   <Check className="w-3 h-3 mr-1" />
-                  {t.messages.save}
+                  Créer
                 </Button>
                 <Button
                   variant="outline"
@@ -273,9 +273,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
         {projects.length > 0 && (
           <div className="p-2 border-b border-gray-200 dark:border-gray-800">
-            <h3 className="text-xs font-medium mb-1 px-1 text-gray-500 uppercase tracking-wide">
-              {t.actions.projects || "Projets"}
-            </h3>
+            <h3 className="text-xs font-medium mb-1 px-1 text-gray-500 uppercase tracking-wide">Projets</h3>
             <div className="space-y-1">
               <Card
                 className={`p-2 cursor-pointer transition-colors text-xs ${
@@ -287,9 +285,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Folder className={`w-3 h-3 ${getIconColorClass()}`} />
-                  <span className="font-medium truncate">
-                    {t.actions.allConversations || "Toutes les conversations"}
-                  </span>
+                  <span className="font-medium truncate">Toutes les conversations</span>
                 </div>
               </Card>
 
@@ -358,7 +354,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           size="icon"
                           className="h-5 w-5 text-gray-400 hover:text-blue-500"
                           onClick={(e) => startEditingProject(project, e)}
-                          title={t.actions.rename}
                         >
                           <Edit className="w-2 h-2" />
                         </Button>
@@ -370,7 +365,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                             e.stopPropagation();
                             onDeleteProject(project.id);
                           }}
-                          title={t.actions.delete}
                         >
                           <Trash2 className="w-2 h-2" />
                         </Button>
@@ -384,9 +378,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         )}
 
         <div className="flex-1 overflow-y-auto p-2">
-          <h3 className="text-xs font-medium mb-1 px-1 text-gray-500 uppercase tracking-wide">
-            {t.actions.conversations || "Conversations"}
-          </h3>
+          <h3 className="text-xs font-medium mb-1 px-1 text-gray-500 uppercase tracking-wide">Conversations</h3>
           <div className="space-y-1">
             {filteredConversations.map((conversation) => (
               <Card
@@ -444,7 +436,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                             size="icon"
                             className="h-5 w-5 text-gray-400 hover:text-blue-500"
                             onClick={(e) => startMovingConversation(conversation.id, e)}
-                            title={t.actions.move}
+                            title="Déplacer vers un dossier"
                           >
                             <Move className="w-2 h-2" />
                           </Button>
@@ -453,7 +445,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                             size="icon"
                             className="h-5 w-5 text-gray-400 hover:text-blue-500"
                             onClick={(e) => startEditing(conversation.id, conversation.title, e)}
-                            title={t.actions.rename}
                           >
                             <Edit className="w-2 h-2" />
                           </Button>
@@ -465,7 +456,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                               e.stopPropagation();
                               onDeleteConversation(conversation.id);
                             }}
-                            title={t.actions.delete}
                           >
                             <Trash2 className="w-2 h-2" />
                           </Button>
@@ -475,7 +465,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   )}
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  {conversation.updatedAt.toLocaleDateString(language)}
+                  {conversation.updatedAt.toLocaleDateString()}
                 </p>
               </Card>
             ))}
@@ -489,7 +479,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         projects={projects}
         onMoveToProject={handleMoveToProject}
         iconColor={iconColor}
-        language={language}
       />
     </>
   );

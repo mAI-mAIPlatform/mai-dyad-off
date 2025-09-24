@@ -233,7 +233,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     {t.messages.cancel}
                   </Button>
                 </div>
-              </div>
+                </div>
             ) : (
               <>
                 <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -279,7 +279,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                             }}
                           >
                             <Copy className="w-3 h-3 mr-1" />
-                            Copier
+                            {t.messages.copy}
                           </Button>
                           <Button
                             variant="secondary"
