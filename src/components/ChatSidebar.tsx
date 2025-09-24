@@ -112,7 +112,95 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     ? conversations.filter(conv => conv.projectId === currentProjectId && !conv.isGhost)
     : conversations.filter(conv => conv.projectId === null && !conv.isGhost);
 
-  // ... (rest of the existing functions remain the same)
+  const handleCreateProjectInternal = () => {
+    if (newProjectName.trim()) {
+      onCreateProject(newProjectName.trim(), newProjectIcon);
+      setNewProjectName('');
+      setNewProjectIcon('folder');
+      setIsCreatingProject(false);
+    }
+  };
+
+  const handleProjectKeyPress = (e: React.KeyboardEvent, projectId: string) => {
+    if (e.key === 'Enter') {
+      if (editProjectName.trim()) {
+        onUpdateProject(projectId, editProjectName.trim(), editProjectIcon);
+        setEditingProjectId(null);
+      }
+    }
+    if (e.key === 'Escape') {
+      setEditingProjectId(null);
+    }
+  };
+
+  const saveProjectEdit = (projectId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (editProjectName.trim()) {
+      onUpdateProject(projectId, editProjectName.trim(), editProjectIcon);
+      setEditingProjectId(null);
+    }
+  };
+
+  const cancelProjectEdit = () => {
+    setEditingProjectId(null);
+  };
+
+  const startEditingProject = (project: Project, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingProjectId(project.id);
+    setEditProjectName(project.name);
+    setEditProjectIcon(project.icon);
+  };
+
+  const renderIcon = (iconName: string) => {
+    const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+    const IconComponent = (LucideIcons as any)[formattedIconName] || Folder;
+    return <IconComponent className={`w-4 h-4 ${getIconColorClass()}`} />;
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent, conversationId: string) => {
+    if (e.key === 'Enter') {
+      if (editTitle.trim()) {
+        onRenameConversation(conversationId, editTitle.trim());
+        setEditingId(null);
+      }
+    }
+    if (e.key === 'Escape') {
+      setEditingId(null);
+    }
+  };
+
+  const saveEdit = (conversationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (editTitle.trim()) {
+      onRenameConversation(conversationId, editTitle.trim());
+      setEditingId(null);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
+  const startMovingConversation = (conversationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedConversationToMove(conversationId);
+    setMoveDialogOpen(true);
+  };
+
+  const handleMoveToProject = (projectId: string | null) => {
+    if (selectedConversationToMove) {
+      onMoveConversationToProject(selectedConversationToMove, projectId);
+    }
+    setMoveDialogOpen(false);
+    setSelectedConversationToMove(null);
+  };
+
+  const startEditing = (conversationId: string, title: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(conversationId);
+    setEditTitle(title);
+  };
 
   return (
     <>
@@ -167,7 +255,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                       value={newProjectName}
                       onChange={(e) => setNewProjectName(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleCreateProject();
+                        if (e.key === 'Enter') handleCreateProjectInternal();
                         if (e.key === 'Escape') setIsCreatingProject(false);
                       }}
                       placeholder="Nom du projet"
@@ -178,7 +266,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   <div className="flex gap-1">
                     <Button
                       size="sm"
-                      onClick={handleCreateProject}
+                      onClick={handleCreateProjectInternal}
                       className="flex-1 h-7 text-xs"
                     >
                       <Check className="w-3 h-3 mr-1" />
