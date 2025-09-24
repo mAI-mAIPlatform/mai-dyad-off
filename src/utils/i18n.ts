@@ -48,12 +48,17 @@ export interface Translation {
   actions: {
     delete: string;
     rename: string;
-  };
-  ghost: {
-    mode: string;
-    newChat: string;
-    badge: string;
-    created: string;
+    move: string;
+    newProject: string;
+    projectName: string;
+    projects: string;
+    allConversations: string;
+    noSpecificFolder: string;
+    chooseDestination: string;
+    chooseDestinationDesc: string;
+    noFolders: string;
+    createFolderFirst: string;
+    createdOn: string;
   };
 }
 
@@ -105,13 +110,18 @@ export const translations: Record<string, Translation> = {
     },
     actions: {
       delete: "Supprimer",
-      rename: "Renommer"
-    },
-    ghost: {
-      mode: "Fantôme",
-      newChat: "Nouvelle conversation Fantôme",
-      badge: "Fantôme",
-      created: "Conversation Fantôme créée"
+      rename: "Renommer",
+      move: "Déplacer",
+      newProject: "Nouveau projet",
+      projectName: "Nom du projet",
+      projects: "Projets",
+      allConversations: "Toutes les conversations",
+      noSpecificFolder: "Conversations sans dossier spécifique",
+      chooseDestination: "Choisir un dossier de destination",
+      chooseDestinationDesc: "Sélectionnez le dossier où vous souhaitez déplacer cette conversation",
+      noFolders: "Aucun dossier créé",
+      createFolderFirst: "Créez d'abord un dossier pour organiser vos conversations",
+      createdOn: "Projet créé le"
     }
   },
   en: {
@@ -161,13 +171,18 @@ export const translations: Record<string, Translation> = {
     },
     actions: {
       delete: "Delete",
-      rename: "Rename"
-    },
-    ghost: {
-      mode: "Ghost",
-      newChat: "New Ghost Conversation",
-      badge: "Ghost",
-      created: "Ghost conversation created"
+      rename: "Rename",
+      move: "Move",
+      newProject: "New project",
+      projectName: "Project name",
+      projects: "Projects",
+      allConversations: "All conversations",
+      noSpecificFolder: "Conversations without specific folder",
+      chooseDestination: "Choose destination folder",
+      chooseDestinationDesc: "Select the folder where you want to move this conversation",
+      noFolders: "No folders created",
+      createFolderFirst: "Create a folder first to organize your conversations",
+      createdOn: "Project created on"
     }
   },
   es: {
@@ -217,13 +232,18 @@ export const translations: Record<string, Translation> = {
     },
     actions: {
       delete: "Eliminar",
-      rename: "Renombrar"
-    },
-    ghost: {
-      mode: "Fantasma",
-      newChat: "Nueva Conversación Fantasma",
-      badge: "Fantasma",
-      created: "Conversación fantasma creada"
+      rename: "Renombrar",
+      move: "Mover",
+      newProject: "Nuevo proyecto",
+      projectName: "Nombre del proyecto",
+      projects: "Proyectos",
+      allConversations: "Todas las conversaciones",
+      noSpecificFolder: "Conversaciones sin carpeta específica",
+      chooseDestination: "Elegir carpeta de destino",
+      chooseDestinationDesc: "Seleccione la carpeta donde desea mover esta conversación",
+      noFolders: "Ninguna carpeta creada",
+      createFolderFirst: "Cree primero una carpeta para organizar sus conversaciones",
+      createdOn: "Proyecto creado el"
     }
   },
   de: {
@@ -273,13 +293,18 @@ export const translations: Record<string, Translation> = {
     },
     actions: {
       delete: "Löschen",
-      rename: "Umbenennen"
-    },
-    ghost: {
-      mode: "Geist",
-      newChat: "Neue Geister-Konversation",
-      badge: "Geist",
-      created: "Geister-Konversation erstellt"
+      rename: "Umbenennen",
+      move: "Verschieben",
+      newProject: "Neues Projekt",
+      projectName: "Projektname",
+      projects: "Projekte",
+      allConversations: "Alle Konversationen",
+      noSpecificFolder: "Konversationen ohne spezifischen Ordner",
+      chooseDestination: "Zielordner auswählen",
+      chooseDestinationDesc: "Wählen Sie den Ordner aus, in den Sie diese Konversation verschieben möchten",
+      noFolders: "Keine Ordner erstellt",
+      createFolderFirst: "Erstellen Sie zuerst einen Ordner, um Ihre Konversationen zu organisieren",
+      createdOn: "Projekt erstellt am"
     }
   },
   pt: {
@@ -329,13 +354,18 @@ export const translations: Record<string, Translation> = {
     },
     actions: {
       delete: "Excluir",
-      rename: "Renomear"
-    },
-    ghost: {
-      mode: "Fantasma",
-      newChat: "Nova Conversa Fantasma",
-      badge: "Fantasma",
-      created: "Conversa fantasma criada"
+      rename: "Renomear",
+      move: "Mover",
+      newProject: "Novo projeto",
+      projectName: "Nome do projeto",
+      projects: "Projetos",
+      allConversations: "Todas as conversas",
+      noSpecificFolder: "Conversas sem pasta específica",
+      chooseDestination: "Escolher pasta de destino",
+      chooseDestinationDesc: "Selecione a pasta para onde deseja mover esta conversa",
+      noFolders: "Nenhuma pasta criada",
+      createFolderFirst: "Crie uma pasta primeiro para organizar suas conversas",
+      createdOn: "Projeto criado em"
     }
   }
 };

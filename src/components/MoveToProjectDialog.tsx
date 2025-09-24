@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Folder, X } from "lucide-react";
 import * as LucideIcons from "lucide-react";
+import { useTranslation } from "@/utils/i18n";
 
 interface Project {
   id: string;
@@ -27,6 +28,7 @@ interface MoveToProjectDialogProps {
   projects: Project[];
   onMoveToProject: (projectId: string | null) => void;
   iconColor: string;
+  language: string;
 }
 
 const MoveToProjectDialog: React.FC<MoveToProjectDialogProps> = ({
@@ -34,8 +36,11 @@ const MoveToProjectDialog: React.FC<MoveToProjectDialogProps> = ({
   onOpenChange,
   projects,
   onMoveToProject,
-  iconColor
+  iconColor,
+  language
 }) => {
+  const t = useTranslation(language);
+
   const getIconColorClass = () => {
     const colorMap: Record<string, string> = {
       'black': 'text-black dark:text-white',
@@ -62,9 +67,9 @@ const MoveToProjectDialog: React.FC<MoveToProjectDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Choisir un dossier de destination</DialogTitle>
+          <DialogTitle>{t.actions.chooseDestination || "Choisir un dossier de destination"}</DialogTitle>
           <DialogDescription>
-            Sélectionnez le dossier où vous souhaitez déplacer cette conversation
+            {t.actions.chooseDestinationDesc || "Sélectionnez le dossier où vous souhaitez déplacer cette conversation"}
           </DialogDescription>
         </DialogHeader>
 
@@ -77,8 +82,8 @@ const MoveToProjectDialog: React.FC<MoveToProjectDialogProps> = ({
             <div className="flex items-center gap-3">
               <Folder className={`w-6 h-6 ${getIconColorClass()}`} />
               <div className="flex-1">
-                <h3 className="font-medium text-sm">Toutes les conversations</h3>
-                <p className="text-xs text-gray-500">Conversations sans dossier spécifique</p>
+                <h3 className="font-medium text-sm">{t.actions.allConversations || "Toutes les conversations"}</h3>
+                <p className="text-xs text-gray-500">{t.actions.noSpecificFolder || "Conversations sans dossier spécifique"}</p>
               </div>
             </div>
           </Card>
@@ -96,7 +101,9 @@ const MoveToProjectDialog: React.FC<MoveToProjectDialogProps> = ({
                 </div>
                 <div className="flex-1">
                   <h3 className="font-medium text-sm">{project.name}</h3>
-                  <p className="text-xs text-gray-500">Projet créé le {project.createdAt.toLocaleDateString()}</p>
+                  <p className="text-xs text-gray-500">
+                    {t.actions.createdOn || "Projet créé le"} {project.createdAt.toLocaleDateString(language)}
+                  </p>
                 </div>
               </div>
             </Card>
@@ -105,8 +112,8 @@ const MoveToProjectDialog: React.FC<MoveToProjectDialogProps> = ({
           {projects.length === 0 && (
             <div className="text-center py-6">
               <Folder className={`w-12 h-12 mx-auto mb-2 ${getIconColorClass()}`} />
-              <p className="text-sm text-gray-500">Aucun dossier créé</p>
-              <p className="text-xs text-gray-400">Créez d'abord un dossier pour organiser vos conversations</p>
+              <p className="text-sm text-gray-500">{t.actions.noFolders || "Aucun dossier créé"}</p>
+              <p className="text-xs text-gray-400">{t.actions.createFolderFirst || "Créez d'abord un dossier pour organiser vos conversations"}</p>
             </div>
           )}
         </div>
@@ -118,7 +125,7 @@ const MoveToProjectDialog: React.FC<MoveToProjectDialogProps> = ({
             className="flex items-center gap-2"
           >
             <X className="w-4 h-4" />
-            Annuler
+            {t.messages.cancel}
           </Button>
         </div>
       </DialogContent>
