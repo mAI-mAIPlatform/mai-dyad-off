@@ -117,10 +117,28 @@ const Index = () => {
       setCustomModels(JSON.parse(savedCustomModels));
     }
     if (savedProjects) {
-      setProjects(JSON.parse(savedProjects));
+      const parsedProjects = JSON.parse(savedProjects);
+      // Convertir les dates strings en objets Date
+      const projectsWithDates = parsedProjects.map((project: any) => ({
+        ...project,
+        createdAt: new Date(project.createdAt),
+        updatedAt: new Date(project.updatedAt)
+      }));
+      setProjects(projectsWithDates);
     }
     if (savedConversations) {
-      setConversations(JSON.parse(savedConversations));
+      const parsedConversations = JSON.parse(savedConversations);
+      // Convertir les dates strings en objets Date
+      const conversationsWithDates = parsedConversations.map((conversation: any) => ({
+        ...conversation,
+        createdAt: new Date(conversation.createdAt),
+        updatedAt: new Date(conversation.updatedAt),
+        messages: conversation.messages.map((message: any) => ({
+          ...message,
+          timestamp: new Date(message.timestamp)
+        }))
+      }));
+      setConversations(conversationsWithDates);
     }
   }, []);
 
