@@ -9,11 +9,25 @@ export interface OpenRouterMessage {
 
 export class OpenRouterService {
   private static readonly API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-  private static readonly API_KEY = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
+
+  static getApiKey(): string {
+    // Pour le développement, vous pouvez définir la clé API directement ici
+    // ou utiliser une variable d'environnement côté client via Vite
+    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+    
+    if (!apiKey) {
+      console.warn("Clé API OpenRouter non trouvée. Utilisez VITE_OPENROUTER_API_KEY dans votre fichier .env");
+      return '';
+    }
+    
+    return apiKey;
+  }
 
   static async sendMessage(messages: OpenRouterMessage[], model: string) {
-    if (!this.API_KEY) {
-      throw new Error("Clé API OpenRouter non configurée");
+    const apiKey = this.getApiKey();
+    
+    if (!apiKey) {
+      throw new Error("Clé API OpenRouter non configurée. Veuillez ajouter VITE_OPENROUTER_API_KEY à votre fichier .env");
     }
 
     try {
@@ -21,7 +35,7 @@ export class OpenRouterService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.API_KEY}`,
+          'Authorization': `Bearer ${apiKey}`,
           'HTTP-Referer': window.location.origin,
           'X-Title': 'mAIs Chat Application'
         },
