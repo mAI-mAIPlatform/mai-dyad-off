@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, MessageSquare, Trash2, Edit, Check, X, Folder, Move, Ghost, Star, Lock, Unlock } from "lucide-react";
+import { Plus, MessageSquare, Trash2, Edit, Check, X, Folder, Move, Ghost, Star } from "lucide-react";
 import { useTranslation } from "@/utils/i18n";
 import IconPicker from "./IconPicker";
 import MoveToProjectDialog from "./MoveToProjectDialog";
@@ -19,7 +19,6 @@ interface Conversation {
   createdAt: Date;
   updatedAt: Date;
   isGhost?: boolean;
-  accessCode?: string;
 }
 
 interface Project {
@@ -28,7 +27,6 @@ interface Project {
   icon: string;
   createdAt: Date;
   updatedAt: Date;
-  accessCode?: string;
 }
 
 interface ChatSidebarProps {
@@ -53,8 +51,6 @@ interface ChatSidebarProps {
   onUpdateCustomModel: (model: CustomModel) => void;
   onDeleteCustomModel: (id: string) => void;
   betaFeaturesEnabled: boolean;
-  onSetConversationAccessCode: (id: string, code: string) => void;
-  onSetProjectAccessCode: (id: string, code: string) => void;
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
@@ -78,9 +74,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onCreateCustomModel,
   onUpdateCustomModel,
   onDeleteCustomModel,
-  betaFeaturesEnabled,
-  onSetConversationAccessCode,
-  onSetProjectAccessCode
+  betaFeaturesEnabled
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -95,21 +89,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [showGhostButton, setShowGhostButton] = useState(false);
   const [customModelDialogOpen, setCustomModelDialogOpen] = useState(false);
   const [showMAIsManager, setShowMAIsManager] = useState(false);
-  
-  // États pour les codes d'accès
-  const [accessCodeDialogOpen, setAccessCodeDialogOpen] = useState(false);
-  const [accessCodeTarget, setAccessCodeTarget] = useState<{type: 'project' | 'conversation', id: string} | null>(null);
-  const [accessCodeStep, setAccessCodeStep] = useState<'create' | 'confirm' | 'enterOld' | 'enterNew' | 'confirmNew'>('create');
-  const [accessCodeInput, setAccessCodeInput] = useState('');
-  const [accessCodeConfirm, setAccessCodeConfirm] = useState('');
-  const [accessCodeOld, setAccessCodeOld] = useState('');
-  const [accessCodeNew, setAccessCodeNew] = useState('');
-  const [accessCodeConfirmNew, setAccessCodeConfirmNew] = useState('');
-  
-  // État pour la vérification des codes d'accès
-  const [accessCodeCheckDialogOpen, setAccessCodeCheckDialogOpen] = useState(false);
-  const [accessCodeCheckInput, setAccessCodeCheckInput] = useState('');
-  const [accessCheckTarget, setAccessCheckTarget] = useState<{type: 'project' | 'conversation', id: string} | null>(null);
   
   const t = useTranslation(language);
 
@@ -221,148 +200,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     e.stopPropagation();
     setEditingId(conversationId);
     setEditTitle(title);
-  };
-
-  // Fonctions pour gérer les codes d'accès
-  const openAccessCodeDialog = (type: 'project' | 'conversation', id: string) => {
-    const target = type === 'project' 
-      ? projects.find(p => p.id === id)
-      : conversations.find(c => c.id === id);
-    
-    setAccessCodeTarget({type, id});
-    
-    if (target?.accessCode) {
-      setAccessCodeStep('enterOld');
-    } else {
-      setAccessCodeStep('create');
-    }
-    
-    setAccessCodeDialogOpen(true);
-    resetAccessCodeInputs();
-  };
-
-  const resetAccessCodeInputs = () => {
-    setAccessCodeInput('');
-    setAccessCodeConfirm('');
-    setAccessCodeOld('');
-    setAccessCodeNew('');
-    setAccessCodeConfirmNew('');
-  };
-
-  const handleAccessCodeSubmit = () => {
-    if (!accessCodeTarget) return;
-    
-    switch (accessCodeStep) {
-      case 'create':
-        setAccessCodeStep('confirm');
-        break;
-        
-      case 'confirm':
-        if (accessCodeInput === accessCodeConfirm && accessCodeInput.length === 4 && /^\d+$/.test(accessCodeInput)) {
-          if (accessCodeTarget.type === 'project') {
-            onSetProjectAccessCode(accessCodeTarget.id, accessCodeInput);
-          } else {
-            onSetConversationAccessCode(accessCodeTarget.id, accessCodeInput);
-          }
-          setAccessCodeDialogOpen(false);
-          resetAccessCodeInputs();
-        }
-        break;
-        
-      case 'enterOld':
-        const target = accessCodeTarget.type === 'project' 
-          ? projects.find(p => p.id === accessCodeTarget.id)
-          : conversations.find(c => c.id === accessCodeTarget.id);
-          
-        if (target?.accessCode === accessCodeOld) {
-          setAccessCodeStep('enterNew');
-        }
-        break;
-        
-      case 'enterNew':
-        setAccessCodeStep('confirmNew');
-        break;
-        
-      case 'confirmNew':
-        if (accessCodeNew === accessCodeConfirmNew && accessCodeNew.length === 4 && /^\d+$/.test(accessCodeNew)) {
-          if (accessCodeTarget.type === 'project') {
-            onSetProjectAccessCode(accessCodeTarget.id, accessCodeNew);
-          } else {
-            onSetConversationAccessCode(accessCodeTarget.id, accessCodeNew);
-          }
-          setAccessCodeDialogOpen(false);
-          resetAccessCodeInputs();
-        }
-        break;
-    }
-  };
-
-  const handleAccessCodeCancel = () => {
-    setAccessCodeDialogOpen(false);
-    resetAccessCodeInputs();
-  };
-
-  const handleAccessCodeKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleAccessCodeSubmit();
-    }
-    if (e.key === 'Escape') {
-      handleAccessCodeCancel();
-    }
-  };
-
-  // Fonction pour vérifier l'accès à un élément protégé
-  const checkAccessCode = (type: 'project' | 'conversation', id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    const target = type === 'project' 
-      ? projects.find(p => p.id === id)
-      : conversations.find(c => c.id === id);
-    
-    if (target?.accessCode) {
-      setAccessCheckTarget({type, id});
-      setAccessCodeCheckInput('');
-      setAccessCodeCheckDialogOpen(true);
-    } else {
-      // Si pas de code d'accès, sélectionner normalement
-      if (type === 'project') {
-        onSelectProject(id);
-      } else {
-        onSelectConversation(id);
-      }
-    }
-  };
-
-  const handleAccessCodeCheck = () => {
-    if (!accessCheckTarget) return;
-    
-    const target = accessCheckTarget.type === 'project' 
-      ? projects.find(p => p.id === accessCheckTarget.id)
-      : conversations.find(c => c.id === accessCheckTarget.id);
-    
-    if (target?.accessCode === accessCodeCheckInput) {
-      if (accessCheckTarget.type === 'project') {
-        onSelectProject(accessCheckTarget.id);
-      } else {
-        onSelectConversation(accessCheckTarget.id);
-      }
-      setAccessCodeCheckDialogOpen(false);
-      setAccessCodeCheckInput('');
-    }
-  };
-
-  const handleAccessCodeCheckCancel = () => {
-    setAccessCodeCheckDialogOpen(false);
-    setAccessCodeCheckInput('');
-  };
-
-  const handleAccessCodeCheckKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleAccessCodeCheck();
-    }
-    if (e.key === 'Escape') {
-      handleAccessCodeCheckCancel();
-    }
   };
 
   return (
@@ -478,7 +315,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                           : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
-                      onClick={(e) => checkAccessCode('project', project.id, e)}
+                      onClick={() => onSelectProject(project.id)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -505,9 +342,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                               <span className="font-medium truncate">
                                 {project.name}
                               </span>
-                              {project.accessCode && (
-                                <Lock className="w-3 h-3 text-gray-500 ml-1 flex-shrink-0" />
-                              )}
                             </>
                           )}
                         </div>
@@ -544,17 +378,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-5 w-5 text-gray-400 hover:text-purple-500"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openAccessCodeDialog('project', project.id);
-                              }}
-                            >
-                              <Lock className="w-2 h-2" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
                               className="h-5 w-5 text-gray-400 hover:text-red-500"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -583,7 +406,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                         : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
-                    onClick={(e) => checkAccessCode('conversation', conversation.id, e)}
+                    onClick={() => onSelectConversation(conversation.id)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -601,9 +424,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           <span className="font-medium truncate">
                             {conversation.title}
                           </span>
-                        )}
-                        {conversation.accessCode && (
-                          <Lock className="w-3 h-3 text-gray-500 ml-1 flex-shrink-0" />
                         )}
                       </div>
                       {conversation.id !== 'default' && (
@@ -645,17 +465,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                 onClick={(e) => startEditing(conversation.id, conversation.title, e)}
                               >
                                 <Edit className="w-2 h-2" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-5 w-5 text-gray-400 hover:text-purple-500"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openAccessCodeDialog('conversation', conversation.id);
-                                }}
-                              >
-                                <Lock className="w-2 h-2" />
                               </Button>
                               <Button
                                 variant="ghost"
@@ -748,173 +557,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         iconColor={iconColor}
         language={language}
       />
-      
-      {/* Dialog pour les codes d'accès */}
-      {accessCodeDialogOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <Card className="p-6 w-80">
-            <h3 className="text-lg font-semibold mb-4">
-              {accessCodeStep === 'create' || accessCodeStep === 'confirm' 
-                ? 'Créer un code d\'accès' 
-                : accessCodeStep === 'enterOld' 
-                  ? 'Entrez l\'ancien code' 
-                  : 'Modifier le code d\'accès'}
-            </h3>
-            
-            {accessCodeStep === 'create' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Code d'accès (4 chiffres)</label>
-                  <Input
-                    type="password"
-                    value={accessCodeInput}
-                    onChange={(e) => setAccessCodeInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    onKeyDown={handleAccessCodeKeyPress}
-                    placeholder="0000"
-                    className="text-center text-lg tracking-widest"
-                    autoFocus
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Entrez un code à 4 chiffres</p>
-                </div>
-              </div>
-            )}
-            
-            {accessCodeStep === 'confirm' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Confirmez le code</label>
-                  <Input
-                    type="password"
-                    value={accessCodeConfirm}
-                    onChange={(e) => setAccessCodeConfirm(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    onKeyDown={handleAccessCodeKeyPress}
-                    placeholder="0000"
-                    className="text-center text-lg tracking-widest"
-                    autoFocus
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Confirmez votre code d'accès</p>
-                </div>
-                {accessCodeInput !== accessCodeConfirm && (
-                  <p className="text-xs text-red-500">Les codes ne correspondent pas</p>
-                )}
-              </div>
-            )}
-            
-            {accessCodeStep === 'enterOld' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Ancien code d'accès</label>
-                  <Input
-                    type="password"
-                    value={accessCodeOld}
-                    onChange={(e) => setAccessCodeOld(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    onKeyDown={handleAccessCodeKeyPress}
-                    placeholder="0000"
-                    className="text-center text-lg tracking-widest"
-                    autoFocus
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Entrez votre code d'accès actuel</p>
-                </div>
-              </div>
-            )}
-            
-            {accessCodeStep === 'enterNew' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Nouveau code d'accès</label>
-                  <Input
-                    type="password"
-                    value={accessCodeNew}
-                    onChange={(e) => setAccessCodeNew(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    onKeyDown={handleAccessCodeKeyPress}
-                    placeholder="0000"
-                    className="text-center text-lg tracking-widest"
-                    autoFocus
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Entrez un nouveau code à 4 chiffres</p>
-                </div>
-              </div>
-            )}
-            
-            {accessCodeStep === 'confirmNew' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Confirmez le nouveau code</label>
-                  <Input
-                    type="password"
-                    value={accessCodeConfirmNew}
-                    onChange={(e) => setAccessCodeConfirmNew(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    onKeyDown={handleAccessCodeKeyPress}
-                    placeholder="0000"
-                    className="text-center text-lg tracking-widest"
-                    autoFocus
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Confirmez votre nouveau code d'accès</p>
-                </div>
-                {accessCodeNew !== accessCodeConfirmNew && (
-                  <p className="text-xs text-red-500">Les codes ne correspondent pas</p>
-                )}
-              </div>
-            )}
-            
-            <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={handleAccessCodeCancel}>
-                Annuler
-              </Button>
-              <Button 
-                onClick={handleAccessCodeSubmit}
-                disabled={
-                  (accessCodeStep === 'create' && accessCodeInput.length !== 4) ||
-                  (accessCodeStep === 'confirm' && accessCodeConfirm.length !== 4) ||
-                  (accessCodeStep === 'enterOld' && accessCodeOld.length !== 4) ||
-                  (accessCodeStep === 'enterNew' && accessCodeNew.length !== 4) ||
-                  (accessCodeStep === 'confirmNew' && accessCodeConfirmNew.length !== 4)
-                }
-              >
-                {accessCodeStep === 'create' || accessCodeStep === 'enterNew' ? 'Suivant' : 
-                 accessCodeStep === 'confirm' || accessCodeStep === 'confirmNew' ? 'Confirmer' : 'Valider'}
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* Dialog pour vérifier les codes d'accès */}
-      {accessCodeCheckDialogOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <Card className="p-6 w-80">
-            <h3 className="text-lg font-semibold mb-4">Code d'accès requis</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Entrez le code d'accès</label>
-                <Input
-                  type="password"
-                  value={accessCodeCheckInput}
-                  onChange={(e) => setAccessCodeCheckInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  onKeyDown={handleAccessCodeCheckKeyPress}
-                  placeholder="0000"
-                  className="text-center text-lg tracking-widest"
-                  autoFocus
-                />
-                <p className="text-xs text-gray-500 mt-1">Code à 4 chiffres requis</p>
-              </div>
-            </div>
-            
-            <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={handleAccessCodeCheckCancel}>
-                Annuler
-              </Button>
-              <Button 
-                onClick={handleAccessCodeCheck}
-                disabled={accessCodeCheckInput.length !== 4}
-              >
-                Valider
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
     </>
   );
 };
