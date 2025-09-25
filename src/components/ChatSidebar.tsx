@@ -4,19 +4,13 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, MessageSquare, Trash2, Edit, Check, X, Folder, Move, Ghost, Star, Lock, Unlock, MoreHorizontal } from "lucide-react";
+import { Plus, MessageSquare, Trash2, Edit, Check, X, Folder, Move, Ghost, Star, Lock, Unlock } from "lucide-react";
 import { useTranslation } from "@/utils/i18n";
 import IconPicker from "./IconPicker";
 import MoveToProjectDialog from "./MoveToProjectDialog";
 import CustomModelDialog, { CustomModel } from "./CustomModelDialog";
 import MAIsManager from "./MAIsManager";
 import * as LucideIcons from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface Conversation {
   id: string;
@@ -98,7 +92,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [editProjectIcon, setEditProjectIcon] = useState('folder');
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [selectedConversationToMove, setSelectedConversationToMove] = useState<string | null>(null);
-  const [showGhostButton, setShowGhostButton] = useState(true);
+  const [showGhostButton, setShowGhostButton] = useState(false);
   const [customModelDialogOpen, setCustomModelDialogOpen] = useState(false);
   const [showMAIsManager, setShowMAIsManager] = useState(false);
   
@@ -382,18 +376,24 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   <Button
                     onClick={onNewChat}
                     className="flex-1 justify-start bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-xs h-7"
+                    onMouseEnter={() => setShowGhostButton(true)}
+                    onMouseLeave={() => setShowGhostButton(false)}
                   >
                     <Plus className={`w-3 h-3 mr-1 ${getIconColorClass()}`} />
                     {t.chat.newConversation}
                   </Button>
                   
-                  <Button
-                    onClick={onNewGhostChat}
-                    className="h-7 w-7 p-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
-                    title={t.ghost.newChat}
-                  >
-                    <Ghost className={`w-3 h-3 ${getIconColorClass()}`} />
-                  </Button>
+                  {showGhostButton && (
+                    <Button
+                      onClick={onNewGhostChat}
+                      className="h-7 w-7 p-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+                      title={t.ghost.newChat}
+                      onMouseEnter={() => setShowGhostButton(true)}
+                      onMouseLeave={() => setShowGhostButton(false)}
+                    >
+                      <Ghost className={`w-3 h-3 ${getIconColorClass()}`} />
+                    </Button>
+                  )}
                 </div>
                 
                 <Button
@@ -532,41 +532,38 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                             </Button>
                           </div>
                         ) : (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-5 w-5 text-gray-400 hover:text-gray-600"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <MoreHorizontal className="w-3 h-3" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40">
-                              <DropdownMenuItem onClick={(e) => startEditingProject(project, e)}>
-                                <Edit className="w-3 h-3 mr-2" />
-                                Modifier
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={(e) => {
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 text-gray-400 hover:text-blue-500"
+                              onClick={(e) => startEditingProject(project, e)}
+                            >
+                              <Edit className="w-2 h-2" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 text-gray-400 hover:text-purple-500"
+                              onClick={(e) => {
                                 e.stopPropagation();
                                 openAccessCodeDialog('project', project.id);
-                              }}>
-                                <Lock className="w-3 h-3 mr-2" />
-                                Code d'accès
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                className="text-red-500 focus:text-red-500"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDeleteProject(project.id);
-                                }}
-                              >
-                                <Trash2 className="w-3 h-3 mr-2" />
-                                Supprimer
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                              }}
+                            >
+                              <Lock className="w-2 h-2" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 text-gray-400 hover:text-red-500"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteProject(project.id);
+                              }}
+                            >
+                              <Trash2 className="w-2 h-2" />
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </Card>
@@ -631,45 +628,47 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                               </Button>
                             </>
                           ) : (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-5 w-5 text-gray-400 hover:text-gray-600"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <MoreHorizontal className="w-3 h-3" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem onClick={(e) => startMovingConversation(conversation.id, e)}>
-                                  <Move className="w-3 h-3 mr-2" />
-                                  Déplacer vers un dossier
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={(e) => startEditing(conversation.id, conversation.title, e)}>
-                                  <Edit className="w-3 h-3 mr-2" />
-                                  Renommer
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={(e) => {
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 text-gray-400 hover:text-blue-500"
+                                onClick={(e) => startMovingConversation(conversation.id, e)}
+                                title="Déplacer vers un dossier"
+                              >
+                                <Move className="w-2 h-2" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 text-gray-400 hover:text-blue-500"
+                                onClick={(e) => startEditing(conversation.id, conversation.title, e)}
+                              >
+                                <Edit className="w-2 h-2" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 text-gray-400 hover:text-purple-500"
+                                onClick={(e) => {
                                   e.stopPropagation();
                                   openAccessCodeDialog('conversation', conversation.id);
-                                }}>
-                                  <Lock className="w-3 h-3 mr-2" />
-                                  Code d'accès
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  className="text-red-500 focus:text-red-500"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDeleteConversation(conversation.id);
-                                  }}
-                                >
-                                  <Trash2 className="w-3 h-3 mr-2" />
-                                  Supprimer
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                                }}
+                              >
+                                <Lock className="w-2 h-2" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 text-gray-400 hover:text-red-500"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeleteConversation(conversation.id);
+                                }}
+                              >
+                                <Trash2 className="w-2 h-2" />
+                              </Button>
+                            </>
                           )}
                         </div>
                       )}
@@ -876,7 +875,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                  accessCodeStep === 'confirm' || accessCodeStep === 'confirmNew' ? 'Confirmer' : 'Valider'}
               </Button>
             </div>
-            </Card>
+          </Card>
         </div>
       )}
 

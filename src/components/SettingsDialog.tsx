@@ -20,12 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Settings, User, Bot, Upload, X, Star } from "lucide-react";
+import { Settings, User, Bot, Upload, X } from "lucide-react";
 import { useTranslation } from "@/utils/i18n";
 import { showSuccess, showError } from "@/utils/toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import IconPicker from "@/components/IconPicker";
-import * as LucideIcons from "lucide-react";
 
 interface SettingsDialogProps {
   selectedModel: string;
@@ -64,15 +62,6 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const [localUserName, setLocalUserName] = useState(userName);
   const [localCustomInstructions, setLocalCustomInstructions] = useState(customInstructions);
   const t = useTranslation(selectedLanguage);
-
-  // États pour les icônes des avatars
-  const [userAvatarIcon, setUserAvatarIcon] = useState(() => {
-    return localStorage.getItem('userAvatarIcon') || 'user';
-  });
-  
-  const [aiAvatarIcon, setAiAvatarIcon] = useState(() => {
-    return localStorage.getItem('aiAvatarIcon') || 'star';
-  });
 
   const models = [
     { id: 'openai/gpt-4o', name: 'm-4.0', description: t.models['m-4.0'] },
@@ -116,11 +105,6 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const handleSave = () => {
     onUserNameChange(localUserName);
     onCustomInstructionsChange(localCustomInstructions);
-    
-    // Sauvegarder les icônes des avatars
-    localStorage.setItem('userAvatarIcon', userAvatarIcon);
-    localStorage.setItem('aiAvatarIcon', aiAvatarIcon);
-    
     setIsOpen(false);
     showSuccess("Paramètres enregistrés");
   };
@@ -159,12 +143,6 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     return localStorage.getItem('aiAvatar');
   };
 
-  const renderIcon = (iconName: string, className: string) => {
-    const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-    const IconComponent = (LucideIcons as any)[formattedIconName] || Star;
-    return <IconComponent className={className} />;
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -185,7 +163,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Avatars</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Avatar Utilisateur */}
               <div className="space-y-3">
                 <Label>Votre avatar</Label>
@@ -200,54 +178,40 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
                       </>
                     ) : (
                       <AvatarFallback className="bg-gray-500 text-white">
-                        {renderIcon(userAvatarIcon, "w-8 h-8")}
+                        <User className="w-8 h-8" />
                       </AvatarFallback>
                     )}
                   </Avatar>
                   
-                  <div className="flex flex-col gap-2">
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" asChild>
-                        <label>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Image
-                          <input
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                handleAvatarChange('user', file);
-                              }
-                            }}
-                          />
-                        </label>
-                      </Button>
-                      
-                      {getUserAvatar() && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeAvatar('user')}
-                          className="text-red-500"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" asChild>
+                      <label>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Changer
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleAvatarChange('user', file);
+                            }
+                          }}
+                        />
+                      </label>
+                    </Button>
                     
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">Icône:</span>
-                      <IconPicker
-                        selectedIcon={userAvatarIcon}
-                        onIconChange={(icon) => {
-                          setUserAvatarIcon(icon);
-                          // Supprimer l'image si une icône est choisie
-                          localStorage.removeItem('userAvatar');
-                        }}
-                      />
-                    </div>
+                    {getUserAvatar() && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeAvatar('user')}
+                        className="text-red-500"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -266,54 +230,40 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
                       </>
                     ) : (
                       <AvatarFallback className="bg-blue-500 text-white">
-                        {renderIcon(aiAvatarIcon, "w-8 h-8")}
+                        <Bot className="w-8 h-8" />
                       </AvatarFallback>
                     )}
                   </Avatar>
                   
-                  <div className="flex flex-col gap-2">
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" asChild>
-                        <label>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Image
-                          <input
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                handleAvatarChange('ai', file);
-                              }
-                            }}
-                          />
-                        </label>
-                      </Button>
-                      
-                      {getAIAvatar() && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeAvatar('ai')}
-                          className="text-red-500"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" asChild>
+                      <label>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Changer
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleAvatarChange('ai', file);
+                            }
+                          }}
+                        />
+                      </label>
+                    </Button>
                     
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">Icône:</span>
-                      <IconPicker
-                        selectedIcon={aiAvatarIcon}
-                        onIconChange={(icon) => {
-                          setAiAvatarIcon(icon);
-                          // Supprimer l'image si une icône est choisie
-                          localStorage.removeItem('aiAvatar');
-                        }}
-                      />
-                    </div>
+                    {getAIAvatar() && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeAvatar('ai')}
+                        className="text-red-500"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/utils/i18n";
 import { showSuccess, showError } from "@/utils/toast";
-import * as LucideIcons from "lucide-react";
 
 interface ChatMessageProps {
   id: string;
@@ -106,20 +105,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     return savedAIAvatar || '';
   };
 
-  const getUserAvatarIcon = () => {
-    return localStorage.getItem('userAvatarIcon') || 'user';
-  };
-
-  const getAIAvatarIcon = () => {
-    return localStorage.getItem('aiAvatarIcon') || 'star';
-  };
-
-  const renderIcon = (iconName: string, className: string) => {
-    const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-    const IconComponent = (LucideIcons as any)[formattedIconName] || User;
-    return <IconComponent className={className} />;
-  };
-
   const formatContent = (text: string) => {
     // Gestion des erreurs d'API
     if (text.includes('User not found') || text.includes('Erreur:')) {
@@ -170,7 +155,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               <AvatarImage src={getAIAvatar()} alt="AI Avatar" />
             ) : (
               <AvatarFallback className="bg-blue-500 text-white">
-                {renderIcon(getAIAvatarIcon(), "w-4 h-4")}
+                <Bot className="w-4 h-4" />
               </AvatarFallback>
             )}
           </Avatar>
@@ -279,7 +264,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               <AvatarImage src={getUserAvatar()} alt="User Avatar" />
             ) : (
               <AvatarFallback className="bg-gray-500 text-white">
-                {renderIcon(getUserAvatarIcon(), "w-4 h-4")}
+                <User className="w-4 h-4" />
               </AvatarFallback>
             )}
           </Avatar>
