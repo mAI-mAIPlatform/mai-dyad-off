@@ -60,9 +60,21 @@ const MAIsManager: React.FC<MAIsManagerProps> = ({
     return colorMap[iconColor] || 'text-black dark:text-white';
   };
 
+  const getModelDisplayName = (baseModel: string): string => {
+    const modelMap: Record<string, string> = {
+      'openai/gpt-4o': 'm-4.0',
+      'openai/gpt-4-turbo': 'm-4.3-mini',
+      'anthropic/claude-3-5-sonnet': 'm-4.5 Pro',
+      'anthropic/claude-3-opus': 'm-4.7o',
+      'google/gemini-2.0-flash-thinking-exp': 'm-4.9+'
+    };
+    return modelMap[baseModel] || baseModel;
+  };
+
   const filteredModels = customModels.filter(model =>
     model.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    model.description.toLowerCase().includes(searchTerm.toLowerCase())
+    model.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    getModelDisplayName(model.baseModel).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const renderIcon = (model: CustomModel) => {
@@ -155,7 +167,7 @@ const MAIsManager: React.FC<MAIsManagerProps> = ({
                     </div>
                     <div>
                       <h3 className="font-semibold">{model.name}</h3>
-                      <p className="text-sm text-gray-500">{model.baseModel}</p>
+                      <p className="text-sm text-gray-500">{getModelDisplayName(model.baseModel)}</p>
                     </div>
                   </div>
                   <Star className="w-4 h-4 text-yellow-500 flex-shrink-0" />
@@ -216,7 +228,11 @@ const MAIsManager: React.FC<MAIsManagerProps> = ({
               }
             </p>
             {!searchTerm && (
-              <Button onClick={() => setIsCreateDialogOpen(true)}>
+              <Button 
+                onClick={() => setIsCreateDialogOpen(true)}
+                disabled={!betaFeaturesEnabled}
+                className={!betaFeaturesEnabled ? "bg-gray-400 cursor-not-allowed" : ""}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Créer un modèle
               </Button>

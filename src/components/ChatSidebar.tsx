@@ -518,14 +518,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 <X className="w-4 h-4" />
                 Retour
               </Button>
-              <Button
-                onClick={() => setCustomModelDialogOpen(true)}
-                disabled={!betaFeaturesEnabled}
-                className={!betaFeaturesEnabled ? "bg-gray-400 cursor-not-allowed" : ""}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Nouveau mAI
-              </Button>
             </div>
 
             <MAIsManager
