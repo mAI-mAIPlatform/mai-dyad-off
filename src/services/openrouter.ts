@@ -31,6 +31,11 @@ export class OpenRouterService {
     model: string = 'openai/gpt-4o'
   ): Promise<OpenRouterResponse> {
     try {
+      // Vérifier que la clé API est présente
+      if (!this.API_KEY) {
+        throw new Error('Clé API OpenRouter non configurée. Veuillez ajouter VITE_OPENROUTER_API_KEY dans votre fichier .env');
+      }
+
       const response = await fetch(this.API_URL, {
         method: 'POST',
         headers: {
@@ -51,13 +56,27 @@ export class OpenRouterService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || `HTTP error! status: ${response.status}`);
+        // Gérer les erreurs spécifiques d'OpenRouter
+        if (data.error?.message?.includes('User not found')) {
+          throw new Error('Erreur d\'authentification : Clé API invalide ou expirée. Veuillez vérifier votre configuration.');
+        }
+        
+        throw new Error(data.error?.message || `Erreur HTTP! status: ${response.status}`);
       }
 
       return data;
     } catch (error) {
-      console.error('Error calling OpenRouter API:', error);
-      throw error;
+      console.error('Erreur lors de l\'appel à l\'API OpenRouter:', error);
+      
+      // Fournir un message d'erreur plus clair
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch')) {
+          throw new Error('Impossible de se connecter au service OpenRouter. Vérifiez votre connexion internet.');
+        }
+        throw error;
+      }
+      
+      throw new Error('Une erreur inattendue s\'est produite lors de la communication avec l\'IA');
     }
   }
 
@@ -68,7 +87,7 @@ export class OpenRouterService {
       en: 'You are mAI, a helpful, friendly and professional AI assistant. Respond in English in a clear and concise manner.',
       es: 'Eres mAI, un asistente de IA útil, amigable y profesional. Responde en español de manera clara y concisa.',
       de: 'Du bist mAI, ein hilfsbereiter, freundlicher und professioneller KI-Assistent. Antworte auf Deutsch klar und prägnant.',
-      pt: 'És mAI, um assistente de IA útil, amigável e profissional. Responde em português de forma clara e concisa.'
+      pt: 'És mAI, um assistente de IA útil, amigável et profissional. Responde em português de forma clara e concisa.'
     };
 
     const systemMessage: OpenRouterMessage = {

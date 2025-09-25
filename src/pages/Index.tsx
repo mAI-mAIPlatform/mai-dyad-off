@@ -66,6 +66,7 @@ const Index = () => {
   const [iconColor, setIconColor] = useState('black');
   const [customInstructions, setCustomInstructions] = useState('');
   const [selectedPersonality, setSelectedPersonality] = useState('default');
+  const [apiError, setApiError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const t = useTranslation(selectedLanguage);
@@ -329,6 +330,7 @@ const Index = () => {
     ));
 
     setIsLoading(true);
+    setApiError(null);
 
     try {
       const apiMessages: OpenRouterMessage[] = messagesToKeep
@@ -388,6 +390,7 @@ const Index = () => {
       setConversations(finalConversations);
     } catch (error: any) {
       console.error('Error:', error);
+      setApiError(error.message);
       
       let errorMessageContent = t.messages.technicalError;
       
@@ -424,7 +427,7 @@ const Index = () => {
     localStorage.setItem('selectedLanguage', language);
   };
 
-  const handleBetaFeaturesChange = (enabled: boolean) => {
+  const handleBetaFeaturesChange = (enabled: boolean) {
     setBetaFeaturesEnabled(enabled);
     localStorage.setItem('betaFeaturesEnabled', enabled.toString());
   };
@@ -515,6 +518,7 @@ const Index = () => {
 
     setConversations(updatedConversations);
     setIsLoading(true);
+    setApiError(null);
 
     try {
       const isImageRequest = content.toLowerCase().includes('image') || 
@@ -552,7 +556,7 @@ const Index = () => {
         if (betaFeaturesEnabled) {
           if (customInstructions) {
             systemMessage += `Informations utilisateur : ${customInstructions}. `;
-          }
+            }
           systemMessage += getPersonalityInstructions(selectedPersonality);
         }
 
@@ -604,6 +608,7 @@ const Index = () => {
       }
     } catch (error: any) {
       console.error('Error:', error);
+      setApiError(error.message);
       
       let errorMessageContent = t.messages.technicalError;
       
@@ -710,6 +715,27 @@ const Index = () => {
               />
             </div>
           </div>
+
+          {/* Banner d'erreur API */}
+          {apiError && (
+            <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 p-3">
+              <div className="max-w-4xl mx-auto flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-red-600 dark:text-red-400 text-sm">
+                    ⚠️ {apiError}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setApiError(null)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          )}
 
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
