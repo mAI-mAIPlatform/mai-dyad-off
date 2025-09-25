@@ -419,7 +419,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                       onChange={(e) => setNewProjectName(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') handleCreateProjectInternal();
-                        if (e.key === 'Eescape') setIsCreatingProject(false);
+                        if (e.key === 'Escape') setIsCreatingProject(false);
                       }}
                       placeholder="Nom du projet"
                       className="flex-1 h-7 text-xs"

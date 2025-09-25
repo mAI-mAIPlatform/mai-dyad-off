@@ -13,7 +13,7 @@ export interface OpenRouterResponse {
   }>;
 }
 
-// Configuration de la clé API OpenRouter
+// Configuration de la clé API OpenRouter - Correction de la clé
 const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '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';
 
 export class OpenRouterService {
