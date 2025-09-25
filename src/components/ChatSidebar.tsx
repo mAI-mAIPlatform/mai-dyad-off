@@ -365,20 +365,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     }
   };
 
-  // Fonction utilitaire pour convertir une chaîne en Date si nécessaire
-  const ensureDate = (date: any): Date => {
-    if (date instanceof Date) {
-      return date;
-    }
-    if (typeof date === 'string') {
-      return new Date(date);
-    }
-    if (typeof date === 'number') {
-      return new Date(date);
-    }
-    return new Date();
-  };
-
   return (
     <>
       <div className="w-64 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col">
@@ -688,7 +674,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                       )}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      {ensureDate(conversation.updatedAt).toLocaleDateString()}
+                      {conversation.updatedAt.toLocaleDateString()}
                     </p>
                   </Card>
                 ))}

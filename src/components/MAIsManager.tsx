@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { 
   Plus, 
   Edit, 
@@ -14,6 +13,7 @@ import {
   Search,
   X
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import CustomModelDialog, { CustomModel } from "./CustomModelDialog";
 import ShareModelDialog from "./ShareModelDialog";
 import { useTranslation } from "@/utils/i18n";
@@ -58,17 +58,6 @@ const MAIsManager: React.FC<MAIsManagerProps> = ({
       'orange': 'text-orange-600'
     };
     return colorMap[iconColor] || 'text-black dark:text-white';
-  };
-
-  const getBaseModelName = (baseModelId: string): string => {
-    const modelNames: Record<string, string> = {
-      'openai/gpt-4o': 'm-4.0',
-      'openai/gpt-4-turbo': 'm-4.3-mini',
-      'anthropic/claude-3-5-sonnet': 'm-4.5 Pro',
-      'anthropic/claude-3-opus': 'm-4.7o',
-      'google/gemini-2.0-flash-thinking-exp': 'm-4.9+'
-    };
-    return modelNames[baseModelId] || baseModelId;
   };
 
   const filteredModels = customModels.filter(model =>
@@ -166,7 +155,7 @@ const MAIsManager: React.FC<MAIsManagerProps> = ({
                     </div>
                     <div>
                       <h3 className="font-semibold">{model.name}</h3>
-                      <p className="text-sm text-gray-500">{getBaseModelName(model.baseModel)}</p>
+                      <p className="text-sm text-gray-500">{model.baseModel}</p>
                     </div>
                   </div>
                   <Star className="w-4 h-4 text-yellow-500 flex-shrink-0" />

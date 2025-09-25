@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,8 +11,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -20,10 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Settings, User, Bot, Upload, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { useTheme } from "next-themes";
+import { showSuccess } from "@/utils/toast";
 import { useTranslation } from "@/utils/i18n";
-import { showSuccess, showError } from "@/utils/toast";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface SettingsDialogProps {
   selectedModel: string;
@@ -58,9 +59,15 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   selectedPersonality,
   onPersonalityChange
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
   const [localUserName, setLocalUserName] = useState(userName);
+  const { theme, setTheme } = useTheme();
+  const [localSelectedModel, setLocalSelectedModel] = useState(selectedModel);
+  const [localSelectedLanguage, setLocalSelectedLanguage] = useState(selectedLanguage);
+  const [localBetaFeaturesEnabled, setLocalBetaFeaturesEnabled] = useState(betaFeaturesEnabled);
+  const [localIconColor, setLocalIconColor] = useState(iconColor);
   const [localCustomInstructions, setLocalCustomInstructions] = useState(customInstructions);
+  const [localSelectedPersonality, setLocalSelectedPersonality] = useState(selectedPersonality);
+
   const t = useTranslation(selectedLanguage);
 
   const models = [
@@ -68,89 +75,87 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
     { id: 'openai/gpt-4-turbo', name: 'm-4.3-mini', description: t.models['m-4.3-mini'] },
     { id: 'anthropic/claude-3-5-sonnet', name: 'm-4.5 Pro', description: t.models['m-4.5 Pro'] },
     { id: 'anthropic/claude-3-opus', name: 'm-4.7o', description: t.models['m-4.7o'] },
-    { id: 'google/gemini-2.0-flash-thinking-exp', name: 'm-4.9+', description: t.models['m-4.9+'] },
+    { id: 'google/gemini-2.0-flash-thinking-exp', name: 'm-4.9+', description: t.models['m-4.9+'] }
   ];
 
   const languages = [
-    { id: 'fr', name: 'Français' },
-    { id: 'en', name: 'English' },
-    { id: 'es', name: 'Español' },
-    { id: 'de', name: 'Deutsch' },
-    { id: 'it', name: 'Italiano' },
+    { id: 'fr', name: t.languages.fr, flag: 'FR' },
+    { id: 'en', name: t.languages.en, flag: 'EN' },
+    { id: 'es', name: t.languages.es, flag: 'ES' },
+    { id: 'de', name: t.languages.de, flag: 'DE' },
+    { id: 'pt', name: t.languages.pt, flag: 'PT' }
   ];
 
   const iconColors = [
-    { id: 'black', name: 'Noir' },
-    { id: 'blue', name: 'Bleu' },
-    { id: 'red', name: 'Rouge' },
-    { id: 'yellow', name: 'Jaune' },
-    { id: 'green', name: 'Vert' },
-    { id: 'purple', name: 'Violet' },
-    { id: 'pink', name: 'Rose' },
-    { id: 'indigo', name: 'Indigo' },
-    { id: 'orange', name: 'Orange' },
+    { id: 'black', name: 'Noir', value: 'black' },
+    { id: 'blue', name: 'Bleu', value: 'blue-600' },
+    { id: 'red', name: 'Rouge', value: 'red-600' },
+    { id: 'yellow', name: 'Jaune', value: 'yellow-600' },
+    { id: 'gray', name: 'Gris', value: 'gray-500' },
+    { id: 'green', name: 'Vert', value: 'green-600' },
+    { id: 'purple', name: 'Violet', value: 'purple-600' },
+    { id: 'pink', name: 'Rose', value: 'pink-600' },
+    { id: 'indigo', name: 'Indigo', value: 'indigo-600' },
+    { id: 'orange', name: 'Orange', value: 'orange-600' }
   ];
 
   const personalities = [
-    { id: 'default', name: 'Standard' },
-    { id: 'professional', name: 'Professionnel' },
-    { id: 'empathetic', name: 'Empathique' },
-    { id: 'genz', name: 'Génération Z' },
-    { id: 'depressive', name: 'Dépressif' },
-    { id: 'enthusiastic', name: 'Enthousiaste' },
-    { id: 'sarcastic', name: 'Sarcastique' },
-    { id: 'technical', name: 'Technique' },
+    { id: 'default', name: 'Défaut', description: 'Personnalité standard et neutre' },
+    { id: 'professional', name: 'Professionnel', description: 'Formel, précis et orienté résultats' },
+    { id: 'empathetic', name: 'Empathique', description: 'Bienveillant, compréhensif et encourageant' },
+    { id: 'genz', name: 'Génération Z', description: 'Décontracté, moderne avec des expressions actuelles' },
+    { id: 'depressive', name: 'Dépressif', description: 'Pessimiste et mélancolique' },
+    { id: 'enthusiastic', name: 'Enthousiaste', description: 'Énergique et positif' },
+    { id: 'sarcastic', name: 'Sarcastique', description: 'Ironique et humoristique' },
+    { id: 'technical', name: 'Technique', description: 'Précis, détaillé et orienté données' }
   ];
 
   const handleSave = () => {
     onUserNameChange(localUserName);
+    onModelChange(localSelectedModel);
+    onLanguageChange(localSelectedLanguage);
+    onBetaFeaturesChange(localBetaFeaturesEnabled);
+    onIconColorChange(localIconColor);
     onCustomInstructionsChange(localCustomInstructions);
-    setIsOpen(false);
-    showSuccess("Paramètres enregistrés");
+    onPersonalityChange(localSelectedPersonality);
+    
+    // Sauvegarder les paramètres dans localStorage
+    localStorage.setItem('userName', localUserName);
+    localStorage.setItem('defaultModel', localSelectedModel);
+    localStorage.setItem('selectedLanguage', localSelectedLanguage);
+    localStorage.setItem('betaFeaturesEnabled', localBetaFeaturesEnabled.toString());
+    localStorage.setItem('iconColor', localIconColor);
+    localStorage.setItem('theme', theme || 'system');
+    localStorage.setItem('customInstructions', localCustomInstructions);
+    localStorage.setItem('selectedPersonality', localSelectedPersonality);
+    
+    showSuccess(t.settings.save);
   };
 
-  const handleAvatarChange = (type: 'user' | 'ai', file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      if (type === 'user') {
-        localStorage.setItem('userAvatar', result);
-      } else {
-        localStorage.setItem('aiAvatar', result);
-      }
-      showSuccess('Avatar mis à jour');
-    };
-    reader.onerror = () => {
-      showError('Erreur lors du chargement de l\'image');
-    };
-    reader.readAsDataURL(file);
+  const getVersionText = () => {
+    return localBetaFeaturesEnabled 
+      ? "26 1.0 (Bêta Update)" 
+      : "26 0.8 (Public Update)";
   };
 
-  const removeAvatar = (type: 'user' | 'ai') => {
-    if (type === 'user') {
-      localStorage.removeItem('userAvatar');
-    } else {
-      localStorage.removeItem('aiAvatar');
-    }
-    showSuccess('Avatar supprimé');
+  const getColorClass = (colorId: string) => {
+    const color = iconColors.find(c => c.id === colorId);
+    return color ? `text-${color.value}` : 'text-black dark:text-white';
   };
 
-  const getUserAvatar = () => {
-    return localStorage.getItem('userAvatar');
-  };
-
-  const getAIAvatar = () => {
-    return localStorage.getItem('aiAvatar');
+  const getPersonalityDescription = (personalityId: string) => {
+    const personality = personalities.find(p => p.id === personalityId);
+    return personality ? personality.description : '';
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon">
+        <Button variant="ghost" size="icon">
           <Settings className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t.settings.title}</DialogTitle>
           <DialogDescription>
@@ -158,235 +163,183 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          {/* Section Avatars */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Avatars</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Avatar Utilisateur */}
-              <div className="space-y-3">
-                <Label>Votre avatar</Label>
-                <div className="flex items-center gap-4">
-                  <Avatar className="w-16 h-16">
-                    {getUserAvatar() ? (
-                      <>
-                        <AvatarImage src={getUserAvatar()} alt="User Avatar" />
-                        <AvatarFallback className="bg-gray-500 text-white">
-                          <User className="w-8 h-8" />
-                        </AvatarFallback>
-                      </>
-                    ) : (
-                      <AvatarFallback className="bg-gray-500 text-white">
-                        <User className="w-8 h-8" />
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <label>
-                        <Upload className="w-4 h-4 mr-2" />
-                        Changer
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              handleAvatarChange('user', file);
-                            }
-                          }}
-                        />
-                      </label>
-                    </Button>
-                    
-                    {getUserAvatar() && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeAvatar('user')}
-                        className="text-red-500"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Avatar IA */}
-              <div className="space-y-3">
-                <Label>Avatar de l'IA</Label>
-                <div className="flex items-center gap-4">
-                  <Avatar className="w-16 h-16">
-                    {getAIAvatar() ? (
-                      <>
-                        <AvatarImage src={getAIAvatar()} alt="AI Avatar" />
-                        <AvatarFallback className="bg-blue-500 text-white">
-                          <Bot className="w-8 h-8" />
-                        </AvatarFallback>
-                      </>
-                    ) : (
-                      <AvatarFallback className="bg-blue-500 text-white">
-                        <Bot className="w-8 h-8" />
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <label>
-                        <Upload className="w-4 h-4 mr-2" />
-                        Changer
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              handleAvatarChange('ai', file);
-                            }
-                          }}
-                        />
-                      </label>
-                    </Button>
-                    
-                    {getAIAvatar() && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeAvatar('ai')}
-                        className="text-red-500"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Section Utilisateur */}
-          <div className="space-y-3">
+        <div className="grid gap-6 py-4">
+          {/* Nom utilisateur */}
+          <div className="grid gap-2">
             <Label htmlFor="userName">{t.settings.userName}</Label>
             <Input
               id="userName"
               value={localUserName}
               onChange={(e) => setLocalUserName(e.target.value)}
-              placeholder="Entrez votre nom"
+              placeholder={t.settings.userName}
             />
           </div>
 
-          {/* Section Modèle par défaut */}
-          <div className="space-y-3">
-            <Label htmlFor="model">Modèle par défaut</Label>
-            <Select value={selectedModel} onValueChange={onModelChange}>
-              <SelectTrigger id="model">
-                <SelectValue placeholder="Sélectionnez un modèle" />
+          {/* Fonctions Bêta */}
+          <div className="grid gap-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="beta-features">Fonctions Bêta</Label>
+              <Switch
+                id="beta-features"
+                checked={localBetaFeaturesEnabled}
+                onCheckedChange={setLocalBetaFeaturesEnabled}
+              />
+            </div>
+            <p className="text-xs text-gray-500">
+              Activez les fonctionnalités Bêta d'mAI, ces fonctionnalités peuvent contenir des bugs.
+            </p>
+          </div>
+
+          {/* Personnalité */}
+          <div className="grid gap-2">
+            <Label htmlFor="personality" className={!localBetaFeaturesEnabled ? "text-gray-400" : ""}>
+              Personnalité (Bêta)
+            </Label>
+            <Select 
+              value={localSelectedPersonality} 
+              onValueChange={setLocalSelectedPersonality}
+              disabled={!localBetaFeaturesEnabled}
+            >
+              <SelectTrigger className={!localBetaFeaturesEnabled ? "bg-gray-100 dark:bg-gray-800 text-gray-400" : ""}>
+                <SelectValue placeholder="Sélectionnez une personnalité">
+                  {personalities.find(p => p.id === localSelectedPersonality)?.name || 'Défaut'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {models.map((model) => (
-                  <SelectItem key={model.id} value={model.id}>
-                    {model.name} - {model.description}
+                {personalities.map((personality) => (
+                  <SelectItem key={personality.id} value={personality.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{personality.name}</span>
+                      <span className="text-xs text-gray-500">{personality.description}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-gray-500">
+              Choisissez le ton et le style de réponse d'mAI
+            </p>
           </div>
 
-          {/* Section Langue */}
-          <div className="space-y-3">
-            <Label htmlFor="language">{t.settings.language}</Label>
-            <Select value={selectedLanguage} onValueChange={onLanguageChange}>
-              <SelectTrigger id="language">
-                <SelectValue placeholder="Sélectionnez une langue" />
-              </SelectTrigger>
-              <SelectContent>
-                {languages.map((language) => (
-                  <SelectItem key={language.id} value={language.id}>
-                    {language.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Instructions personnalisées */}
+          <div className="grid gap-2">
+            <Label htmlFor="custom-instructions" className={!localBetaFeaturesEnabled ? "text-gray-400" : ""}>
+              Instructions personnalisées (Bêta)
+            </Label>
+            <Textarea
+              id="custom-instructions"
+              value={localCustomInstructions}
+              onChange={(e) => setLocalCustomInstructions(e.target.value)}
+              placeholder="Ex: Je suis développeur web, parle-moi en termes techniques. Mes préférences sont..."
+              className="min-h-[80px] resize-none"
+              disabled={!localBetaFeaturesEnabled}
+            />
+            <p className="text-xs text-gray-500">
+              Fournissez des informations sur vous pour personnaliser les réponses d'mAI
+            </p>
           </div>
 
-          {/* Section Couleur des icônes */}
-          <div className="space-y-3">
-            <Label htmlFor="iconColor">Couleur des icônes</Label>
-            <Select value={iconColor} onValueChange={onIconColorChange}>
-              <SelectTrigger id="iconColor">
-                <SelectValue placeholder="Sélectionnez une couleur" />
+          {/* Couleur des icônes */}
+          <div className="grid gap-2">
+            <Label htmlFor="icon-color" className={!localBetaFeaturesEnabled ? "text-gray-400" : ""}>
+              Couleur des icônes (Bêta)
+            </Label>
+            <Select 
+              value={localIconColor} 
+              onValueChange={setLocalIconColor}
+              disabled={!localBetaFeaturesEnabled}
+            >
+              <SelectTrigger className={!localBetaFeaturesEnabled ? "bg-gray-100 dark:bg-gray-800 text-gray-400" : ""}>
+                <SelectValue placeholder="Sélectionnez une couleur">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded-full ${getColorClass(localIconColor)} bg-current`} />
+                    <span>{iconColors.find(c => c.id === localIconColor)?.name || 'Couleur'}</span>
+                  </div>
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {iconColors.map((color) => (
                   <SelectItem key={color.id} value={color.id}>
-                    {color.name}
+                    <div className="flex items-center gap-2">
+                      <div className={`w-4 h-4 rounded-full ${getColorClass(color.id)} bg-current`} />
+                      <span>{color.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500">
+              Couleur des icônes de projets, étoiles et autres éléments
+            </p>
+          </div>
+
+          {/* Langue */}
+          <div className="grid gap-2">
+            <Label htmlFor="language" className={!localBetaFeaturesEnabled ? "text-gray-400" : ""}>
+              {t.settings.language} (Bêta)
+            </Label>
+            <Select 
+              value={localSelectedLanguage} 
+              onValueChange={setLocalSelectedLanguage}
+              disabled={!localBetaFeaturesEnabled}
+            >
+              <SelectTrigger className={!localBetaFeaturesEnabled ? "bg-gray-100 dark:bg-gray-800 text-gray-400" : ""}>
+                <SelectValue placeholder={t.settings.language} />
+              </SelectTrigger>
+              <SelectContent>
+                {languages.map((language) => (
+                  <SelectItem key={language.id} value={language.id}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{language.flag}</span>
+                      <span>{language.name}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Section Fonctionnalités Bêta */}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="betaFeatures" className="flex-1">
-              Fonctionnalités Bêta
-              <p className="text-sm text-gray-500 font-normal">
-                Activer les fonctionnalités expérimentales
-              </p>
-            </Label>
-            <Switch
-              id="betaFeatures"
-              checked={betaFeaturesEnabled}
-              onCheckedChange={onBetaFeaturesChange}
-            />
+          {/* Modèle IA par défaut */}
+          <div className="grid gap-2">
+            <Label htmlFor="model">{t.settings.model}</Label>
+            <Select value={localSelectedModel} onValueChange={setLocalSelectedModel}>
+              <SelectTrigger>
+                <SelectValue placeholder={t.settings.model} />
+              </SelectTrigger>
+              <SelectContent>
+                {models.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{model.name}</span>
+                      <span className="text-xs text-gray-500">{model.description}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500">
+              Ce modèle sera utilisé pour les nouvelles conversations
+            </p>
           </div>
 
-          {/* Section Instructions personnalisées (uniquement si bêta activé) */}
-          {betaFeaturesEnabled && (
-            <div className="space-y-3">
-              <Label htmlFor="customInstructions">Instructions personnalisées</Label>
-              <textarea
-                id="customInstructions"
-                value={localCustomInstructions}
-                onChange={(e) => setLocalCustomInstructions(e.target.value)}
-                placeholder="Informations supplémentaires sur vous ou vos préférences..."
-                className="w-full p-3 border rounded-md resize-none min-h-[100px]"
-              />
-            </div>
-          )}
-
-          {/* Section Personnalité (uniquement si bêta activé) */}
-          {betaFeaturesEnabled && (
-            <div className="space-y-3">
-              <Label htmlFor="personality">Personnalité de l'IA</Label>
-              <Select value={selectedPersonality} onValueChange={onPersonalityChange}>
-                <SelectTrigger id="personality">
-                  <SelectValue placeholder="Sélectionnez une personnalité" />
-                </SelectTrigger>
-                <SelectContent>
-                  {personalities.map((personality) => (
-                    <SelectItem key={personality.id} value={personality.id}>
-                      {personality.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          {/* Thème */}
+          <div className="flex items-center justify-between">
+            <Label htmlFor="theme">{t.settings.darkMode}</Label>
+            <Switch
+              id="theme"
+              checked={theme === 'dark'}
+              onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+            />
+          </div>
         </div>
 
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Annuler
-          </Button>
-          <Button onClick={handleSave}>
-            Enregistrer
+        {/* Version et bouton sauvegarder */}
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-xs text-gray-500">
+            {getVersionText()}
+          </div>
+          <Button onClick={handleSave} size="sm">
+            {t.settings.save}
           </Button>
         </div>
       </DialogContent>
