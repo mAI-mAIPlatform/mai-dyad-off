@@ -4,29 +4,18 @@
 
 ---
 
-## 🚀 Configuration de l'API OpenRouter
+## 🚀 Fonctionnalités
 
-Pour utiliser mAI, vous devez configurer une clé API OpenRouter :
-
-1. **Obtenez une clé API** :
-   - Rendez-vous sur [OpenRouter](https://openrouter.ai/)
-   - Créez un compte et obtenez votre clé API gratuite
-
-2. **Configurez votre environnement** :
-   - Copiez le fichier `.env.example` en `.env`
-   - Ajoutez votre clé API :
-     ```
-     VITE_OPENROUTER_API_KEY=votre_cle_api_ici
-     ```
-
-3. **Redémarrez l'application** :
-   - Redémarrez le serveur de développement pour que les changements prennent effet
+- Génération de réponses intelligentes et contextuelles 📝  
+- Analyse et traitement de données en temps réel 📊  
+- Interface et API modulaires pour une intégration facile 💻  
+- Optimisée pour rapidité et efficacité ⚡  
 
 ---
 
 ## 📜 Licence
 
-MIT License — libre d'utilisation et de modification, en conservant le crédit à **mAIDevlopers**.
+MIT License — libre d’utilisation et de modification, en conservant le crédit à **mAIDevlopers**.
 
 ---
 
