@@ -41,14 +41,24 @@ type Project = {
 };
 
 /* ---------- Helpers ---------- */
-// Stub simple pour la génération d’image (peut être remplacé par une vraie implémentation)
+// Stub simple pour la génération d'image (peut être remplacé par une vraie implémentation)
 const generateImage = async (prompt: string): Promise<string> => {
   return `https://via.placeholder.com/400x300?text=${encodeURIComponent(prompt)}`;
 };
 
 // Stub pour les instructions de personnalité
 const getPersonalityInstructions = (personalityId: string): string => {
-  return "";
+  const personalities: Record<string, string> = {
+    'default': '',
+    'professional': 'Réponds de manière formelle, précise et orientée résultats.',
+    'empathetic': 'Sois bienveillant, compréhensif et encourageant dans tes réponses.',
+    'genz': 'Utilise un ton décontracté, moderne avec des expressions actuelles et des emojis.',
+    'depressive': 'Adopte un ton pessimiste et mélancolique dans tes réponses.',
+    'enthusiastic': 'Sois énergique et positif dans tes réponses.',
+    'sarcastic': 'Utilise un ton ironique et humoristique.',
+    'technical': 'Sois précis, détaillé et orienté données techniques.'
+  };
+  return personalities[personalityId] || '';
 };
 
 /* ---------- Component ---------- */
@@ -178,9 +188,7 @@ const Index: React.FC = () => {
       setConversations(finalConversations);
     } catch (error: any) {
       console.error("Error:", error);
-      const errorMessageContent = error?.message?.includes("User not found")
-        ? "Clé API OpenRouter invalide ou compte non trouvé. Veuillez vérifier votre clé."
-        : t.messages.technicalError;
+      const errorMessageContent = error?.message || t.messages.technicalError;
 
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -206,7 +214,7 @@ const Index: React.FC = () => {
     }
   };
 
-  /* ---------- Envoi d’un nouveau message ---------- */
+  /* ---------- Envoi d'un nouveau message ---------- */
   const handleSendMessage = async (content: string, isRegeneration = false) => {
     if (!content.trim() || isLoading) return;
     if (!currentConversation) return;
@@ -314,9 +322,7 @@ const Index: React.FC = () => {
       }
     } catch (error: any) {
       console.error("Error:", error);
-      const errorMessageContent = error?.message?.includes("User not found")
-        ? "Clé API OpenRouter invalide ou compte non trouvé. Veuillez vérifier votre clé."
-        : t.messages.technicalError;
+      const errorMessageContent = error?.message || t.messages.technicalError;
 
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),

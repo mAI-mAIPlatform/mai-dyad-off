@@ -71,14 +71,32 @@ export class OpenRouterService {
       const data = await response.json();
 
       if (!response.ok) {
-        // Propagate API‑returned error (e.g., “User not found”)
-        throw new Error(data.error?.message || `Erreur HTTP ${response.status}`);
+        // Log detailed error information
+        console.error('❌ OpenRouter API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          data: data
+        });
+        
+        // Propagate API‑returned error
+        const errorMessage = data.error?.message || `Erreur HTTP ${response.status}`;
+        throw new Error(errorMessage);
       }
 
       return data;
-    } catch (error) {
-      console.error('❗️ Erreur lors de l’appel OpenRouter :', error);
-      // Re‑throw so calling components can display a toast
+    } catch (error: any) {
+      console.error('❗️ Erreur lors de l’appel OpenRouter:', error);
+      
+      // Provide more specific error messages
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Problème de connexion réseau. Vérifiez votre connexion internet.');
+      } else if (error.message.includes('User not found')) {
+        throw new Error('Clé API OpenRouter invalide ou compte non trouvé. Veuillez vérifier votre clé.');
+      } else if (error.message.includes('quota')) {
+        throw new Error('Quota API dépassé. Veuillez vérifier votre compte OpenRouter.');
+      }
+      
+      // Re‑throw the original error
       throw error;
     }
   }
