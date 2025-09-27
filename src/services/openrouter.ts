@@ -24,12 +24,23 @@ export interface OpenRouterResponse {
 
 export class OpenRouterService {
   private static readonly API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+  // La clé d’API provient des variables d’environnement Vite
   private static readonly API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 
+  /** 
+   * Envoie un tableau de messages à l’API OpenRouter.
+   * Lance une erreur claire si la clé d’API est manquante.
+   */
   static async sendMessage(
     messages: OpenRouterMessage[],
     model: string = 'openai/gpt-4o'
   ): Promise<OpenRouterResponse> {
+    // 👉 Vérification de la clé d’API avant l’appel réseau
+    if (!this.API_KEY) {
+      // L’erreur sera capturée par le composant appelant et affichée à l’utilisateur
+      throw new Error('Clé API OpenRouter manquante. Veuillez la définir dans le fichier .env (VITE_OPENROUTER_API_KEY).');
+    }
+
     try {
       const response = await fetch(this.API_URL, {
         method: 'POST',
@@ -51,12 +62,14 @@ export class OpenRouterService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || `HTTP error! status: ${response.status}`);
+        // Propagation de l’erreur retournée par l’API (ex. “User not found”)
+        throw new Error(data.error?.message || `Erreur HTTP ${response.status}`);
       }
 
       return data;
     } catch (error) {
       console.error('Error calling OpenRouter API:', error);
+      // Re‑propagation pour que le composant puisse afficher le toast
       throw error;
     }
   }
